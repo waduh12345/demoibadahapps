@@ -71,24 +71,19 @@ export default function FeatureNavigation() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-5 gap-2">
         {features.map((feature) => {
           const Icon = feature.icon;
           return (
             <Link key={feature.name} href={feature.href}>
-              <Card className="border-awqaf-border-light hover:shadow-md transition-all duration-200 active:scale-95">
-                <CardContent className="p-4 text-center">
-                  <div className="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Icon className="w-6 h-6 text-awqaf-primary" />
-                  </div>
-                  <h3 className="font-semibold text-card-foreground text-sm font-comfortaa mb-1">
-                    {feature.name}
-                  </h3>
-                  <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
-                    {feature.description}
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="flex flex-col items-center p-3 rounded-xl border border-awqaf-border-light bg-white hover:shadow-md hover:bg-accent-50 transition-all duration-200 active:scale-95 h-full">
+                <div className="w-10 h-10 bg-accent-100 rounded-full flex items-center justify-center mb-2 flex-shrink-0">
+                  <Icon className="w-5 h-5 text-awqaf-primary" />
+                </div>
+                <h3 className="font-medium text-card-foreground text-[10px] font-comfortaa text-center leading-tight flex-1 flex items-center justify-center">
+                  {feature.name}
+                </h3>
+              </div>
             </Link>
           );
         })}

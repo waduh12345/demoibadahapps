@@ -286,7 +286,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md mx-auto p-0 bg-background/95 backdrop-blur-md border-awqaf-border-light">
+      <DialogContent className="max-w-md mx-auto p-0 bg-background/95 backdrop-blur-md border-awqaf-border-lightss">
         <DialogHeader className="px-4 py-3 border-b border-awqaf-border-light">
           <DialogTitle className="text-lg font-semibold text-awqaf-primary font-comfortaa">
             Cari di IbadahApp
