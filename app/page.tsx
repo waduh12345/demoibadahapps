@@ -12,6 +12,7 @@ import ProgressWidget from "./components/ProgressWidget";
 import FeatureNavigation from "./components/FeatureNavigation";
 import ArticleCard from "./components/ArticleCard";
 import SearchModal from "./components/SearchModal";
+import NotificationButton from "./components/NotificationButton";
 
 export default function Home() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -78,14 +79,17 @@ export default function Home() {
                   <HijriDate />
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-10 h-10 p-0 rounded-full bg-accent-100 hover:bg-accent-200 hover:text-awqaf-primary transition-colors duration-200"
-                onClick={() => setIsSearchOpen(true)}
-              >
-                <Search className="w-5 h-5 text-awqaf-primary hover:text-awqaf-primary transition-colors duration-200" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <NotificationButton />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-10 h-10 p-0 rounded-full bg-accent-100 hover:bg-accent-200 hover:text-awqaf-primary transition-colors duration-200"
+                  onClick={() => setIsSearchOpen(true)}
+                >
+                  <Search className="w-5 h-5 text-awqaf-primary hover:text-awqaf-primary transition-colors duration-200" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
