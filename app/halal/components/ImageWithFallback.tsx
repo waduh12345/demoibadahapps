@@ -26,7 +26,7 @@ export default function ImageWithFallback({
   if (imageError) {
     return (
       <div
-        className={`bg-accent-100 flex items-center justify-center ${className}`}
+        className={`w-full h-full bg-accent-100 flex items-center justify-center ${className}`}
         style={fill ? {} : { width, height }}
       >
         <Utensils className="w-8 h-8 text-awqaf-foreground-secondary" />

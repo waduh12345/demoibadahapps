@@ -112,6 +112,16 @@ const features: Feature[] = [
     category: "Kehidupan",
   },
   {
+    id: "donasi",
+    name: "Donasi & Sedekah",
+    description: "Wakaf, zakat, kurban, dan infaq untuk kemaslahatan umat",
+    icon: Gift,
+    href: "/donasi",
+    category: "Kehidupan",
+    isNew: true,
+    isPopular: true,
+  },
+  {
     id: "masjid",
     name: "Masjid & Mushola",
     description: "Temukan masjid dan mushola terdekat",
