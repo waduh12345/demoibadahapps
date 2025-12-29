@@ -11,7 +11,6 @@ interface Notification {
   isRead: boolean;
   id: string | number; // Assuming a notification has an ID
   title: string; // Assuming a notification has a title
-  // Add other known properties as needed
   [key: string]: unknown; // Allow for other keys, but this is less preferred
 }
 
