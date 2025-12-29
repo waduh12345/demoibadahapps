@@ -88,7 +88,7 @@ export default function PWAInstaller() {
   }
 
   return (
-    <div className="fixed top-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm">
+    <div className="fixed top-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm z-50">
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0">
           <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
