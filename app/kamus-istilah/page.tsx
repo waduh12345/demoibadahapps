@@ -1,171 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useMemo } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, BookOpen, BookA } from "lucide-react";
+import { ArrowLeft, Search, BookOpen, BookA, Loader2 } from "lucide-react";
 import Link from "next/link";
-
-// --- 1. TIPE DATA ---
-interface IslamicTerm {
-  id: string;
-  term: string;
-  definition: string;
-  alphabet_index: string; // A, B, C...
-}
-
-// --- 2. DATA DUMMY (Sample Data) ---
-const TERMS: IslamicTerm[] = [
-  {
-    id: "1",
-    term: "Adzan",
-    definition: "Panggilan untuk melaksanakan shalat bagi umat Islam.",
-    alphabet_index: "A",
-  },
-  {
-    id: "2",
-    term: "Aqidah",
-    definition: "Kepercayaan atau keyakinan yang kuat dalam hati (iman).",
-    alphabet_index: "A",
-  },
-  {
-    id: "3",
-    term: "Akhlak",
-    definition: "Tingkah laku atau budi pekerti seseorang.",
-    alphabet_index: "A",
-  },
-  {
-    id: "4",
-    term: "Barakah",
-    definition: "Bertambahnya kebaikan atau karunia dari Allah.",
-    alphabet_index: "B",
-  },
-  {
-    id: "5",
-    term: "Bid'ah",
-    definition:
-      "Perbuatan baru dalam agama yang tidak ada contohnya dari Nabi.",
-    alphabet_index: "B",
-  },
-  {
-    id: "6",
-    term: "Fardhu",
-    definition:
-      "Status hukum wajib dalam Islam (misal: Fardhu Ain, Fardhu Kifayah).",
-    alphabet_index: "F",
-  },
-  {
-    id: "7",
-    term: "Fiqih",
-    definition: "Pemahaman mendalam tentang hukum-hukum syariat Islam.",
-    alphabet_index: "F",
-  },
-  {
-    id: "8",
-    term: "Gharar",
-    definition: "Ketidakpastian dalam transaksi yang dilarang dalam muamalah.",
-    alphabet_index: "G",
-  },
-  {
-    id: "9",
-    term: "Hijrah",
-    definition:
-      "Perpindahan dari satu tempat ke tempat lain, atau meninggalkan keburukan menuju kebaikan.",
-    alphabet_index: "H",
-  },
-  {
-    id: "10",
-    term: "Ihsan",
-    definition: "Beribadah kepada Allah seakan-akan melihat-Nya.",
-    alphabet_index: "I",
-  },
-  {
-    id: "11",
-    term: "Istiqomah",
-    definition: "Konsisten atau teguh pendirian dalam ketaatan.",
-    alphabet_index: "I",
-  },
-  {
-    id: "12",
-    term: "Jihad",
-    definition: "Bersungguh-sungguh mencurahkan tenaga/harta di jalan Allah.",
-    alphabet_index: "J",
-  },
-  {
-    id: "13",
-    term: "Khusyu",
-    definition:
-      "Ketenangan hati dan anggota badan serta ketundukan saat beribadah.",
-    alphabet_index: "K",
-  },
-  {
-    id: "14",
-    term: "Muamalah",
-    definition: "Hubungan antar manusia dalam interaksi sosial dan ekonomi.",
-    alphabet_index: "M",
-  },
-  {
-    id: "15",
-    term: "Qada",
-    definition: "Ketetapan Allah sejak zaman azali.",
-    alphabet_index: "Q",
-  },
-  {
-    id: "16",
-    term: "Riba",
-    definition:
-      "Tambahan nilai dalam transaksi pinjam-meminjam yang diharamkan.",
-    alphabet_index: "R",
-  },
-  {
-    id: "17",
-    term: "Sunnah",
-    definition:
-      "Segala sesuatu yang bersumber dari Nabi SAW (ucapan, perbuatan, persetujuan).",
-    alphabet_index: "S",
-  },
-  {
-    id: "18",
-    term: "Syariah",
-    definition: "Hukum atau aturan yang ditetapkan Allah bagi hamba-Nya.",
-    alphabet_index: "S",
-  },
-  {
-    id: "19",
-    term: "Tauhid",
-    definition:
-      "Mengesakan Allah SWT dalam rububiyah, uluhiyah, dan asma wa sifat.",
-    alphabet_index: "T",
-  },
-  {
-    id: "20",
-    term: "Taqwa",
-    definition: "Menjalankan perintah Allah dan menjauhi larangan-Nya.",
-    alphabet_index: "T",
-  },
-  {
-    id: "21",
-    term: "Ukhuwah",
-    definition: "Persaudaraan (biasanya Ukhuwah Islamiyah).",
-    alphabet_index: "U",
-  },
-  {
-    id: "22",
-    term: "Wara'",
-    definition:
-      "Sikap hati-hati meninggalkan hal syubhat (meragukan) karena takut haram.",
-    alphabet_index: "W",
-  },
-  {
-    id: "23",
-    term: "Zakat",
-    definition:
-      "Harta tertentu yang wajib dikeluarkan oleh umat Islam untuk diberikan kepada golongan yang berhak.",
-    alphabet_index: "Z",
-  },
-];
+// Import Service & Types
+import { useGetDictionaryEntriesQuery } from "@/services/public/dictionary.service";
+import { DictionaryEntry } from "@/types/public/dictionary";
 
 const ALPHABETS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -173,30 +17,49 @@ export default function KamusPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLetter, setSelectedLetter] = useState<string>("ALL");
 
+  // Fetch Data from API
+  const {
+    data: dictionaryEntries,
+    isLoading,
+    error,
+  } = useGetDictionaryEntriesQuery();
+
   // 1. Filter Logic
-  const filteredTerms = TERMS.filter((item) => {
-    const matchesSearch =
-      item.term.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.definition.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredTerms = useMemo(() => {
+    if (!dictionaryEntries) return [];
 
-    const matchesLetter =
-      selectedLetter === "ALL" || item.alphabet_index === selectedLetter;
+    return dictionaryEntries.filter((item) => {
+      const q = searchQuery.toLowerCase();
+      // Strip HTML tags from definition for search comparison if needed,
+      // or just search in raw HTML string (simple approach)
+      const definitionText = item.definition.toLowerCase();
 
-    return matchesSearch && matchesLetter;
-  });
+      const matchesSearch =
+        item.term.toLowerCase().includes(q) || definitionText.includes(q);
+
+      const matchesLetter =
+        selectedLetter === "ALL" || item.alphabet_index === selectedLetter;
+
+      return matchesSearch && matchesLetter;
+    });
+  }, [dictionaryEntries, searchQuery, selectedLetter]);
 
   // 2. Grouping Logic (Group by Alphabet)
-  const groupedTerms = filteredTerms.reduce((acc, item) => {
-    const letter = item.alphabet_index;
-    if (!acc[letter]) {
-      acc[letter] = [];
-    }
-    acc[letter].push(item);
-    return acc;
-  }, {} as Record<string, IslamicTerm[]>);
+  const groupedTerms = useMemo(() => {
+    return filteredTerms.reduce((acc, item) => {
+      const letter = item.alphabet_index;
+      if (!acc[letter]) {
+        acc[letter] = [];
+      }
+      acc[letter].push(item);
+      return acc;
+    }, {} as Record<string, DictionaryEntry[]>);
+  }, [filteredTerms]);
 
   // Sort keys alphabetically
-  const sortedKeys = Object.keys(groupedTerms).sort();
+  const sortedKeys = useMemo(() => {
+    return Object.keys(groupedTerms).sort();
+  }, [groupedTerms]);
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -267,71 +130,97 @@ export default function KamusPage() {
           </div>
         </div>
 
-        {/* Terms List */}
-        <div className="space-y-6">
-          {sortedKeys.length > 0 ? (
-            sortedKeys.map((letter) => (
-              <div
-                key={letter}
-                className="scroll-mt-24"
-                id={`section-${letter}`}
-              >
-                {/* Letter Header */}
-                <div className="flex items-center gap-2 mb-3 px-2">
-                  <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold font-mono text-sm border border-teal-200">
-                    {letter}
+        {/* Terms List Content */}
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+            <Loader2 className="w-10 h-10 animate-spin mb-4 text-teal-600" />
+            <p className="font-comfortaa">Memuat kamus...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <p className="text-red-500 font-comfortaa">
+              Gagal memuat data kamus.
+            </p>
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={() => window.location.reload()}
+            >
+              Coba Lagi
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {sortedKeys.length > 0 ? (
+              sortedKeys.map((letter) => (
+                <div
+                  key={letter}
+                  className="scroll-mt-24"
+                  id={`section-${letter}`}
+                >
+                  {/* Letter Header */}
+                  <div className="flex items-center gap-2 mb-3 px-2">
+                    <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold font-mono text-sm border border-teal-200">
+                      {letter}
+                    </div>
+                    <div className="h-px flex-1 bg-gradient-to-r from-teal-200 to-transparent"></div>
                   </div>
-                  <div className="h-px flex-1 bg-gradient-to-r from-teal-200 to-transparent"></div>
-                </div>
 
-                {/* Terms Cards */}
-                <div className="space-y-3">
-                  {groupedTerms[letter].map((item) => (
-                    <Card
-                      key={item.id}
-                      className="border-awqaf-border-light hover:border-teal-200 transition-colors group"
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-bold text-gray-800 text-lg font-comfortaa mb-1 group-hover:text-teal-600 transition-colors">
-                            {item.term}
-                          </h3>
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] font-mono text-gray-400"
-                          >
-                            {item.alphabet_index}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-600 font-comfortaa leading-relaxed">
-                          {item.definition}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))}
+                  {/* Terms Cards */}
+                  <div className="space-y-3">
+                    {groupedTerms[letter].map((item) => (
+                      <Card
+                        key={item.id}
+                        className="border-awqaf-border-light hover:border-teal-200 transition-colors group"
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start">
+                            <h3 className="font-bold text-gray-800 text-lg font-comfortaa mb-1 group-hover:text-teal-600 transition-colors">
+                              {item.term}
+                            </h3>
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] font-mono text-gray-400"
+                            >
+                              {item.alphabet_index}
+                            </Badge>
+                          </div>
+                          {/* Render HTML Definition */}
+                          <div
+                            className="text-sm text-gray-600 font-comfortaa leading-relaxed"
+                            dangerouslySetInnerHTML={{
+                              __html: item.definition,
+                            }}
+                          />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-20">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="w-10 h-10 text-gray-300" />
+                </div>
+                <h3 className="text-gray-900 font-bold font-comfortaa">
+                  Istilah tidak ditemukan
+                </h3>
+                <p className="text-sm text-gray-500 font-comfortaa">
+                  Coba cari dengan kata kunci lain.
+                </p>
               </div>
-            ))
-          ) : (
-            <div className="text-center py-20">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <BookOpen className="w-10 h-10 text-gray-300" />
-              </div>
-              <h3 className="text-gray-900 font-bold font-comfortaa">
-                Istilah tidak ditemukan
-              </h3>
-              <p className="text-sm text-gray-500 font-comfortaa">
-                Coba cari dengan kata kunci lain.
-              </p>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
-        <div className="text-center py-6">
-          <p className="text-xs text-gray-400 font-comfortaa">
-            Menampilkan {filteredTerms.length} istilah
-          </p>
-        </div>
+        {!isLoading && !error && (
+          <div className="text-center py-6">
+            <p className="text-xs text-gray-400 font-comfortaa">
+              Menampilkan {filteredTerms.length} istilah
+            </p>
+          </div>
+        )}
       </main>
     </div>
   );

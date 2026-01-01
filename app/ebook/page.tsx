@@ -232,7 +232,6 @@ export default function EBookPage() {
                     onClick={() => handleOpenPdf(book.pdf)}
                     className="flex items-start gap-4 p-4 rounded-xl hover:bg-accent-50 transition-all duration-200 cursor-pointer border border-transparent hover:border-accent-100"
                   >
-                    {/* Cover Image */}
                     <div className="w-16 h-20 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden relative">
                       {book.cover ? (
                         <Image
