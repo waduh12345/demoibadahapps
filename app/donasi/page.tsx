@@ -23,8 +23,8 @@ import {
   popularDonations,
   donationCategories,
   formatCurrency,
-  formatNumber,
   getDaysRemaining,
+  Donation,
 } from "./data/donations";
 import { useGetCampaignsQuery, useCreateDonationMutation } from "@/services/public/campaign.service";
 import { Campaign } from "@/types/public/campaign";
@@ -32,7 +32,7 @@ import Image from "next/image";
 import ImageWithFallback from "./components/ImageWithFallback";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Clock, Users, MapPin } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 import ShareModal from "./components/ShareModal";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
@@ -56,19 +56,33 @@ const DonationSkeleton = () => {
   );
 };
 
+// Type for converted donation from campaign
+type ConvertedDonation = Omit<Donation, "isUrgent" | "isPopular">;
+
 // Helper: Convert Campaign to Donation format
-const campaignToDonation = (campaign: Campaign): any => {
+const campaignToDonation = (campaign: Campaign): ConvertedDonation => {
   const progress =
     campaign.target_amount > 0
       ? Math.round((campaign.raised_amount / campaign.target_amount) * 100)
       : 0;
+
+  // Map category to valid donation category
+  const categoryMap: Record<string, Donation["category"]> = {
+    infaq: "infaq",
+    wakaf: "wakaf",
+    zakat: "zakat",
+    kurban: "kurban",
+  };
+
+  const categoryLower = campaign.category.toLowerCase();
+  const mappedCategory = categoryMap[categoryLower] || "infaq";
 
   return {
     id: campaign.id.toString(),
     title: campaign.title,
     description: campaign.description.replace(/<[^>]*>/g, ""), // Remove HTML tags
     image: campaign.image,
-    category: campaign.category.toLowerCase() as any,
+    category: mappedCategory,
     targetAmount: campaign.target_amount,
     currentAmount: campaign.raised_amount,
     donorCount: 0, // API doesn't provide this
@@ -91,7 +105,7 @@ export default function DonasiPage() {
   // State untuk Modal Donasi
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [selectedDonation, setSelectedDonation] = useState<any | null>(null);
+  const [selectedDonation, setSelectedDonation] = useState<ConvertedDonation | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"qris" | "bank_transfer" | "card">("qris");
   const [paymentChannel, setPaymentChannel] = useState<"qris" | "bca" | "bni" | "bri" | "cimb" | "card">("qris");
   const [donationAmount, setDonationAmount] = useState<string>("");
@@ -134,7 +148,7 @@ export default function DonasiPage() {
   }, [campaignsData]);
 
   // Handler saat tombol donasi diklik
-  const handleDonateClick = (donation: any) => {
+  const handleDonateClick = (donation: ConvertedDonation) => {
     setSelectedDonation(donation);
     setIsModalOpen(true);
     setPaymentMethod("qris");
@@ -147,7 +161,7 @@ export default function DonasiPage() {
   };
 
   // Handler untuk share
-  const handleShare = (donation: any) => {
+  const handleShare = (donation: ConvertedDonation) => {
     setSelectedDonation(donation);
     setIsShareModalOpen(true);
   };
@@ -204,8 +218,12 @@ export default function DonasiPage() {
         setDonorPhone("");
         setDescription("");
       }
-    } catch (error: any) {
-      alert(error?.data?.message || "Gagal membuat donasi. Silakan coba lagi.");
+    } catch (error) {
+      const errorMessage =
+        error && typeof error === "object" && "data" in error
+          ? (error.data as { message?: string })?.message
+          : undefined;
+      alert(errorMessage || "Gagal membuat donasi. Silakan coba lagi.");
     } finally {
       setIsSubmitting(false);
     }
@@ -685,7 +703,11 @@ export default function DonasiPage() {
                         <button
                           key={bank.value}
                           type="button"
-                          onClick={() => setPaymentChannel(bank.value as any)}
+                          onClick={() =>
+                            setPaymentChannel(
+                              bank.value as "bca" | "bni" | "bri" | "cimb"
+                            )
+                          }
                           className={`py-2 px-3 rounded-lg text-xs font-bold transition-all font-comfortaa ${
                             paymentChannel === bank.value
                               ? "bg-awqaf-primary text-white"

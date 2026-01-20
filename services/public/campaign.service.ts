@@ -56,9 +56,6 @@ export const campaignApi = apiSlice.injectEndpoints({
           response.message || "Gagal mengambil riwayat donasi."
         );
       },
-      providesTags: (result, error, { campaign }) => [
-        { type: "CampaignDonations", id: campaign },
-      ],
     }),
 
     // 💰 Create Donation
@@ -69,10 +66,6 @@ export const campaignApi = apiSlice.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: (result, error, { campaign }) => [
-        "Campaigns",
-        { type: "CampaignDonations", id: campaign },
-      ],
     }),
   }),
 });
