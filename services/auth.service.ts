@@ -73,10 +73,13 @@ export const authApi = apiSlice.injectEndpoints({
     }),
 
     // 👤 Get current user
-    getCurrentUser: builder.query<User, void>({
-      query: () => ({
+    getCurrentUser: builder.query<User, { forceRefresh?: boolean } | void>({
+      query: (params) => ({
         url: "/me",
         method: "GET",
+        params: params && typeof params === "object" && "forceRefresh" in params
+          ? { forceRefresh: params.forceRefresh ? 1 : undefined }
+          : undefined,
       }),
       transformResponse: (response: {
         code: number;

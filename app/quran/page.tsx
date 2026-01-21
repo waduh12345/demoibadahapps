@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Search, BookOpen, Bookmark, Clock, Loader2 } from "lucide-react";
+import { Search, BookOpen, Bookmark, Clock, Loader2, GraduationCap, CheckCircle2, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,6 +18,9 @@ import { useGetSurahsQuery } from "@/services/public/quran.service";
 import { Surah } from "@/types/public/quran";
 // Import i18n
 import { useI18n } from "@/app/hooks/useI18n";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 // Mapping Juz untuk setiap surah berdasarkan standar Al-Quran
 // Mapping ini menunjukkan juz pertama di mana surah dimulai
@@ -156,6 +159,15 @@ export default function QuranPage() {
   const [bookmarkedSurahs, setBookmarkedSurahs] = useState<number[]>([]);
   const [recentSurahs, setRecentSurahs] = useState<number[]>([]);
   const [isBookmarkOpen, setIsBookmarkOpen] = useState(false);
+  const [isMemorizationOpen, setIsMemorizationOpen] = useState(false);
+  const [memorizedVerses, setMemorizedVerses] = useState<Record<number, number[]>>({});
+  const [isBulkMemorizationOpen, setIsBulkMemorizationOpen] = useState(false);
+  
+  // Bulk memorization form state
+  const [startSurah, setStartSurah] = useState<string>("1");
+  const [startVerse, setStartVerse] = useState<string>("1");
+  const [endSurah, setEndSurah] = useState<string>("1");
+  const [endVerse, setEndVerse] = useState<string>("1");
 
   // Fetch API
   const { data: apiSurahs, isLoading } = useGetSurahsQuery({ lang: "id" });
@@ -180,6 +192,131 @@ export default function QuranPage() {
       setRecentSurahs(JSON.parse(savedRecent));
     }
   }, []);
+
+  // Load memorized verses from localStorage
+  useEffect(() => {
+    const savedMemorization = localStorage.getItem("quran-memorization");
+    if (savedMemorization) {
+      setMemorizedVerses(JSON.parse(savedMemorization));
+    }
+  }, []);
+
+  // Calculate memorization statistics
+  const memorizationStats = useMemo(() => {
+    const totalVerses = allSurahs.reduce((sum, surah) => sum + surah.total_verses, 0);
+    const memorizedCount = Object.values(memorizedVerses).reduce(
+      (sum, verses) => sum + verses.length,
+      0
+    );
+    const percentage = totalVerses > 0 ? Math.round((memorizedCount / totalVerses) * 100) : 0;
+    
+    // Count fully memorized surahs
+    const fullyMemorizedSurahs = allSurahs.filter((surah) => {
+      const verses = memorizedVerses[surah.id] || [];
+      return verses.length === surah.total_verses;
+    }).length;
+
+    return {
+      totalVerses,
+      memorizedCount,
+      percentage,
+      fullyMemorizedSurahs,
+      totalSurahs: allSurahs.length,
+    };
+  }, [memorizedVerses, allSurahs]);
+
+  // Get memorization progress for a surah
+  const getSurahMemorizationProgress = (surahId: number, totalVerses: number): number => {
+    const verses = memorizedVerses[surahId] || [];
+    return totalVerses > 0 ? Math.round((verses.length / totalVerses) * 100) : 0;
+  };
+
+  // Handle bulk memorization (range input)
+  const handleBulkMemorization = () => {
+    const startSurahNum = parseInt(startSurah);
+    const startVerseNum = parseInt(startVerse);
+    const endSurahNum = parseInt(endSurah);
+    const endVerseNum = parseInt(endVerse);
+
+    // Validation
+    if (
+      isNaN(startSurahNum) || isNaN(startVerseNum) ||
+      isNaN(endSurahNum) || isNaN(endVerseNum)
+    ) {
+      alert("Mohon masukkan nomor yang valid");
+      return;
+    }
+
+    if (startSurahNum < 1 || startSurahNum > 114 || endSurahNum < 1 || endSurahNum > 114) {
+      alert("Nomor surah harus antara 1-114");
+      return;
+    }
+
+    if (startSurahNum > endSurahNum) {
+      alert("Surah awal tidak boleh lebih besar dari surah akhir");
+      return;
+    }
+
+    // Get surah details for validation
+    const startSurahData = allSurahs.find(s => s.id === startSurahNum);
+    const endSurahData = allSurahs.find(s => s.id === endSurahNum);
+
+    if (!startSurahData || !endSurahData) {
+      alert("Surah tidak ditemukan");
+      return;
+    }
+
+    if (startVerseNum < 1 || startVerseNum > startSurahData.total_verses) {
+      alert(`Ayat awal harus antara 1-${startSurahData.total_verses} untuk ${startSurahData.transliteration}`);
+      return;
+    }
+
+    if (endVerseNum < 1 || endVerseNum > endSurahData.total_verses) {
+      alert(`Ayat akhir harus antara 1-${endSurahData.total_verses} untuk ${endSurahData.transliteration}`);
+      return;
+    }
+
+    if (startSurahNum === endSurahNum && startVerseNum > endVerseNum) {
+      alert("Ayat awal tidak boleh lebih besar dari ayat akhir");
+      return;
+    }
+
+    // Create new memorization object
+    const newMemorized = { ...memorizedVerses };
+
+    // Mark verses in range
+    for (let surahId = startSurahNum; surahId <= endSurahNum; surahId++) {
+      const surahData = allSurahs.find(s => s.id === surahId);
+      if (!surahData) continue;
+
+      const existingVerses = newMemorized[surahId] || [];
+      const newVerses = new Set(existingVerses);
+
+      // Determine verse range for this surah
+      const firstVerse = surahId === startSurahNum ? startVerseNum : 1;
+      const lastVerse = surahId === endSurahNum ? endVerseNum : surahData.total_verses;
+
+      // Add all verses in range
+      for (let verseId = firstVerse; verseId <= lastVerse; verseId++) {
+        newVerses.add(verseId);
+      }
+
+      newMemorized[surahId] = Array.from(newVerses).sort((a, b) => a - b);
+    }
+
+    // Update state and localStorage
+    setMemorizedVerses(newMemorized);
+    localStorage.setItem("quran-memorization", JSON.stringify(newMemorized));
+
+    // Close dialog and show success
+    setIsBulkMemorizationOpen(false);
+    
+    // Calculate added verses
+    const addedCount = Object.values(newMemorized).reduce((sum, verses) => sum + verses.length, 0) -
+                       Object.values(memorizedVerses).reduce((sum, verses) => sum + verses.length, 0);
+    
+    alert(`Berhasil menambahkan ${addedCount} ayat ke hafalan!`);
+  };
 
   // Filter surahs based on search and filters
   const filteredSurahs = useMemo(() => {
@@ -300,19 +437,19 @@ export default function QuranPage() {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           <Card
             className="border-awqaf-border-light hover:shadow-md transition-all duration-200 cursor-pointer group"
             onClick={() => handleSurahClick(1)}
           >
-            <CardContent className="p-4 text-center">
-              <div className="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-accent-200 transition-colors duration-200">
-                <BookOpen className="w-6 h-6 text-awqaf-primary" />
+            <CardContent className="p-3 text-center">
+              <div className="w-10 h-10 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-accent-200 transition-colors duration-200">
+                <BookOpen className="w-5 h-5 text-awqaf-primary" />
               </div>
-              <h3 className="font-semibold text-card-foreground text-sm font-comfortaa mb-1">
+              <h3 className="font-semibold text-card-foreground text-xs font-comfortaa mb-1">
                 {t("quran.readQuran")}
               </h3>
-              <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
+              <p className="text-[10px] text-awqaf-foreground-secondary font-comfortaa">
                 {t("quran.startFromFatihah")}
               </p>
             </CardContent>
@@ -322,15 +459,32 @@ export default function QuranPage() {
             onClick={() => setIsBookmarkOpen(true)}
             className="border-awqaf-border-light hover:shadow-md transition-all duration-200 cursor-pointer group"
           >
-            <CardContent className="p-4 text-center">
-              <div className="w-12 h-12 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-accent-200 transition-colors duration-200">
-                <Bookmark className="w-6 h-6 text-info" />
+            <CardContent className="p-3 text-center">
+              <div className="w-10 h-10 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-accent-200 transition-colors duration-200">
+                <Bookmark className="w-5 h-5 text-info" />
               </div>
-              <h3 className="font-semibold text-card-foreground text-sm font-comfortaa mb-1">
+              <h3 className="font-semibold text-card-foreground text-xs font-comfortaa mb-1">
                 {t("quran.bookmark")}
               </h3>
-              <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
-                {bookmarkedSurahs.length} {t("quran.surahSaved")}
+              <p className="text-[10px] text-awqaf-foreground-secondary font-comfortaa">
+                {bookmarkedSurahs.length} tersimpan
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card
+            onClick={() => setIsMemorizationOpen(true)}
+            className="border-awqaf-border-light hover:shadow-md transition-all duration-200 cursor-pointer group"
+          >
+            <CardContent className="p-3 text-center">
+              <div className="w-10 h-10 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:bg-accent-200 transition-colors duration-200">
+                <GraduationCap className="w-5 h-5 text-success" />
+              </div>
+              <h3 className="font-semibold text-card-foreground text-xs font-comfortaa mb-1">
+                Hafalan
+              </h3>
+              <p className="text-[10px] text-awqaf-foreground-secondary font-comfortaa">
+                {memorizationStats.percentage}% selesai
               </p>
             </CardContent>
           </Card>
@@ -369,6 +523,245 @@ export default function QuranPage() {
                   ))}
                 </div>
               )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Bulk Memorization Input Dialog */}
+        <Dialog open={isBulkMemorizationOpen} onOpenChange={setIsBulkMemorizationOpen}>
+          <DialogContent className="border-awqaf-border-light p-0 max-w-md">
+            <DialogHeader className="p-4 border-b border-awqaf-border-light">
+              <DialogTitle className="font-comfortaa flex items-center gap-2">
+                <Plus className="w-5 h-5 text-success" />
+                Tambah Hafalan (Range)
+              </DialogTitle>
+            </DialogHeader>
+            <div className="px-4 pb-4 pt-4">
+              <p className="text-sm text-awqaf-foreground-secondary font-comfortaa mb-4">
+                Tandai hafalan dari surah dan ayat tertentu hingga surah dan ayat tertentu
+              </p>
+
+              <div className="space-y-4">
+                {/* Start Range */}
+                <div className="border border-awqaf-border-light rounded-lg p-4 bg-accent-50">
+                  <Label className="text-sm font-semibold text-card-foreground font-comfortaa mb-3 block">
+                    Dari:
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs text-awqaf-foreground-secondary font-comfortaa mb-1 block">
+                        Surah
+                      </Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="114"
+                        value={startSurah}
+                        onChange={(e) => setStartSurah(e.target.value)}
+                        placeholder="1"
+                        className="border-awqaf-border-light font-comfortaa"
+                      />
+                      {allSurahs.find(s => s.id === parseInt(startSurah)) && (
+                        <p className="text-xs text-awqaf-primary font-comfortaa mt-1">
+                          {allSurahs.find(s => s.id === parseInt(startSurah))?.transliteration}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <Label className="text-xs text-awqaf-foreground-secondary font-comfortaa mb-1 block">
+                        Ayat
+                      </Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={startVerse}
+                        onChange={(e) => setStartVerse(e.target.value)}
+                        placeholder="1"
+                        className="border-awqaf-border-light font-comfortaa"
+                      />
+                      {allSurahs.find(s => s.id === parseInt(startSurah)) && (
+                        <p className="text-xs text-awqaf-foreground-secondary font-comfortaa mt-1">
+                          Max: {allSurahs.find(s => s.id === parseInt(startSurah))?.total_verses}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* End Range */}
+                <div className="border border-awqaf-border-light rounded-lg p-4 bg-accent-50">
+                  <Label className="text-sm font-semibold text-card-foreground font-comfortaa mb-3 block">
+                    Sampai:
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs text-awqaf-foreground-secondary font-comfortaa mb-1 block">
+                        Surah
+                      </Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="114"
+                        value={endSurah}
+                        onChange={(e) => setEndSurah(e.target.value)}
+                        placeholder="1"
+                        className="border-awqaf-border-light font-comfortaa"
+                      />
+                      {allSurahs.find(s => s.id === parseInt(endSurah)) && (
+                        <p className="text-xs text-awqaf-primary font-comfortaa mt-1">
+                          {allSurahs.find(s => s.id === parseInt(endSurah))?.transliteration}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <Label className="text-xs text-awqaf-foreground-secondary font-comfortaa mb-1 block">
+                        Ayat
+                      </Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={endVerse}
+                        onChange={(e) => setEndVerse(e.target.value)}
+                        placeholder="1"
+                        className="border-awqaf-border-light font-comfortaa"
+                      />
+                      {allSurahs.find(s => s.id === parseInt(endSurah)) && (
+                        <p className="text-xs text-awqaf-foreground-secondary font-comfortaa mt-1">
+                          Max: {allSurahs.find(s => s.id === parseInt(endSurah))?.total_verses}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsBulkMemorizationOpen(false)}
+                    className="flex-1 font-comfortaa"
+                  >
+                    Batal
+                  </Button>
+                  <Button
+                    onClick={handleBulkMemorization}
+                    className="flex-1 bg-success hover:bg-success/90 text-white font-comfortaa"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Tambah Hafalan
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Memorization Progress Dialog */}
+        <Dialog open={isMemorizationOpen} onOpenChange={setIsMemorizationOpen}>
+          <DialogContent className="border-awqaf-border-light p-0 max-w-md">
+            <DialogHeader className="p-4 border-b border-awqaf-border-light">
+              <DialogTitle className="font-comfortaa flex items-center gap-2">
+                <GraduationCap className="w-5 h-5 text-success" />
+                Progress Hafalan Al-Quran
+              </DialogTitle>
+            </DialogHeader>
+            <div className="px-4 pb-4 pt-4">
+              {/* Overall Statistics */}
+              <Card className="border-awqaf-border-light bg-gradient-to-br from-accent-50 to-accent-100 mb-4">
+                <CardContent className="p-4">
+                  <div className="text-center mb-4">
+                    <div className="w-20 h-20 bg-background rounded-full flex items-center justify-center mx-auto mb-3 shadow-md">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-success font-comfortaa">
+                          {memorizationStats.percentage}%
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-sm font-semibold text-card-foreground font-comfortaa mb-2">
+                      Total Progress Hafalan
+                    </p>
+                    <Progress 
+                      value={memorizationStats.percentage} 
+                      className="h-2 bg-accent-200"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-center">
+                    <div className="bg-background/60 rounded-lg p-3">
+                      <p className="text-2xl font-bold text-awqaf-primary font-comfortaa">
+                        {memorizationStats.memorizedCount}
+                      </p>
+                      <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
+                        Ayat Dihafal
+                      </p>
+                    </div>
+                    <div className="bg-background/60 rounded-lg p-3">
+                      <p className="text-2xl font-bold text-success font-comfortaa">
+                        {memorizationStats.fullyMemorizedSurahs}
+                      </p>
+                      <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
+                        Surah Selesai
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Action: Add Bulk Memorization */}
+              <Button
+                onClick={() => {
+                  setIsBulkMemorizationOpen(true);
+                  setIsMemorizationOpen(false);
+                }}
+                className="w-full bg-success hover:bg-success/90 text-white font-comfortaa mb-4"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Tambah Hafalan (Range)
+              </Button>
+
+              {/* Surahs with memorization progress */}
+              <div className="space-y-2 max-h-96 overflow-y-auto mobile-scroll">
+                <p className="text-sm font-semibold text-card-foreground font-comfortaa mb-2">
+                  Progress per Surah
+                </p>
+                {allSurahs.map((surah) => {
+                  const progress = getSurahMemorizationProgress(surah.id, surah.total_verses);
+                  const memorizedCount = (memorizedVerses[surah.id] || []).length;
+                  
+                  if (progress === 0) return null;
+                  
+                  return (
+                    <div
+                      key={surah.id}
+                      onClick={() => {
+                        setIsMemorizationOpen(false);
+                        handleSurahClick(surah.id);
+                      }}
+                      className="p-3 rounded-lg border border-awqaf-border-light hover:bg-accent-50 cursor-pointer transition-all"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold font-comfortaa text-card-foreground text-sm truncate">
+                            {surah.id}. {surah.transliteration}
+                          </p>
+                          <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
+                            {memorizedCount} / {surah.total_verses} ayat
+                          </p>
+                        </div>
+                        {progress === 100 && (
+                          <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 ml-2" />
+                        )}
+                      </div>
+                      <Progress value={progress} className="h-1.5 bg-accent-100" />
+                    </div>
+                  );
+                })}
+                {Object.keys(memorizedVerses).length === 0 && (
+                  <p className="text-sm text-awqaf-foreground-secondary font-comfortaa text-center py-6">
+                    Belum ada hafalan. Mulai menandai ayat yang sudah dihafal!
+                  </p>
+                )}
+              </div>
             </div>
           </DialogContent>
         </Dialog>
@@ -420,18 +813,31 @@ export default function QuranPage() {
               </div>
             ) : (
               <div className="space-y-3 max-h-[600px] overflow-y-auto mobile-scroll">
-                {filteredSurahs.map((surah) => (
-                  <div
-                    key={surah.id}
-                    onClick={() => handleSurahClick(surah.id)}
-                  >
-                    <SurahCard
-                      surah={surah}
-                      onBookmark={handleBookmark}
-                      isBookmarked={bookmarkedSurahs.includes(surah.id)}
-                    />
-                  </div>
-                ))}
+                {filteredSurahs.map((surah) => {
+                  const memProgress = getSurahMemorizationProgress(surah.id, surah.total_verses);
+                  const memorizedCount = (memorizedVerses[surah.id] || []).length;
+                  
+                  return (
+                    <div
+                      key={surah.id}
+                      onClick={() => handleSurahClick(surah.id)}
+                      className="relative"
+                    >
+                      <SurahCard
+                        surah={surah}
+                        onBookmark={handleBookmark}
+                        isBookmarked={bookmarkedSurahs.includes(surah.id)}
+                      />
+                      {/* Memorization indicator */}
+                      {memProgress > 0 && (
+                        <div className="absolute top-2 right-2 flex items-center gap-1 bg-success/90 text-white px-2 py-1 rounded-full text-xs font-comfortaa">
+                          <GraduationCap className="w-3 h-3" />
+                          <span>{memorizedCount}/{surah.total_verses}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </CardContent>

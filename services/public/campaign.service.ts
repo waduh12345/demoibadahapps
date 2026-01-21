@@ -67,6 +67,20 @@ export const campaignApi = apiSlice.injectEndpoints({
         body,
       }),
     }),
+
+    // ❤️ Toggle Favorite Campaign
+    // Endpoint: /user/toggle-favorite-campaign
+    toggleFavoriteCampaign: builder.mutation<
+      { code: number; message: string; data: any },
+      { campaign_id: number }
+    >({
+      query: (body) => ({
+        url: "/user/toggle-favorite-campaign",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Campaigns"],
+    }),
   }),
 });
 
@@ -74,4 +88,5 @@ export const {
   useGetCampaignsQuery,
   useGetCampaignDonationsQuery,
   useCreateDonationMutation,
+  useToggleFavoriteCampaignMutation,
 } = campaignApi;

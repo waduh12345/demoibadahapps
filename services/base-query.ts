@@ -20,6 +20,7 @@ export const apiSlice = createApi({
     "PublicPlaces",
     "PublicStores",
     "PublicProducts",
+    "PublicProductCategories",
     "PublicArticleCategories",
     "PublicArticles",
     "PublicLocales",

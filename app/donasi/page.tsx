@@ -37,6 +37,8 @@ import ShareModal from "./components/ShareModal";
 import { useRouter } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { useI18n } from "@/app/hooks/useI18n";
+import { useGetCurrentUserQuery } from "@/services/auth.service";
+import { useSession } from "next-auth/react";
 
 // Loading Skeleton Component
 const DonationSkeleton = () => {
@@ -99,6 +101,7 @@ const campaignToDonation = (campaign: Campaign): ConvertedDonation => {
 export default function DonasiPage() {
   const { t, locale } = useI18n();
   const router = useRouter();
+  const { data: session } = useSession();
   
   // State untuk Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -120,6 +123,89 @@ export default function DonasiPage() {
 
   // Mutation untuk create donation
   const [createDonation, { isLoading: isCreatingDonation }] = useCreateDonationMutation();
+  
+  // Get current user untuk favorite campaigns
+  const { data: currentUser, refetch: refetchUser } = useGetCurrentUserQuery(
+    session ? { forceRefresh: true } : undefined,
+    { 
+      skip: !session,
+      refetchOnMountOrArgChange: true,
+    }
+  );
+  
+  // State untuk tracking which campaign is being toggled
+  const [togglingCampaignId, setTogglingCampaignId] = useState<number | null>(null);
+  
+  // Helper: Check if campaign is favorited
+  const isCampaignFavorited = (campaignId: number): boolean => {
+    if (!currentUser?.favorite_campaigns) return false;
+    return currentUser.favorite_campaigns.some(
+      (fav) => fav.campaign_id === campaignId
+    );
+  };
+  
+  // Handler untuk toggle favorite
+  const handleToggleFavorite = async (campaignId: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
+    
+    if (!session?.user?.token) {
+      // Redirect to login if not authenticated
+      router.push("/auth/login");
+      return;
+    }
+    
+    setTogglingCampaignId(campaignId);
+    
+    try {
+      // Hit toggle favorite endpoint dengan full URL
+      const toggleResponse = await fetch(
+        "https://cms.ibadahapps.com/api/v1/user/toggle-favorite-campaign",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.user.token}`,
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ campaign_id: campaignId }),
+        }
+      );
+
+      if (!toggleResponse.ok) {
+        throw new Error("Failed to toggle favorite");
+      }
+
+      // Refresh user profile untuk mendapatkan favorite campaigns terbaru
+      // Hit /me dengan forceRefresh=1
+      const meResponse = await fetch(
+        "https://cms.ibadahapps.com/api/v1/me?forceRefresh=1",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session.user.token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (meResponse.ok) {
+        // Refetch user data
+        await refetchUser();
+      }
+    } catch (error) {
+      const errorMessages: Record<string, string> = {
+        id: "Gagal mengubah status favorit. Silakan coba lagi.",
+        en: "Failed to toggle favorite. Please try again.",
+        ar: "فشل تغيير حالة المفضلة. يرجى المحاولة مرة أخرى.",
+        fr: "Échec du changement de favori. Veuillez réessayer.",
+        kr: "즐겨찾기 상태 변경에 실패했습니다. 다시 시도하세요.",
+        jp: "お気に入りの状態の変更に失敗しました。もう一度お試しください。",
+      };
+      alert(errorMessages[locale] || errorMessages.id);
+    } finally {
+      setTogglingCampaignId(null);
+    }
+  };
 
   // Fetch Campaigns from API
   const {
@@ -354,9 +440,25 @@ export default function DonasiPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="absolute top-3 right-3 w-8 h-8 p-0 rounded-full bg-black/20 hover:bg-black/40 text-white"
+                              onClick={(e) => handleToggleFavorite(Number(donation.id), e)}
+                              disabled={togglingCampaignId === Number(donation.id)}
+                              className={`absolute top-3 right-3 w-8 h-8 p-0 rounded-full transition-all ${
+                                isCampaignFavorited(Number(donation.id))
+                                  ? "bg-red-500/80 hover:bg-red-500 text-white"
+                                  : "bg-black/20 hover:bg-black/40 text-white"
+                              } ${togglingCampaignId === Number(donation.id) ? "opacity-50 cursor-wait" : ""}`}
                             >
-                              <Heart className="w-4 h-4" />
+                              {togglingCampaignId === Number(donation.id) ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Heart
+                                  className={`w-4 h-4 transition-all ${
+                                    isCampaignFavorited(Number(donation.id))
+                                      ? "fill-current"
+                                      : ""
+                                  }`}
+                                />
+                              )}
                             </Button>
                           </div>
 

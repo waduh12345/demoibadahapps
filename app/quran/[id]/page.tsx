@@ -12,6 +12,9 @@ import {
   Share2,
   Settings,
   RotateCcw,
+  GraduationCap,
+  CheckCircle2,
+  Circle,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +26,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { Progress } from "@/components/ui/progress";
 // Import Service
 import { useGetSurahDetailQuery } from "@/services/public/quran.service";
 
@@ -47,6 +51,8 @@ export default function SurahDetailPage() {
   const [bookmarkedVerses, setBookmarkedVerses] = useState<number[]>([]);
   const [fontSize, setFontSize] = useState<"sm" | "md" | "lg">("md");
   const [showTranslation, setShowTranslation] = useState(true);
+  const [memorizedVerses, setMemorizedVerses] = useState<number[]>([]);
+  const [showMemorizationMode, setShowMemorizationMode] = useState(false);
 
   // Load bookmarked verses
   useEffect(() => {
@@ -55,6 +61,15 @@ export default function SurahDetailPage() {
     );
     if (savedBookmarks) {
       setBookmarkedVerses(JSON.parse(savedBookmarks));
+    }
+  }, [surahId]);
+
+  // Load memorized verses
+  useEffect(() => {
+    const savedMemorization = localStorage.getItem("quran-memorization");
+    if (savedMemorization) {
+      const allMemorization = JSON.parse(savedMemorization);
+      setMemorizedVerses(allMemorization[surahId] || []);
     }
   }, [surahId]);
 
@@ -183,6 +198,48 @@ export default function SurahDetailPage() {
       alert("Link disalin!");
     }
   };
+
+  // Handle memorization toggle for a verse
+  const handleMemorizationToggle = (verseId: number) => {
+    const newMemorized = memorizedVerses.includes(verseId)
+      ? memorizedVerses.filter((id) => id !== verseId)
+      : [...memorizedVerses, verseId].sort((a, b) => a - b);
+
+    setMemorizedVerses(newMemorized);
+
+    // Update localStorage
+    const savedMemorization = localStorage.getItem("quran-memorization");
+    const allMemorization = savedMemorization ? JSON.parse(savedMemorization) : {};
+    allMemorization[surahId] = newMemorized;
+    localStorage.setItem("quran-memorization", JSON.stringify(allMemorization));
+  };
+
+  // Mark all verses as memorized
+  const handleMarkAllMemorized = () => {
+    if (!surah) return;
+    const allVerseIds = surah.verses.map((v) => v.id);
+    setMemorizedVerses(allVerseIds);
+
+    const savedMemorization = localStorage.getItem("quran-memorization");
+    const allMemorization = savedMemorization ? JSON.parse(savedMemorization) : {};
+    allMemorization[surahId] = allVerseIds;
+    localStorage.setItem("quran-memorization", JSON.stringify(allMemorization));
+  };
+
+  // Clear all memorization for this surah
+  const handleClearMemorization = () => {
+    setMemorizedVerses([]);
+
+    const savedMemorization = localStorage.getItem("quran-memorization");
+    const allMemorization = savedMemorization ? JSON.parse(savedMemorization) : {};
+    delete allMemorization[surahId];
+    localStorage.setItem("quran-memorization", JSON.stringify(allMemorization));
+  };
+
+  // Calculate memorization progress
+  const memorizationProgress = surah
+    ? Math.round((memorizedVerses.length / surah.verses.length) * 100)
+    : 0;
 
   if (isLoading) {
     return (
@@ -348,7 +405,7 @@ export default function SurahDetailPage() {
                   ) : (
                     <Play className="w-4 h-4 mr-2" />
                   )}
-                  {isPlaying ? "Pause" : "Play Audio"}
+                  {isPlaying ? "Pause" : "Play"}
                 </Button>
                 <Button
                   variant="outline"
@@ -362,7 +419,7 @@ export default function SurahDetailPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4 text-sm text-awqaf-foreground-secondary font-comfortaa">
+            <div className="flex items-center gap-4 text-sm text-awqaf-foreground-secondary font-comfortaa mb-3">
               <span>{surah.total_verses} ayat</span>
               <Badge
                 variant="secondary"
@@ -374,6 +431,72 @@ export default function SurahDetailPage() {
               >
                 {surah.type === "meccan" ? "Makkiyah" : "Madaniyah"}
               </Badge>
+            </div>
+
+            {/* Memorization Progress */}
+            <div className="border-t border-awqaf-border-light pt-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="w-4 h-4 text-success" />
+                  <span className="text-sm font-semibold text-card-foreground font-comfortaa">
+                    Progress Hafalan
+                  </span>
+                </div>
+                <span className="text-sm font-bold text-success font-comfortaa">
+                  {memorizedVerses.length} / {surah.total_verses} ({memorizationProgress}%)
+                </span>
+              </div>
+              <Progress value={memorizationProgress} className="h-2 bg-accent-100 mb-2" />
+              
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={showMemorizationMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowMemorizationMode(!showMemorizationMode)}
+                  className="flex-1 font-comfortaa text-xs"
+                >
+                  <GraduationCap className="w-3 h-3 mr-1" />
+                  {showMemorizationMode ? "Mode Hafalan Aktif" : "Aktifkan Mode Hafalan"}
+                </Button>
+                {showMemorizationMode && (
+                  <Drawer>
+                    <DrawerTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="font-comfortaa text-xs"
+                      >
+                        Kelola
+                      </Button>
+                    </DrawerTrigger>
+                    <DrawerContent className="border-awqaf-border-light">
+                      <DrawerHeader>
+                        <DrawerTitle className="font-comfortaa">
+                          Kelola Hafalan
+                        </DrawerTitle>
+                      </DrawerHeader>
+                      <div className="p-4 space-y-3">
+                        <Button
+                          variant="outline"
+                          className="w-full font-comfortaa"
+                          onClick={handleMarkAllMemorized}
+                        >
+                          <CheckCircle2 className="w-4 h-4 mr-2" />
+                          Tandai Semua Sudah Hafal
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full font-comfortaa text-error border-error hover:bg-error/10"
+                          onClick={handleClearMemorization}
+                        >
+                          <Circle className="w-4 h-4 mr-2" />
+                          Hapus Semua Hafalan
+                        </Button>
+                      </div>
+                    </DrawerContent>
+                  </Drawer>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -389,71 +512,133 @@ export default function SurahDetailPage() {
             </div>
           )}
 
-          {surah.verses.map((verse) => (
-            <Card key={verse.id} className="border-awqaf-border-light">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-4">
-                  {/* Verse Number */}
-                  <div className="w-8 h-8 bg-accent-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-awqaf-primary font-bold font-comfortaa text-sm">
-                      {verse.id}
-                    </span>
-                  </div>
-
-                  {/* Verse Content */}
-                  <div className="flex-1 min-w-0">
-                    {/* Arabic Text */}
-                    <div className="mb-3 text-right">
-                      <p
-                        className={`text-awqaf-primary font-arabic leading-loose ${
-                          fontSize === "sm"
-                            ? "text-xl"
-                            : fontSize === "md"
-                            ? "text-2xl"
-                            : "text-3xl"
-                        }`}
+          {surah.verses.map((verse) => {
+            const isMemorized = memorizedVerses.includes(verse.id);
+            
+            return (
+              <Card 
+                key={verse.id} 
+                className={`border-awqaf-border-light transition-all ${
+                  isMemorized ? "bg-success/5 border-success/30" : ""
+                }`}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-4">
+                    {/* Verse Number or Memorization Checkbox */}
+                    {showMemorizationMode ? (
+                      <div 
+                        className="flex-shrink-0 mt-1 cursor-pointer"
+                        onClick={() => handleMemorizationToggle(verse.id)}
                       >
-                        {verse.text}
-                      </p>
-                    </div>
-
-                    {/* Translation */}
-                    {showTranslation && (
-                      <div className="mb-3">
-                        <p
-                          className={`text-awqaf-foreground-secondary font-comfortaa leading-relaxed ${
-                            fontSize === "sm"
-                              ? "text-sm"
-                              : fontSize === "md"
-                              ? "text-base"
-                              : "text-lg"
-                          }`}
-                        >
-                          {verse.translation}
-                        </p>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                          isMemorized 
+                            ? "bg-success text-white" 
+                            : "bg-accent-100 border-2 border-awqaf-border-light"
+                        }`}>
+                          {isMemorized ? (
+                            <CheckCircle2 className="w-5 h-5" />
+                          ) : (
+                            <span className="text-awqaf-primary font-bold font-comfortaa text-sm">
+                              {verse.id}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 bg-accent-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1 relative">
+                        <span className="text-awqaf-primary font-bold font-comfortaa text-sm">
+                          {verse.id}
+                        </span>
+                        {isMemorized && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-success rounded-full flex items-center justify-center">
+                            <CheckCircle2 className="w-3 h-3 text-white" />
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleVerseBookmark(verse.id)}
-                        className="h-8 px-2 text-awqaf-foreground-secondary hover:text-awqaf-primary hover:bg-accent-100 transition-colors duration-200"
-                      >
-                        {bookmarkedVerses.includes(verse.id) ? (
-                          <BookmarkCheck className="w-4 h-4 text-awqaf-primary" />
+                    {/* Verse Content */}
+                    <div className="flex-1 min-w-0">
+                      {/* Arabic Text */}
+                      <div className="mb-3 text-right">
+                        <p
+                          className={`text-awqaf-primary font-arabic leading-loose ${
+                            fontSize === "sm"
+                              ? "text-xl"
+                              : fontSize === "md"
+                              ? "text-2xl"
+                              : "text-3xl"
+                          }`}
+                        >
+                          {verse.text}
+                        </p>
+                      </div>
+
+                      {/* Translation */}
+                      {showTranslation && (
+                        <div className="mb-3">
+                          <p
+                            className={`text-awqaf-foreground-secondary font-comfortaa leading-relaxed ${
+                              fontSize === "sm"
+                                ? "text-sm"
+                                : fontSize === "md"
+                                ? "text-base"
+                                : "text-lg"
+                            }`}
+                          >
+                            {verse.translation}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2">
+                        {showMemorizationMode ? (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleMemorizationToggle(verse.id)}
+                              className={`h-8 px-3 font-comfortaa text-xs ${
+                                isMemorized
+                                  ? "text-success hover:text-success hover:bg-success/10"
+                                  : "text-awqaf-foreground-secondary hover:text-awqaf-primary hover:bg-accent-100"
+                              }`}
+                            >
+                              {isMemorized ? (
+                                <>
+                                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                                  Sudah Hafal
+                                </>
+                              ) : (
+                                <>
+                                  <Circle className="w-3 h-3 mr-1" />
+                                  Tandai Hafal
+                                </>
+                              )}
+                            </Button>
+                          </div>
                         ) : (
-                          <Bookmark className="w-4 h-4" />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleVerseBookmark(verse.id)}
+                            className="h-8 px-2 text-awqaf-foreground-secondary hover:text-awqaf-primary hover:bg-accent-100 transition-colors duration-200"
+                          >
+                            {bookmarkedVerses.includes(verse.id) ? (
+                              <BookmarkCheck className="w-4 h-4 text-awqaf-primary" />
+                            ) : (
+                              <Bookmark className="w-4 h-4" />
+                            )}
+                          </Button>
                         )}
-                      </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </main>
     </div>

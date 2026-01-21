@@ -93,17 +93,40 @@ export interface Refferal {
   updated_at: string;
 }
 
+export interface FavoriteCampaign {
+  id: number;
+  user_id: number;
+  campaign_id: number;
+  created_at: string;
+  updated_at: string;
+  campaign: {
+    id: number;
+    title: string;
+    category: string;
+    target_amount: number;
+    raised_amount: number;
+    start_date: string;
+    end_date: string;
+    description: string;
+    created_at: string;
+    updated_at: string;
+  };
+}
+
 export interface User {
   id: number;
   name: string;
   email: string;
+  phone: string | null;
   email_verified_at: string | null;
+  two_factor_confirmed_at: string | null;
   created_at: string;
   updated_at: string;
   anggota: Anggota | null;
   roles: UserRole[];
   refferal: Refferal | null;
   referrer: unknown | null; // response saat ini null; disimpan apa adanya
+  favorite_campaigns?: FavoriteCampaign[];
 }
 
 export interface AuthenticatedUser extends User {

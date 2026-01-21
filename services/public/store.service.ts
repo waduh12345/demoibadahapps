@@ -2,6 +2,15 @@ import { apiSlice } from "@/services/base-query";
 import { PaginatedResponse } from "@/types/pagination";
 import { Store, GetStoresParams } from "@/types/public/store/store";
 import { Product, GetProductsParams } from "@/types/public/store/product";
+import {
+  ProductCategory,
+  GetProductCategoriesParams,
+} from "@/types/public/store/category";
+import {
+  CheckoutTransactionRequest,
+  CheckoutTransactionResponse,
+  Transaction,
+} from "@/types/public/store/transaction";
 
 export const publicApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -57,7 +66,57 @@ export const publicApi = apiSlice.injectEndpoints({
       },
       providesTags: ["PublicProducts"],
     }),
+
+    // 📂 Get Public Product Categories
+    getPublicProductCategories: builder.query<
+      PaginatedResponse<ProductCategory>["data"],
+      GetProductCategoriesParams
+    >({
+      query: (params) => ({
+        url: "/public/product-categories",
+        method: "GET",
+        params: {
+          page: params.page ?? 1,
+          paginate: params.paginate ?? 10,
+        },
+      }),
+      transformResponse: (response: PaginatedResponse<ProductCategory>) => {
+        if (response.code === 200) {
+          return response.data;
+        }
+        throw new Error(
+          response.message || "Gagal mengambil kategori produk."
+        );
+      },
+      providesTags: ["PublicProductCategories"],
+    }),
+
+    // 💳 Checkout Transaction
+    checkoutTransaction: builder.mutation<
+      Transaction,
+      CheckoutTransactionRequest
+    >({
+      query: (body) => ({
+        url: "/transaction/checkout",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: CheckoutTransactionResponse) => {
+        if (response.code === 201) {
+          return response.data;
+        }
+        throw new Error(
+          response.message || "Gagal melakukan checkout transaksi."
+        );
+      },
+      invalidatesTags: ["PublicProducts"],
+    }),
   }),
 });
 
-export const { useGetPublicStoresQuery, useGetPublicProductsQuery } = publicApi;
+export const {
+  useGetPublicStoresQuery,
+  useGetPublicProductsQuery,
+  useGetPublicProductCategoriesQuery,
+  useCheckoutTransactionMutation,
+} = publicApi;

@@ -21,18 +21,31 @@ import { useRouter } from "next/navigation";
 import {
   useGetPublicStoresQuery,
   useGetPublicProductsQuery,
+  useGetPublicProductCategoriesQuery,
 } from "@/services/public/store.service";
 import { Product } from "@/types/public/store/product";
+import { ProductCategory } from "@/types/public/store/category";
 import { dummyProducts } from "./data/dummy-products";
+import { useI18n } from "@/app/hooks/useI18n";
+import { getCurrentLocale } from "@/lib/i18n";
 
 /* ================= Utils ================= */
 
-const formatRupiah = (num: number) =>
-  new Intl.NumberFormat("id-ID", {
+const formatRupiah = (num: number, locale: string = "id") => {
+  const localeMap: Record<string, string> = {
+    id: "id-ID",
+    en: "en-US",
+    ar: "ar-SA",
+    fr: "fr-FR",
+    kr: "ko-KR",
+    jp: "ja-JP",
+  };
+  return new Intl.NumberFormat(localeMap[locale] || "id-ID", {
     style: "currency",
     currency: "IDR",
     maximumFractionDigits: 0,
   }).format(num);
+};
 
 const calculateDiscount = (price: number, markupPrice: number) => {
   if (markupPrice <= price) return 0;
@@ -41,19 +54,11 @@ const calculateDiscount = (price: number, markupPrice: number) => {
 
 /* ================= Constants ================= */
 
-const categories = [
-  { id: "all", name: "Semua", icon: "📦" },
-  { id: "mukena", name: "Mukena", icon: "🧕" },
-  { id: "sajadah", name: "Sajadah", icon: "🕌" },
-  { id: "buku", name: "Buku", icon: "📚" },
-  { id: "aksesoris", name: "Aksesoris", icon: "✨" },
-];
-
 const sortOptions = [
-  { value: "newest", label: "Terbaru" },
-  { value: "price_low", label: "Harga Terendah" },
-  { value: "price_high", label: "Harga Tertinggi" },
-  { value: "name", label: "Nama A-Z" },
+  { value: "newest", label: "newest" },
+  { value: "price_low", label: "priceLow" },
+  { value: "price_high", label: "priceHigh" },
+  { value: "name", label: "nameAZ" },
 ];
 
 type CartItem = {
@@ -65,10 +70,12 @@ type CartItem = {
 
 export default function StorePage() {
   const router = useRouter();
+  const { t } = useI18n();
+  const locale = getCurrentLocale();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStoreId, setSelectedStoreId] = useState<number | undefined>();
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState<number | "all">("all");
   const [sortBy, setSortBy] = useState("newest");
   const [showFilters, setShowFilters] = useState(false);
   const [cartCount, setCartCount] = useState(0);
@@ -79,6 +86,12 @@ export default function StorePage() {
     page: 1,
     paginate: 100,
   });
+
+  const { data: categoriesData, isLoading: isLoadingCategories } =
+    useGetPublicProductCategoriesQuery({
+      page: 1,
+      paginate: 100,
+    });
 
   const { data: productsData, isLoading: isLoadingProducts } =
     useGetPublicProductsQuery({
@@ -101,6 +114,20 @@ export default function StorePage() {
     return () => window.removeEventListener("storage", updateCartCount);
   }, []);
 
+  /* ================= Helper Functions ================= */
+
+  // Get translated name from category based on locale
+  const getCategoryName = (category: ProductCategory): string => {
+    const translation = category.translations?.find((t) => t.locale === locale);
+    return translation?.name || category.name;
+  };
+
+  // Get translated name from product based on locale
+  const getProductName = (product: Product): string => {
+    const translation = product.translations?.find((t) => t.locale === locale);
+    return translation?.name || product.name;
+  };
+
   /* ================= Products ================= */
 
   const allProducts = useMemo(() => {
@@ -114,21 +141,15 @@ export default function StorePage() {
     let filtered = [...allProducts];
 
     if (searchQuery) {
-      filtered = filtered.filter((p) =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      filtered = filtered.filter((p) => {
+        const productName = getProductName(p).toLowerCase();
+        return productName.includes(searchQuery.toLowerCase());
+      });
     }
 
     if (selectedCategory !== "all") {
       filtered = filtered.filter((p) => {
-        const name = p.name.toLowerCase();
-        if (selectedCategory === "mukena") return name.includes("mukena");
-        if (selectedCategory === "sajadah") return name.includes("sajadah");
-        if (selectedCategory === "buku")
-          return name.includes("buku") || name.includes("quran");
-        if (selectedCategory === "aksesoris")
-          return name.includes("tasbih") || name.includes("peci");
-        return true;
+        return p.store_product_category_id === selectedCategory;
       });
     }
 
@@ -181,7 +202,7 @@ export default function StorePage() {
               <div className="w-8 h-8 bg-awqaf-primary rounded-lg flex items-center justify-center text-white">
                 <Store className="w-5 h-5" />
               </div>
-              <h1 className="font-bold text-awqaf-primary">Awqaf Store</h1>
+              <h1 className="font-bold text-awqaf-primary">{t("store.title")}</h1>
             </div>
 
             <div className="flex gap-2">
@@ -207,7 +228,7 @@ export default function StorePage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               className="pl-9 rounded-full"
-              placeholder="Cari produk..."
+              placeholder={t("store.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -219,24 +240,45 @@ export default function StorePage() {
       <main className="max-w-md mx-auto px-4 py-4 space-y-4">
         {/* Category */}
         <div className="flex justify-between items-center">
-          <h3 className="font-semibold">Kategori</h3>
+          <h3 className="font-semibold">{t("store.category")}</h3>
           <Button size="sm" variant="ghost" onClick={() => setShowFilters(true)}>
             <Filter className="w-4 h-4 mr-1" />
-            Filter
+            {t("store.filter")}
           </Button>
         </div>
 
         <div className="flex gap-2 overflow-x-auto">
-          {categories.map((cat) => (
-            <Button
-              key={cat.id}
-              size="sm"
-              variant={selectedCategory === cat.id ? "default" : "outline"}
-              onClick={() => setSelectedCategory(cat.id)}
-            >
-              {cat.icon} {cat.name}
-            </Button>
-          ))}
+          {/* All Category */}
+          <Button
+            size="sm"
+            variant={selectedCategory === "all" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("all")}
+          >
+            📦 {t("store.all")}
+          </Button>
+          {/* API Categories */}
+          {isLoadingCategories ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-8 w-20 bg-gray-200 rounded animate-pulse"
+              />
+            ))
+          ) : (
+            categoriesData?.data.map((cat) => {
+              const categoryName = getCategoryName(cat);
+              return (
+                <Button
+                  key={cat.id}
+                  size="sm"
+                  variant={selectedCategory === cat.id ? "default" : "outline"}
+                  onClick={() => setSelectedCategory(cat.id)}
+                >
+                  {cat.icon || "📦"} {categoryName}
+                </Button>
+              );
+            })
+          )}
         </div>
 
         {/* Products */}
@@ -270,7 +312,7 @@ export default function StorePage() {
                       />
                       {discount > 0 && (
                         <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-                          {discount}% OFF
+                          {discount}% {t("store.discount")}
                         </span>
                       )}
                     </div>
@@ -278,10 +320,10 @@ export default function StorePage() {
                     <CardContent className="p-3">
                       <Badge className="mb-1">{product.store.name}</Badge>
                       <h3 className="text-sm font-bold line-clamp-2">
-                        {product.name}
+                        {getProductName(product)}
                       </h3>
                       <p className="font-bold text-awqaf-primary">
-                        {formatRupiah(product.price)}
+                        {formatRupiah(product.price, locale)}
                       </p>
                     </CardContent>
 
@@ -292,7 +334,7 @@ export default function StorePage() {
                         onClick={(e) => handleAddToCart(product, e)}
                       >
                         <ShoppingCart className="w-4 h-4 mr-1" />
-                        Keranjang
+                        {isInStock ? t("store.addToCart") : t("store.outOfStock")}
                       </Button>
                     </CardFooter>
                   </Card>
