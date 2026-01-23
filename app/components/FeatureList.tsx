@@ -23,218 +23,312 @@ import {
   Book,
   UserCheck,
   Notebook,
+  Scroll,
+  ShieldCheck,
+  ListOrdered,
+  HelpCircle,
+  Plane,
+  Repeat,
+  LifeBuoy,
 } from "lucide-react";
+import { useI18n } from "@/app/hooks/useI18n";
 
-interface Feature {
+// Definisi Tipe Data
+interface FeatureConfig {
   id: string;
-  name: string;
-  description: string;
+  defaultName: string;
+  defaultDescription: string;
   icon: React.ComponentType<{ className?: string }>;
   href: string;
-  category: string;
+  defaultCategory: string; // Kategori dalam Bahasa Indonesia (untuk fallback & grouping key)
   isNew?: boolean;
   isPopular?: boolean;
 }
 
-const features: Feature[] = [
+// Data Fitur Statis (Default Bahasa Indonesia)
+const FEATURES_CONFIG: FeatureConfig[] = [
+  // --- Ibadah ---
   {
     id: "prayer-time",
-    name: "Prayer Time + Adzan",
-    description: "Jadwal sholat dan notifikasi adzan berdasarkan lokasi",
+    defaultName: "Waktu Sholat + Adzan",
+    defaultDescription: "Jadwal sholat dan notifikasi adzan berdasarkan lokasi",
     icon: Clock,
     href: "/sholat",
-    category: "Ibadah",
+    defaultCategory: "Ibadah",
     isPopular: true,
   },
   {
     id: "prayer-tracker",
-    name: "Prayer Tracker",
-    description: "Pantau dan catat sholat harian Anda",
+    defaultName: "Prayer Tracker",
+    defaultDescription: "Pantau dan catat sholat harian Anda",
     icon: Target,
     href: "/prayer-tracker",
-    category: "Ibadah",
+    defaultCategory: "Ibadah",
   },
   {
     id: "qibla",
-    name: "Qibla",
-    description: "Arah kiblat yang akurat menggunakan kompas digital",
+    defaultName: "Arah Kiblat",
+    defaultDescription: "Arah kiblat yang akurat menggunakan kompas digital",
     icon: Compass,
     href: "/kiblat",
-    category: "Ibadah",
+    defaultCategory: "Ibadah",
     isPopular: true,
   },
+
+  // --- Al-Qur'an ---
   {
     id: "quran",
-    name: "Qur'an + Terjemahan",
-    description: "Baca Al-Qur'an dengan terjemahan bahasa Indonesia",
+    defaultName: "Al-Qur'an + Terjemahan",
+    defaultDescription: "Baca Al-Qur'an dengan terjemahan bahasa Indonesia",
     icon: BookOpen,
     href: "/quran",
-    category: "Al-Qur'an",
-    isPopular: true,
-  },
-  {
-    id: "hadith",
-    name: "Hadith + Hadith of the day",
-    description: "Kumpulan hadith shahih dan hadith harian",
-    icon: BookMarked,
-    href: "/hadith",
-    category: "Hadith",
-  },
-  {
-    id: "doa-dzikir",
-    name: "Doa + Dzikir pagi & petang",
-    description: "Kumpulan doa dan dzikir untuk pagi dan petang",
-    icon: Heart,
-    href: "/doa-dzikir",
-    category: "Doa & Dzikir",
-  },
-  {
-    id: "asmaul-husna",
-    name: "Asmaul Husna",
-    description: "99 nama-nama Allah yang indah dengan maknanya",
-    icon: Star,
-    href: "/asmaul-husna",
-    category: "Doa & Dzikir",
-  },
-  {
-    id: "kajian",
-    name: "Kajian (Audio)",
-    description: "Kumpulan kajian Islam dalam format audio",
-    icon: Volume2,
-    href: "/kajian",
-    category: "Kajian",
-    isPopular: true,
-  },
-  {
-    id: "halal",
-    name: "Halal",
-    description: "Rekomendasi tempat makan dan restoran yang halal",
-    icon: Utensils,
-    href: "/halal",
-    category: "Kehidupan",
-  },
-  {
-    id: "donasi",
-    name: "Donasi & Sedekah",
-    description: "Wakaf, zakat, kurban, dan infaq untuk kemaslahatan umat",
-    icon: Gift,
-    href: "/donasi",
-    category: "Kehidupan",
-    isNew: true,
-    isPopular: true,
-  },
-  {
-    id: "masjid",
-    name: "Masjid & Mushola",
-    description: "Temukan masjid dan mushola terdekat",
-    icon: MapPin,
-    href: "/masjid",
-    category: "Kehidupan",
-  },
-  {
-    id: "donasi",
-    name: "Donasi (Wakaf, Zakat, Kurban, Infaq)",
-    description: "Platform donasi untuk berbagai amal ibadah",
-    icon: Gift,
-    href: "/donasi",
-    category: "Amal",
-  },
-  {
-    id: "artikel",
-    name: "Artikel",
-    description: "Artikel Islami dan tips kehidupan Muslim",
-    icon: FileText,
-    href: "/artikel",
-    category: "Edukasi",
-  },
-  {
-    id: "kamus-istilah",
-    name: "Kamus Istilah",
-    description: "Kamus istialah Islami dan tips kehidupan Muslim",
-    icon: BookOpen,
-    href: "/kamus-istilah",
-    category: "Edukasi",
-  },
-  {
-    id: "bahasa-arab",
-    name: "Bahasa Arab",
-    description: "Bahasa Arab untuk membaca Al-Qur'an dengan benar",
-    icon: BookOpen,
-    href: "/bahasa-arab",
-    category: "Edukasi",
-  },
-  {
-    id: "tanya-ustadz",
-    name: "Tanya Ustaz",
-    description: "Konsultasi keagamaan dengan ustaz berpengalaman",
-    icon: MessageCircle,
-    href: "/tanya-ustadz",
-    category: "Konsultasi",
+    defaultCategory: "Al-Qur'an",
     isPopular: true,
   },
   {
     id: "tajwid",
-    name: "Tajwid",
-    description: "Belajar tajwid untuk membaca Al-Qur'an dengan benar",
+    defaultName: "Ilmu Tajwid",
+    defaultDescription: "Belajar tajwid untuk membaca Al-Qur'an dengan benar",
     icon: BookA,
     href: "/tajwid",
-    category: "Al-Qur'an",
+    defaultCategory: "Al-Qur'an",
+  },
+
+  // --- Hadits ---
+  {
+    id: "hadith",
+    defaultName: "Hadits",
+    defaultDescription: "Kumpulan hadits shahih dan hadits harian",
+    icon: BookMarked,
+    href: "/hadith",
+    defaultCategory: "Hadits",
+  },
+
+  // --- Doa & Dzikir ---
+  {
+    id: "doa-dzikir",
+    defaultName: "Doa & Dzikir",
+    defaultDescription: "Kumpulan doa dan dzikir untuk pagi dan petang",
+    icon: Heart,
+    href: "/doa-dzikir",
+    defaultCategory: "Doa & Dzikir",
   },
   {
-    id: "kalender-hijriyah",
-    name: "Kalender Hijriyah",
-    description: "Kalender Islam dengan tanggal hijriyah",
-    icon: Calendar,
-    href: "/kalender-hijriyah",
-    category: "Kalender",
+    id: "asmaul-husna",
+    defaultName: "Asmaul Husna",
+    defaultDescription: "99 nama-nama Allah yang indah dengan maknanya",
+    icon: Star,
+    href: "/asmaul-husna",
+    defaultCategory: "Doa & Dzikir",
+  },
+
+  // --- Kajian ---
+  {
+    id: "kajian",
+    defaultName: "Kajian Audio",
+    defaultDescription: "Kumpulan kajian Islam dalam format audio",
+    icon: Volume2,
+    href: "/kajian",
+    defaultCategory: "Kajian",
+    isPopular: true,
+  },
+
+  // --- Kehidupan (Lifestyle) ---
+  {
+    id: "halal",
+    defaultName: "Makanan Halal",
+    defaultDescription: "Rekomendasi tempat makan dan restoran yang halal",
+    icon: Utensils,
+    href: "/halal",
+    defaultCategory: "Kehidupan",
   },
   {
-    id: "ebook",
-    name: "E-Book",
-    description: "Kumpulan e-book Islami dan referensi",
-    icon: Book,
-    href: "/ebook",
-    category: "Edukasi",
-  },
-  {
-    id: "tasbih",
-    name: "Tasbih Digital",
-    description: "Tasbih digital untuk berdzikir dan kebaikan",
-    icon: UserCheck,
-    href: "/tasbih-digital",
-    category: "Amal",
-  },
-  {
-    id: "surat",
-    name: "Surat",
-    description: "Template Surat untuk keperluan keagamaan",
-    icon: UserCheck,
-    href: "/template-surat",
-    category: "Template",
-  },
-  {
-    id: "kal-zakat",
-    name: "Kalkulator Zakat",
-    description: "Kalkulator zakat untuk menghitung jumlah zakat",
-    icon: Notebook,
-    href: "/kalkulator/zakat",
-    category: "Kalkulator",
-  },
-  {
-    id: "kal-waris",
-    name: "Kalkulator Waris",
-    description: "Kalkulator waris untuk menghitung jumlah waris",
-    icon: Notebook,
-    href: "/kalkulator/waris",
-    category: "Kalkulator",
+    id: "masjid",
+    defaultName: "Masjid Terdekat",
+    defaultDescription: "Temukan masjid dan mushola terdekat",
+    icon: MapPin,
+    href: "/masjid",
+    defaultCategory: "Kehidupan",
   },
   {
     id: "event",
-    name: "Event",
-    description: "Kumpulan event Islam dan keagamaan",
+    defaultName: "Event Islami",
+    defaultDescription: "Kumpulan event Islam dan keagamaan",
     icon: Calendar,
     href: "/event",
-    category: "Kehidupan",
+    defaultCategory: "Kehidupan",
+  },
+
+  // --- Amal ---
+  {
+    id: "donasi",
+    defaultName: "Donasi & Zakat",
+    defaultDescription: "Platform donasi, wakaf, zakat, kurban, dan infaq",
+    icon: Gift,
+    href: "/donasi",
+    defaultCategory: "Amal",
+    isNew: true,
+    isPopular: true,
+  },
+  {
+    id: "tasbih",
+    defaultName: "Tasbih Digital",
+    defaultDescription: "Hitung dzikir harian Anda dengan mudah",
+    icon: UserCheck,
+    href: "/tasbih-digital",
+    defaultCategory: "Amal",
+  },
+
+  // --- Edukasi ---
+  {
+    id: "artikel",
+    defaultName: "Artikel Islami",
+    defaultDescription: "Artikel Islami dan tips kehidupan Muslim",
+    icon: FileText,
+    href: "/artikel",
+    defaultCategory: "Edukasi",
+  },
+  {
+    id: "kamus-istilah",
+    defaultName: "Kamus Istilah",
+    defaultDescription: "Kamus istilah Islami dan maknanya",
+    icon: BookOpen,
+    href: "/kamus-istilah",
+    defaultCategory: "Edukasi",
+  },
+  {
+    id: "bahasa-arab",
+    defaultName: "Belajar Bahasa Arab",
+    defaultDescription: "Materi dasar bahasa Arab untuk Al-Qur'an",
+    icon: BookOpen,
+    href: "/bahasa-arab",
+    defaultCategory: "Edukasi",
+  },
+  {
+    id: "ebook",
+    defaultName: "E-Book Islami",
+    defaultDescription: "Kumpulan e-book Islami dan referensi",
+    icon: Book,
+    href: "/ebook",
+    defaultCategory: "Edukasi",
+  },
+  {
+    id: "sirah",
+    defaultName: "Sirah Nabawiyah",
+    defaultDescription: "Kisah para Nabi, Istri Nabi, Sahabat, dan Ulama",
+    icon: Scroll,
+    href: "/sirah",
+    defaultCategory: "Edukasi",
+    isNew: true,
+  },
+  {
+    id: "rukun-iman",
+    defaultName: "Rukun Iman",
+    defaultDescription: "Pelajari 6 pilar keimanan dalam Islam",
+    icon: ShieldCheck,
+    href: "/rukun-iman",
+    defaultCategory: "Edukasi",
+  },
+  {
+    id: "rukun-islam",
+    defaultName: "Rukun Islam",
+    defaultDescription: "Pelajari 5 pilar utama agama Islam",
+    icon: ListOrdered,
+    href: "/rukun-islam",
+    defaultCategory: "Edukasi",
+  },
+
+  // --- Konsultasi ---
+  {
+    id: "tanya-ustadz",
+    defaultName: "Tanya Ustadz",
+    defaultDescription: "Konsultasi keagamaan dengan ustadz berpengalaman",
+    icon: MessageCircle,
+    href: "/tanya-ustadz",
+    defaultCategory: "Konsultasi",
+    isPopular: true,
+  },
+  {
+    id: "fatwa-syaikh",
+    defaultName: "Fatwa Ulama",
+    defaultDescription: "Kumpulan tanya jawab dan fatwa dari para Syaikh",
+    icon: HelpCircle,
+    href: "/fatwa",
+    defaultCategory: "Konsultasi",
+  },
+
+  // --- Kalender ---
+  {
+    id: "kalender-hijriyah",
+    defaultName: "Kalender Hijriyah",
+    defaultDescription: "Kalender Islam dengan tanggal hijriyah",
+    icon: Calendar,
+    href: "/kalender-hijriyah",
+    defaultCategory: "Kalender",
+  },
+
+  // --- Template ---
+  {
+    id: "surat",
+    defaultName: "Template Surat",
+    defaultDescription: "Buat surat resmi kebutuhan masjid/nikah",
+    icon: FileText,
+    href: "/template-surat",
+    defaultCategory: "Template",
+  },
+
+  // --- Kalkulator ---
+  {
+    id: "kal-zakat",
+    defaultName: "Kalkulator Zakat",
+    defaultDescription: "Hitung kewajiban zakat mal dan fitrah",
+    icon: Notebook,
+    href: "/kalkulator/zakat",
+    defaultCategory: "Kalkulator",
+  },
+  {
+    id: "kal-waris",
+    defaultName: "Kalkulator Waris",
+    defaultDescription: "Simulasi pembagian harta waris menurut Islam",
+    icon: Notebook,
+    href: "/kalkulator/waris",
+    defaultCategory: "Kalkulator",
+  },
+
+  // --- Haji & Umrah (BARU) ---
+  {
+    id: "panduan-haji",
+    defaultName: "Panduan Haji & Umrah",
+    defaultDescription: "Tata cara lengkap ibadah Haji dan Umrah",
+    icon: BookOpen,
+    href: "/haji-umrah/panduan",
+    defaultCategory: "Haji & Umrah",
+  },
+  {
+    id: "perjalanan-haji",
+    defaultName: "Perjalanan Haji",
+    defaultDescription: "Lacak dan rencanakan perjalanan ibadah Haji",
+    icon: Plane,
+    href: "/haji-umrah/perjalanan",
+    defaultCategory: "Haji & Umrah",
+  },
+  {
+    id: "badal-haji",
+    defaultName: "Badal Haji & Umrah",
+    defaultDescription: "Layanan amanah untuk badal Haji dan Umrah",
+    icon: Repeat,
+    href: "/haji-umrah/badal",
+    defaultCategory: "Haji & Umrah",
+  },
+
+  // --- Lainnya (BARU) ---
+  {
+    id: "bantuan",
+    defaultName: "Pusat Bantuan",
+    defaultDescription: "Informasi bantuan dan layanan pengguna",
+    icon: LifeBuoy,
+    href: "/bantuan",
+    defaultCategory: "Lainnya",
   },
 ];
 
@@ -243,6 +337,40 @@ interface FeatureListProps {
 }
 
 export default function FeatureList({ searchQuery }: FeatureListProps) {
+  // Ambil fungsi 't' dari hook.
+  // Karena hook useI18n men-trigger event window, state 'locale' di dalam hook
+  // akan berubah, memicu re-render pada komponen ini.
+  const { t } = useI18n();
+
+  // PROSES TRANSLASI
+  // Kita melakukan mapping langsung setiap render agar reaktif terhadap perubahan bahasa.
+  const features = FEATURES_CONFIG.map((f) => {
+    // 1. Generate Key yang aman untuk kategori
+    // Contoh: "Doa & Dzikir" -> "doa_dzikir"
+    const categoryKeyRaw = f.defaultCategory
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+
+    const nameKey = `features.${f.id}.name`;
+    const descKey = `features.${f.id}.description`;
+    const categoryKey = `categories.${categoryKeyRaw}`;
+
+    // 2. Ambil terjemahan dengan Fallback
+    // Hook t() yang baru sudah support fallback value sebagai parameter kedua
+    // Contoh: t("features.sholat.name", "Waktu Sholat")
+    const transName = t(nameKey, f.defaultName);
+    const transDesc = t(descKey, f.defaultDescription);
+    const transCategory = t(categoryKey, f.defaultCategory);
+
+    return {
+      ...f,
+      name: transName,
+      description: transDesc,
+      category: transCategory,
+    };
+  });
+
   // Filter features based on search query
   const filteredFeatures = features.filter((feature) => {
     if (!searchQuery) return true;
@@ -256,13 +384,16 @@ export default function FeatureList({ searchQuery }: FeatureListProps) {
   });
 
   // Group features by category
-  const groupedFeatures = filteredFeatures.reduce((acc, feature) => {
-    if (!acc[feature.category]) {
-      acc[feature.category] = [];
-    }
-    acc[feature.category].push(feature);
-    return acc;
-  }, {} as Record<string, Feature[]>);
+  const groupedFeatures = filteredFeatures.reduce(
+    (acc, feature) => {
+      if (!acc[feature.category]) {
+        acc[feature.category] = [];
+      }
+      acc[feature.category].push(feature);
+      return acc;
+    },
+    {} as Record<string, typeof features>,
+  );
 
   if (filteredFeatures.length === 0) {
     return (
@@ -271,10 +402,10 @@ export default function FeatureList({ searchQuery }: FeatureListProps) {
           <Search className="w-8 h-8 text-awqaf-foreground-secondary" />
         </div>
         <h3 className="text-lg font-semibold text-awqaf-foreground-secondary font-comfortaa mb-2">
-          Fitur tidak ditemukan
+          {t("features.notFoundTitle", "Fitur tidak ditemukan")}
         </h3>
         <p className="text-sm text-awqaf-foreground-tertiary font-comfortaa">
-          Coba gunakan kata kunci yang berbeda
+          {t("features.notFoundDesc", "Coba gunakan kata kunci yang berbeda")}
         </p>
       </div>
     );
@@ -306,12 +437,12 @@ export default function FeatureList({ searchQuery }: FeatureListProps) {
                             <div className="flex gap-1">
                               {feature.isNew && (
                                 <Badge className="bg-info text-white text-xs px-1.5 py-0.5 group-hover:bg-info/90 transition-colors duration-200">
-                                  Baru
+                                  {t("common.new", "Baru")}
                                 </Badge>
                               )}
                               {feature.isPopular && (
                                 <Badge className="bg-success text-white text-xs px-1.5 py-0.5 group-hover:bg-success/90 transition-colors duration-200">
-                                  Populer
+                                  {t("common.popular", "Populer")}
                                 </Badge>
                               )}
                             </div>

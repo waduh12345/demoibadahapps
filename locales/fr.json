@@ -1,0 +1,152 @@
+{
+  "common": {
+    "new": "Nouveau",
+    "popular": "Populaire",
+    "search": "Rechercher",
+    "retry": "Réessayer"
+  },
+  "features": {
+    "notFoundTitle": "Fonctionnalité introuvable",
+    "notFoundDesc": "Essayez d'utiliser des mots-clés différents",
+    "prayer-time": {
+      "name": "Horaires de Prière + Adhan",
+      "description": "Horaires de prière et notifications de l'Adhan selon la localisation"
+    },
+    "prayer-tracker": {
+      "name": "Suivi des Prières",
+      "description": "Surveillez et enregistrez vos prières quotidiennes"
+    },
+    "qibla": {
+      "name": "Direction de la Qibla",
+      "description": "Direction précise de la Qibla à l'aide d'une boussole numérique"
+    },
+    "quran": {
+      "name": "Coran + Traduction",
+      "description": "Lire le Coran avec traductions"
+    },
+    "hadith": {
+      "name": "Hadith",
+      "description": "Collection de Hadiths authentiques et Hadith du jour"
+    },
+    "doa-dzikir": {
+      "name": "Douas & Dhikr",
+      "description": "Recueil de Douas et Dhikr pour le matin et le soir"
+    },
+    "asmaul-husna": {
+      "name": "Asmaul Husna",
+      "description": "Les 99 beaux noms d'Allah avec leurs significations"
+    },
+    "kajian": {
+      "name": "Conférences Audio",
+      "description": "Collection de conférences islamiques au format audio"
+    },
+    "halal": {
+      "name": "Nourriture Halal",
+      "description": "Recommandations de restaurants et plats halal"
+    },
+    "masjid": {
+      "name": "Mosquées à Proximité",
+      "description": "Trouvez les mosquées et salles de prière les plus proches"
+    },
+    "donasi": {
+      "name": "Dons & Zakat",
+      "description": "Plateforme pour les dons, waqf, zakat et infaq"
+    },
+    "artikel": {
+      "name": "Articles Islamiques",
+      "description": "Articles islamiques et conseils de vie pour les musulmans"
+    },
+    "kamus-istilah": {
+      "name": "Dictionnaire Islamique",
+      "description": "Dictionnaire des termes islamiques et leurs significations"
+    },
+    "bahasa-arab": {
+      "name": "Apprendre l'Arabe",
+      "description": "Matériel de base en arabe pour comprendre le Coran"
+    },
+    "tanya-ustadz": {
+      "name": "Demandez à l'Oustaz",
+      "description": "Consultation religieuse avec des savants expérimentés"
+    },
+    "tajwid": {
+      "name": "Science du Tajwid",
+      "description": "Apprendre le Tajwid pour lire le Coran correctement"
+    },
+    "kalender-hijriyah": {
+      "name": "Calendrier Hégirien",
+      "description": "Calendrier islamique avec dates hégiriennes"
+    },
+    "ebook": {
+      "name": "E-Books Islamiques",
+      "description": "Collection de livres numériques et références islamiques"
+    },
+    "tasbih": {
+      "name": "Tasbih Numérique",
+      "description": "Comptez facilement votre Dhikr quotidien"
+    },
+    "surat": {
+      "name": "Modèles de Lettres",
+      "description": "Modèles de lettres pour des besoins religieux"
+    },
+    "kal-zakat": {
+      "name": "Calculateur de Zakat",
+      "description": "Calculez vos obligations de Zakat Mal et Fitrah"
+    },
+    "kal-waris": {
+      "name": "Calculateur d'Héritage",
+      "description": "Simulation de la répartition de l'héritage selon l'Islam"
+    },
+    "event": {
+      "name": "Événements Islamiques",
+      "description": "Calendrier des rassemblements et événements religieux"
+    },
+    "sirah": {
+      "name": "Biographie Prophétique",
+      "description": "Histoires des Prophètes, Compagnons et figures islamiques"
+    },
+    "rukun-iman": {
+      "name": "Piliers de la Foi",
+      "description": "Apprenez les 6 piliers de la foi en Islam"
+    },
+    "rukun-islam": {
+      "name": "Piliers de l'Islam",
+      "description": "Apprenez les 5 piliers principaux de l'Islam"
+    },
+    "fatwa-syaikh": {
+      "name": "Fatwas des Savants",
+      "description": "Collection de fatwas et questions-réponses des savants"
+    },
+    "panduan-haji": {
+      "name": "Guide Hajj & Omra",
+      "description": "Guide complet pour le pèlerinage du Hajj et de l'Omra"
+    },
+    "perjalanan-haji": {
+      "name": "Voyage du Hajj",
+      "description": "Suivez et planifiez votre voyage de pèlerinage"
+    },
+    "badal-haji": {
+      "name": "Badal Hajj",
+      "description": "Service de confiance pour le Badal Hajj et Omra"
+    },
+    "bantuan": {
+      "name": "Centre d'Aide",
+      "description": "Informations et support utilisateur"
+    }
+  },
+  "categories": {
+    "ibadah": "Culte",
+    "al_qur_an": "Al-Coran",
+    "hadith": "Hadith",
+    "doa_dzikir": "Douas & Dhikr",
+    "kajian": "Conférences",
+    "kehidupan": "Style de Vie",
+    "amal": "Charité",
+    "edukasi": "Éducation",
+    "konsultasi": "Consultation",
+    "kalender": "Calendrier",
+    "template": "Modèles",
+    "kalkulator": "Calculateur",
+    "haji_umrah": "Hajj & Omra",
+    "lainnya": "Autres"
+  }
+}

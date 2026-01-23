@@ -5,20 +5,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BookOpen, Clock, Target } from "lucide-react";
 import { usePrayerTracker } from "@/app/prayer-tracker/hooks/usePrayerTracker";
-// Import service untuk mendapatkan nama surat
 import { useGetSurahsQuery } from "@/services/public/quran.service";
-
-interface QuranProgress {
-  lastReadSurah: string;
-  lastReadVerse: number;
-  totalVersesRead: number;
-}
+import { useI18n } from "@/app/hooks/useI18n"; // Import Hook
 
 export default function ProgressWidget() {
+  const { locale } = useI18n(); // Ambil locale
+
   // 1. Get Prayer Progress
   const { todayData, isLoading: isPrayerLoading } = usePrayerTracker();
 
-  // 2. Get Surah Data untuk mapping ID ke Nama
+  // 2. Get Surah Data
   const { data: surahList } = useGetSurahsQuery({ lang: "id" });
 
   // 3. State for Quran Progress
@@ -26,8 +22,74 @@ export default function ProgressWidget() {
     completed: 0,
     total: 604,
     percentage: 0,
-    lastRead: "Belum membaca",
+    lastRead: "", // String kosong dulu, nanti diisi useEffect
   });
+
+  // --- Inline Translations ---
+  const TEXTS = {
+    id: {
+      title: "Progress Hari Ini",
+      subtitle: "Target ibadah harian",
+      prayer: "Sholat Wajib",
+      quran: "Al-Qur'an",
+      notRead: "Belum membaca",
+      page: "Hlm",
+      surah: "Surah",
+      verse: "Ayat",
+    },
+    en: {
+      title: "Today's Progress",
+      subtitle: "Daily worship target",
+      prayer: "Obligatory Prayer",
+      quran: "Quran",
+      notRead: "Not read yet",
+      page: "Pg",
+      surah: "Surah",
+      verse: "Verse",
+    },
+    ar: {
+      title: "تقدم اليوم",
+      subtitle: "هدف العبادة اليومي",
+      prayer: "الصلوات المفروضة",
+      quran: "القرآن",
+      notRead: "لم تقرأ بعد",
+      page: "ص",
+      surah: "سورة",
+      verse: "آية",
+    },
+    fr: {
+      title: "Progrès d'aujourd'hui",
+      subtitle: "Objectif de culte quotidien",
+      prayer: "Prière Obligatoire",
+      quran: "Coran",
+      notRead: "Pas encore lu",
+      page: "P",
+      surah: "Sourate",
+      verse: "Verset",
+    },
+    kr: {
+      title: "오늘의 진행 상황",
+      subtitle: "일일 예배 목표",
+      prayer: "의무 기도",
+      quran: "꾸란",
+      notRead: "아직 읽지 않음",
+      page: "쪽",
+      surah: "수라",
+      verse: "절",
+    },
+    jp: {
+      title: "今日の進捗",
+      subtitle: "毎日の礼拝目標",
+      prayer: "義務の礼拝",
+      quran: "クルアーン",
+      notRead: "未読",
+      page: "ページ",
+      surah: "スーラ",
+      verse: "節",
+    },
+  };
+
+  const t = TEXTS[locale] || TEXTS.id;
 
   // Load Quran progress from localStorage
   useEffect(() => {
@@ -40,28 +102,29 @@ export default function ProgressWidget() {
         completed: parsed.page || 1,
         total: 604,
         percentage: Math.round(((parsed.page || 1) / 604) * 100),
-        lastRead: `${parsed.surahName} : Ayat ${parsed.verse}`,
+        lastRead: `${parsed.surahName} : ${t.verse} ${parsed.verse}`,
       });
     } else if (savedRecent) {
-      // Fallback ke recent (array of IDs)
       const recent = JSON.parse(savedRecent);
       if (recent.length > 0) {
         const surahId = recent[0];
-        // Cari nama surat berdasarkan ID dari data API
         const surahName = surahList?.find(
-          (s) => s.id === surahId
+          (s) => s.id === surahId,
         )?.transliteration;
 
         setQuranProgress((prev) => ({
           ...prev,
-          // Gunakan nama surat jika ada, jika belum load gunakan ID sementara
-          lastRead: surahName ? `Surah ${surahName}` : `Surah ke-${surahId}`,
+          lastRead: surahName
+            ? `${t.surah} ${surahName}`
+            : `${t.surah} ${surahId}`,
         }));
       } else {
-        setQuranProgress((prev) => ({ ...prev, lastRead: "Belum membaca" }));
+        setQuranProgress((prev) => ({ ...prev, lastRead: t.notRead }));
       }
+    } else {
+      setQuranProgress((prev) => ({ ...prev, lastRead: t.notRead }));
     }
-  }, [surahList]); // Tambahkan surahList ke dependency agar update saat data API masuk
+  }, [surahList, locale]); // Update saat locale berubah
 
   // Calculate Prayer Progress
   const prayerCompleted = todayData?.completedPrayers || 0;
@@ -77,10 +140,10 @@ export default function ProgressWidget() {
           </div>
           <div>
             <h3 className="font-semibold text-card-foreground text-sm font-comfortaa">
-              Progress Hari Ini
+              {t.title}
             </h3>
             <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
-              Target ibadah harian
+              {t.subtitle}
             </p>
           </div>
         </div>
@@ -92,7 +155,7 @@ export default function ProgressWidget() {
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-awqaf-primary" />
                 <span className="text-sm font-medium text-card-foreground font-comfortaa">
-                  Sholat Wajib
+                  {t.prayer}
                 </span>
               </div>
               <span className="text-sm text-awqaf-foreground-secondary font-comfortaa">
@@ -115,7 +178,7 @@ export default function ProgressWidget() {
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-info" />
                 <span className="text-sm font-medium text-card-foreground font-comfortaa">
-                  Al-Qur&apos;an
+                  {t.quran}
                 </span>
               </div>
               <span className="text-xs text-awqaf-foreground-secondary font-comfortaa max-w-[120px] truncate text-right">
@@ -127,11 +190,11 @@ export default function ProgressWidget() {
               className="h-2 bg-accent-100"
             />
             <div className="flex justify-between text-xs text-awqaf-foreground-secondary font-comfortaa">
-              <span>Hlm 1</span>
+              <span>{t.page} 1</span>
               <span className="font-medium text-info">
-                Hlm {quranProgress.completed}
+                {t.page} {quranProgress.completed}
               </span>
-              <span>Hlm 604</span>
+              <span>{t.page} 604</span>
             </div>
           </div>
         </div>

@@ -6,9 +6,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import FeatureSearch from "@/app/components/FeatureSearch";
 import FeatureList from "@/app/components/FeatureList";
+import { useI18n } from "@/app/hooks/useI18n";
 
 export default function FeaturesPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { locale } = useI18n();
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -39,7 +41,7 @@ export default function FeaturesPage() {
       </header>
 
       <main className="max-w-md mx-auto px-4 py-6">
-        <FeatureList searchQuery={searchQuery} />
+        <FeatureList searchQuery={searchQuery} key={locale} />
       </main>
     </div>
   );

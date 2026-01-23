@@ -1,0 +1,152 @@
+{
+  "common": {
+    "new": "New",
+    "popular": "Popular",
+    "search": "Search",
+    "retry": "Try Again"
+  },
+  "features": {
+    "notFoundTitle": "Feature not found",
+    "notFoundDesc": "Try using different keywords",
+    "prayer-time": {
+      "name": "Prayer Times + Adhan",
+      "description": "Prayer schedules and Adhan notifications based on location"
+    },
+    "prayer-tracker": {
+      "name": "Prayer Tracker",
+      "description": "Monitor and record your daily prayers"
+    },
+    "qibla": {
+      "name": "Qibla Direction",
+      "description": "Accurate Qibla direction using digital compass"
+    },
+    "quran": {
+      "name": "Quran + Translation",
+      "description": "Read Al-Quran with translations"
+    },
+    "hadith": {
+      "name": "Hadith",
+      "description": "Collection of authentic Hadith and Hadith of the day"
+    },
+    "doa-dzikir": {
+      "name": "Dua & Dhikr",
+      "description": "Collection of Dua and Dhikr for morning and evening"
+    },
+    "asmaul-husna": {
+      "name": "Asmaul Husna",
+      "description": "99 beautiful names of Allah with their meanings"
+    },
+    "kajian": {
+      "name": "Islamic Lectures",
+      "description": "Collection of Islamic lectures in audio format"
+    },
+    "halal": {
+      "name": "Halal Food",
+      "description": "Recommendations for Halal food and restaurants"
+    },
+    "masjid": {
+      "name": "Nearby Mosques",
+      "description": "Find the nearest mosques and prayer rooms"
+    },
+    "donasi": {
+      "name": "Donation & Zakat",
+      "description": "Platform for donation, waqf, zakat, and infaq"
+    },
+    "artikel": {
+      "name": "Islamic Articles",
+      "description": "Islamic articles and lifestyle tips for Muslims"
+    },
+    "kamus-istilah": {
+      "name": "Islamic Dictionary",
+      "description": "Dictionary of Islamic terms and their meanings"
+    },
+    "bahasa-arab": {
+      "name": "Learn Arabic",
+      "description": "Basic Arabic materials for understanding Al-Quran"
+    },
+    "tanya-ustadz": {
+      "name": "Ask Ustadz",
+      "description": "Religious consultation with experienced scholars"
+    },
+    "tajwid": {
+      "name": "Tajweed Science",
+      "description": "Learn Tajweed to read Al-Quran correctly"
+    },
+    "kalender-hijriyah": {
+      "name": "Hijri Calendar",
+      "description": "Islamic calendar with Hijri dates"
+    },
+    "ebook": {
+      "name": "Islamic E-Books",
+      "description": "Collection of Islamic digital books and references"
+    },
+    "tasbih": {
+      "name": "Digital Tasbih",
+      "description": "Count your daily Dhikr easily"
+    },
+    "surat": {
+      "name": "Letter Templates",
+      "description": "Letter templates for religious purposes"
+    },
+    "kal-zakat": {
+      "name": "Zakat Calculator",
+      "description": "Calculate your Zakat Mal and Fitrah obligations"
+    },
+    "kal-waris": {
+      "name": "Inheritance Calculator",
+      "description": "Simulate Islamic inheritance distribution"
+    },
+    "event": {
+      "name": "Islamic Events",
+      "description": "Schedule of Islamic gatherings and events"
+    },
+    "sirah": {
+      "name": "Prophetic Biography",
+      "description": "Stories of Prophets, Companions, and Islamic figures"
+    },
+    "rukun-iman": {
+      "name": "Pillars of Faith",
+      "description": "Learn the 6 pillars of faith in Islam"
+    },
+    "rukun-islam": {
+      "name": "Pillars of Islam",
+      "description": "Learn the 5 main pillars of Islam"
+    },
+    "fatwa-syaikh": {
+      "name": "Scholars' Fatwa",
+      "description": "Collection of fatwas and Q&A from scholars"
+    },
+    "panduan-haji": {
+      "name": "Hajj & Umrah Guide",
+      "description": "Complete guide for Hajj and Umrah pilgrimage"
+    },
+    "perjalanan-haji": {
+      "name": "Hajj Journey",
+      "description": "Track and plan your Hajj pilgrimage journey"
+    },
+    "badal-haji": {
+      "name": "Hajj Badal",
+      "description": "Trusted service for Hajj and Umrah Badal"
+    },
+    "bantuan": {
+      "name": "Help Center",
+      "description": "Information and user support"
+    }
+  },
+  "categories": {
+    "ibadah": "Worship",
+    "al_qur_an": "Al-Quran",
+    "hadith": "Hadith",
+    "doa_dzikir": "Dua & Dhikr",
+    "kajian": "Lectures",
+    "kehidupan": "Lifestyle",
+    "amal": "Charity",
+    "edukasi": "Education",
+    "konsultasi": "Consultation",
+    "kalender": "Calendar",
+    "template": "Templates",
+    "kalkulator": "Calculator",
+    "haji_umrah": "Hajj & Umrah",
+    "lainnya": "Others"
+  }
+}

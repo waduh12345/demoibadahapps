@@ -1,0 +1,149 @@
+{
+  "common": {
+    "new": "Baru",
+    "popular": "Populer"
+  },
+  "features": {
+    "notFoundTitle": "Fitur tidak ditemukan",
+    "notFoundDesc": "Coba gunakan kata kunci yang berbeda",
+    "prayer-time": {
+      "name": "Waktu Sholat + Adzan",
+      "description": "Jadwal sholat dan notifikasi adzan berdasarkan lokasi"
+    },
+    "prayer-tracker": {
+      "name": "Prayer Tracker",
+      "description": "Pantau dan catat sholat harian Anda"
+    },
+    "qibla": {
+      "name": "Arah Kiblat",
+      "description": "Arah kiblat yang akurat menggunakan kompas digital"
+    },
+    "quran": {
+      "name": "Al-Qur'an + Terjemahan",
+      "description": "Baca Al-Qur'an dengan terjemahan bahasa Indonesia"
+    },
+    "hadith": {
+      "name": "Hadits",
+      "description": "Kumpulan hadits shahih dan hadits harian"
+    },
+    "doa-dzikir": {
+      "name": "Doa & Dzikir",
+      "description": "Kumpulan doa dan dzikir untuk pagi dan petang"
+    },
+    "asmaul-husna": {
+      "name": "Asmaul Husna",
+      "description": "99 nama-nama Allah yang indah dengan maknanya"
+    },
+    "kajian": {
+      "name": "Kajian Audio",
+      "description": "Kumpulan kajian Islam dalam format audio"
+    },
+    "halal": {
+      "name": "Makanan Halal",
+      "description": "Rekomendasi tempat makan dan restoran yang halal"
+    },
+    "masjid": {
+      "name": "Masjid Terdekat",
+      "description": "Temukan masjid dan mushola terdekat"
+    },
+    "donasi": {
+      "name": "Donasi & Zakat",
+      "description": "Platform donasi, wakaf, zakat, dan infaq"
+    },
+    "artikel": {
+      "name": "Artikel Islami",
+      "description": "Artikel Islami dan tips kehidupan Muslim"
+    },
+    "kamus-istilah": {
+      "name": "Kamus Istilah",
+      "description": "Kamus istilah Islami dan maknanya"
+    },
+    "bahasa-arab": {
+      "name": "Belajar Bahasa Arab",
+      "description": "Materi dasar bahasa Arab untuk Al-Qur'an"
+    },
+    "tanya-ustadz": {
+      "name": "Tanya Ustadz",
+      "description": "Konsultasi keagamaan dengan ustadz berpengalaman"
+    },
+    "tajwid": {
+      "name": "Ilmu Tajwid",
+      "description": "Belajar tajwid untuk membaca Al-Qur'an dengan benar"
+    },
+    "kalender-hijriyah": {
+      "name": "Kalender Hijriyah",
+      "description": "Kalender Islam dengan tanggal hijriyah"
+    },
+    "ebook": {
+      "name": "E-Book Islami",
+      "description": "Kumpulan buku digital Islami"
+    },
+    "tasbih": {
+      "name": "Tasbih Digital",
+      "description": "Hitung dzikir harian Anda dengan mudah"
+    },
+    "surat": {
+      "name": "Template Surat",
+      "description": "Buat surat resmi kebutuhan masjid/nikah"
+    },
+    "kal-zakat": {
+      "name": "Kalkulator Zakat",
+      "description": "Hitung kewajiban zakat mal dan fitrah"
+    },
+    "kal-waris": {
+      "name": "Kalkulator Waris",
+      "description": "Simulasi pembagian harta waris menurut Islam"
+    },
+    "event": {
+      "name": "Event Islami",
+      "description": "Jadwal kajian dan acara keagamaan"
+    },
+    "sirah": {
+      "name": "Sirah Nabawiyah",
+      "description": "Kisah Nabi, Sahabat, dan tokoh Islam"
+    },
+    "rukun-iman": {
+      "name": "Rukun Iman",
+      "description": "Pelajari 6 pilar keimanan"
+    },
+    "rukun-islam": {
+      "name": "Rukun Islam",
+      "description": "Pelajari 5 pilar utama Islam"
+    },
+    "fatwa-syaikh": {
+      "name": "Fatwa Ulama",
+      "description": "Kumpulan fatwa dan tanya jawab ulama"
+    },
+    "panduan-haji": {
+      "name": "Panduan Haji & Umrah",
+      "description": "Tata cara ibadah di tanah suci"
+    },
+    "perjalanan-haji": {
+      "name": "Perjalanan Haji",
+      "description": "Panduan perjalanan ibadah haji"
+    },
+    "badal-haji": {
+      "name": "Badal Haji",
+      "description": "Layanan badal haji dan umrah terpercaya"
+    },
+    "bantuan": {
+      "name": "Pusat Bantuan",
+      "description": "Informasi dan bantuan aplikasi"
+    }
+  },
+  "categories": {
+    "ibadah": "Ibadah",
+    "al_qur_an": "Al-Qur'an",
+    "hadith": "Hadits",
+    "doa_dzikir": "Doa & Dzikir",
+    "kehidupan": "Gaya Hidup",
+    "amal": "Amal & Donasi",
+    "edukasi": "Edukasi",
+    "konsultasi": "Konsultasi",
+    "kalender": "Kalender",
+    "template": "Template",
+    "kalkulator": "Kalkulator",
+    "haji_umrah": "Haji & Umrah",
+    "lainnya": "Lainnya"
+  }
+}

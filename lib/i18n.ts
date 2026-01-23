@@ -1,6 +1,17 @@
 // i18n Configuration and Translations
 
+import idJson from "@/locales/id.json";
+import enJson from "@/locales/en.json";
+import arJson from "@/locales/ar.json";
+import frJson from "@/locales/fr.json";
+import krJson from "@/locales/kr.json";
+import jpJson from "@/locales/jp.json";
+
 export type LocaleCode = "id" | "en" | "ar" | "fr" | "kr" | "jp";
+
+interface Dictionary {
+  [key: string]: string | Dictionary;
+}
 
 export interface Translations {
   // Home Page
@@ -511,7 +522,7 @@ export interface Translations {
   };
 }
 
-export const translations: Record<LocaleCode, Translations> = {
+const hardcodedTranslations: Record<LocaleCode, Dictionary> = {
   id: {
     home: {
       title: "IbadahApp",
@@ -590,7 +601,8 @@ export const translations: Record<LocaleCode, Translations> = {
       noKajianFound: "Belum ada kajian ditemukan",
       noKajianMatch: "Tidak ada kajian yang sesuai dengan filter",
       quickAccess: "Akses Cepat",
-      getNotifications: "Dapatkan notifikasi kajian terbaru dan jadwal live streaming",
+      getNotifications:
+        "Dapatkan notifikasi kajian terbaru dan jadwal live streaming",
     },
     prayerTracker: {
       title: "Prayer Tracker",
@@ -624,7 +636,8 @@ export const translations: Record<LocaleCode, Translations> = {
         holdHorizontal: "Pegang perangkat secara horizontal",
       },
       compassCalibration: "Kalibrasi Kompas",
-      calibrationDescription: "Jika jarum tidak akurat, gerakkan perangkat membentuk angka 8 di udara beberapa kali untuk mengkalibrasi sensor kompas.",
+      calibrationDescription:
+        "Jika jarum tidak akurat, gerakkan perangkat membentuk angka 8 di udara beberapa kali untuk mengkalibrasi sensor kompas.",
       calibrationMovement: "Gerakan kalibrasi",
       accuracy: {
         high: "Akurasi Tinggi",
@@ -701,11 +714,13 @@ export const translations: Record<LocaleCode, Translations> = {
       menuAvailable: "menu tersedia",
       noRestaurantsFound: "Tidak ada restoran ditemukan",
       tryDifferentFilter: "Coba ubah filter atau pilih kota lain",
-      motivationalQuote: "Makanlah dari rezeki yang halal dan baik yang telah Allah berikan kepadamu",
+      motivationalQuote:
+        "Makanlah dari rezeki yang halal dan baik yang telah Allah berikan kepadamu",
     },
     donation: {
       title: "Donasi & Sedekah",
-      subtitle: "Berikan donasi terbaik Anda untuk kemaslahatan umat. Setiap rupiah yang Anda berikan akan membantu sesama yang membutuhkan.",
+      subtitle:
+        "Berikan donasi terbaik Anda untuk kemaslahatan umat. Setiap rupiah yang Anda berikan akan membantu sesama yang membutuhkan.",
       donationList: "Daftar Donasi",
       selectDonation: "Pilih donasi yang ingin Anda dukung",
       donations: "Donasi",
@@ -717,7 +732,8 @@ export const translations: Record<LocaleCode, Translations> = {
       favoriteDonation: "Donasi Favorit",
       share: "Bagikan",
       donationHistory: "Riwayat Donasi",
-      motivationalQuote: "Sesungguhnya sedekah itu akan memadamkan panas kubur bagi pelakunya, dan sesungguhnya di hari kiamat seorang mukmin akan berlindung di bawah naungan sedekahnya",
+      motivationalQuote:
+        "Sesungguhnya sedekah itu akan memadamkan panas kubur bagi pelakunya, dan sesungguhnya di hari kiamat seorang mukmin akan berlindung di bawah naungan sedekahnya",
       donorName: "Nama Donor",
       donorNameRequired: "Nama Donor",
       email: "Email (Opsional)",
@@ -731,8 +747,10 @@ export const translations: Record<LocaleCode, Translations> = {
       messageOptional: "Pesan/Doa (Opsional)",
       paymentMethod: "Metode Pembayaran",
       selectBank: "Pilih Bank",
-      scanQRIS: "Scan QRIS di atas menggunakan e-wallet (Gopay, OVO, Dana) atau Mobile Banking.",
-      transferInstructions: "Mohon transfer sesuai nominal hingga 3 digit terakhir untuk verifikasi otomatis.",
+      scanQRIS:
+        "Scan QRIS di atas menggunakan e-wallet (Gopay, OVO, Dana) atau Mobile Banking.",
+      transferInstructions:
+        "Mohon transfer sesuai nominal hingga 3 digit terakhir untuk verifikasi otomatis.",
       accountNumber: "Nomor Rekening",
       confirmPayment: "Konfirmasi Pembayaran",
       processing: "Memproses...",
@@ -806,13 +824,15 @@ export const translations: Record<LocaleCode, Translations> = {
       resetFilter: "Reset Filter",
       read: "Baca",
       noArticlesFound: "Tidak ada artikel ditemukan",
-      tryDifferentKeyword: "Coba ubah kata kunci pencarian atau filter kategori",
+      tryDifferentKeyword:
+        "Coba ubah kata kunci pencarian atau filter kategori",
       viewAllArticles: "Lihat Semua Artikel",
       min: "min",
     },
     askUstadz: {
       title: "Tanya Ustadz",
-      subtitle: "Ajukan pertanyaan tentang Islam kepada ustadz yang berkompeten. Dapatkan jawaban yang tepat dan terpercaya.",
+      subtitle:
+        "Ajukan pertanyaan tentang Islam kepada ustadz yang berkompeten. Dapatkan jawaban yang tepat dan terpercaya.",
       askQuestion: "Ajukan Pertanyaan",
       totalQuestions: "Total Pertanyaan",
       answered: "Terjawab",
@@ -830,7 +850,8 @@ export const translations: Record<LocaleCode, Translations> = {
       importantDays: "Hari Besar",
       noImportantDays: "Tidak ada hari besar di bulan ini",
       information: "Informasi",
-      infoDescription: "Klik pada tanggal di kalender untuk melihat detail hari besar. Tanggal yang memiliki tanda titik atau ikon adalah hari-hari penting dalam Islam.",
+      infoDescription:
+        "Klik pada tanggal di kalender untuk melihat detail hari besar. Tanggal yang memiliki tanda titik atau ikon adalah hari-hari penting dalam Islam.",
       explanation: "Penjelasan",
       selectedDate: "Tanggal Terpilih",
       importantDay: "Hari Besar",
@@ -871,8 +892,10 @@ export const translations: Record<LocaleCode, Translations> = {
       totalGroup: "Total Golongan:",
       people: "Orang",
       remainingInheritance: "Sisa Harta (Radd)",
-      remainingDescription: "Terdapat sisa harta yang tidak habis dibagi oleh Ashabul Furud. Sisa ini biasanya dikembalikan ke ahli waris nasab sebanding bagian mereka.",
-      disclaimer: "*Perhitungan ini menggunakan simulasi dasar untuk keluarga inti. Untuk kasus kompleks (Kakek, Nenek, Saudara, Kalalah), mohon konsultasikan dengan Ulama atau ahli waris terpercaya.",
+      remainingDescription:
+        "Terdapat sisa harta yang tidak habis dibagi oleh Ashabul Furud. Sisa ini biasanya dikembalikan ke ahli waris nasab sebanding bagian mereka.",
+      disclaimer:
+        "*Perhitungan ini menggunakan simulasi dasar untuk keluarga inti. Untuk kasus kompleks (Kakek, Nenek, Saudara, Kalalah), mohon konsultasikan dengan Ulama atau ahli waris terpercaya.",
     },
     zakatCalculator: {
       title: "Kalkulator Zakat",
@@ -902,7 +925,8 @@ export const translations: Record<LocaleCode, Translations> = {
       selectedCategory: "Kategori Pilihan",
       noBooksInCategory: "Belum ada buku di kategori ini.",
       freeDownload: "Download Gratis",
-      freeDownloadDescription: "Semua e-book tersedia gratis untuk pembelajaran dan dakwah",
+      freeDownloadDescription:
+        "Semua e-book tersedia gratis untuk pembelajaran dan dakwah",
       pages: "hlm",
       rating: "Rating",
       downloads: "Download",
@@ -970,7 +994,8 @@ export const translations: Record<LocaleCode, Translations> = {
       useCurrentLocation: "Gunakan Lokasi Saat Ini",
       gettingLocation: "Mendapatkan lokasi...",
       locationRequired: "Lokasi Diperlukan",
-      locationRequiredDesc: "Untuk menampilkan jadwal sholat yang akurat, aplikasi memerlukan akses ke lokasi Anda.",
+      locationRequiredDesc:
+        "Untuk menampilkan jadwal sholat yang akurat, aplikasi memerlukan akses ke lokasi Anda.",
       allowLocationAccess: "Izinkan Akses Lokasi",
       prayerSchedule: "Jadwal Sholat Hari Ini",
       todaySchedule: "Jadwal Sholat Hari Ini",
@@ -1075,7 +1100,8 @@ export const translations: Record<LocaleCode, Translations> = {
       noKajianFound: "No studies found yet",
       noKajianMatch: "No studies match the filter",
       quickAccess: "Quick Access",
-      getNotifications: "Get notifications for latest studies and live streaming schedule",
+      getNotifications:
+        "Get notifications for latest studies and live streaming schedule",
     },
     prayerTracker: {
       title: "Prayer Tracker",
@@ -1084,7 +1110,8 @@ export const translations: Record<LocaleCode, Translations> = {
       today: "Today",
       monthly: "Monthly",
       loadingSchedule: "Loading prayer schedule...",
-      failedToLoad: "Failed to load prayer schedule. Check your internet connection.",
+      failedToLoad:
+        "Failed to load prayer schedule. Check your internet connection.",
       checkConnection: "Check your internet connection",
       motivationalQuote: "And establish prayer for My remembrance",
     },
@@ -1109,7 +1136,8 @@ export const translations: Record<LocaleCode, Translations> = {
         holdHorizontal: "Hold device horizontally",
       },
       compassCalibration: "Compass Calibration",
-      calibrationDescription: "If the needle is not accurate, move the device in a figure-8 pattern in the air several times to calibrate the compass sensor.",
+      calibrationDescription:
+        "If the needle is not accurate, move the device in a figure-8 pattern in the air several times to calibrate the compass sensor.",
       calibrationMovement: "Calibration movement",
       accuracy: {
         high: "High Accuracy",
@@ -1186,11 +1214,13 @@ export const translations: Record<LocaleCode, Translations> = {
       menuAvailable: "menu available",
       noRestaurantsFound: "No restaurants found",
       tryDifferentFilter: "Try changing filters or select another city",
-      motivationalQuote: "Eat from the lawful and good things which Allah has provided for you",
+      motivationalQuote:
+        "Eat from the lawful and good things which Allah has provided for you",
     },
     donation: {
       title: "Donation & Charity",
-      subtitle: "Give your best donation for the benefit of the ummah. Every rupiah you give will help those in need.",
+      subtitle:
+        "Give your best donation for the benefit of the ummah. Every rupiah you give will help those in need.",
       donationList: "Donation List",
       selectDonation: "Select the donation you want to support",
       donations: "Donations",
@@ -1202,7 +1232,8 @@ export const translations: Record<LocaleCode, Translations> = {
       favoriteDonation: "Favorite Donation",
       share: "Share",
       donationHistory: "Donation History",
-      motivationalQuote: "Indeed, charity extinguishes the heat of the grave for its doer, and indeed on the Day of Judgment a believer will take shelter under the shade of his charity",
+      motivationalQuote:
+        "Indeed, charity extinguishes the heat of the grave for its doer, and indeed on the Day of Judgment a believer will take shelter under the shade of his charity",
       donorName: "Donor Name",
       donorNameRequired: "Donor Name",
       email: "Email (Optional)",
@@ -1216,8 +1247,10 @@ export const translations: Record<LocaleCode, Translations> = {
       messageOptional: "Message/Prayer (Optional)",
       paymentMethod: "Payment Method",
       selectBank: "Select Bank",
-      scanQRIS: "Scan the QRIS above using e-wallet (Gopay, OVO, Dana) or Mobile Banking.",
-      transferInstructions: "Please transfer according to the amount up to the last 3 digits for automatic verification.",
+      scanQRIS:
+        "Scan the QRIS above using e-wallet (Gopay, OVO, Dana) or Mobile Banking.",
+      transferInstructions:
+        "Please transfer according to the amount up to the last 3 digits for automatic verification.",
       accountNumber: "Account Number",
       confirmPayment: "Confirm Payment",
       processing: "Processing...",
@@ -1297,7 +1330,8 @@ export const translations: Record<LocaleCode, Translations> = {
     },
     askUstadz: {
       title: "Ask Ustadz",
-      subtitle: "Ask questions about Islam to competent ustadz. Get accurate and trusted answers.",
+      subtitle:
+        "Ask questions about Islam to competent ustadz. Get accurate and trusted answers.",
       askQuestion: "Ask Question",
       totalQuestions: "Total Questions",
       answered: "Answered",
@@ -1315,7 +1349,8 @@ export const translations: Record<LocaleCode, Translations> = {
       importantDays: "Important Days",
       noImportantDays: "No important days this month",
       information: "Information",
-      infoDescription: "Click on a date in the calendar to see important day details. Dates with dots or icons are important days in Islam.",
+      infoDescription:
+        "Click on a date in the calendar to see important day details. Dates with dots or icons are important days in Islam.",
       explanation: "Explanation",
       selectedDate: "Selected Date",
       importantDay: "Important Day",
@@ -1356,8 +1391,10 @@ export const translations: Record<LocaleCode, Translations> = {
       totalGroup: "Total Group:",
       people: "people",
       remainingInheritance: "Remaining Inheritance (Radd)",
-      remainingDescription: "There is remaining inheritance that was not fully distributed by Ashabul Furud. This remainder is usually returned to nasab heirs proportionally to their shares.",
-      disclaimer: "*This calculation uses basic simulation for nuclear families. For complex cases (Grandfather, Grandmother, Siblings, Kalalah), please consult with trusted Ulama or inheritance experts.",
+      remainingDescription:
+        "There is remaining inheritance that was not fully distributed by Ashabul Furud. This remainder is usually returned to nasab heirs proportionally to their shares.",
+      disclaimer:
+        "*This calculation uses basic simulation for nuclear families. For complex cases (Grandfather, Grandmother, Siblings, Kalalah), please consult with trusted Ulama or inheritance experts.",
     },
     zakatCalculator: {
       title: "Zakat Calculator",
@@ -1387,7 +1424,8 @@ export const translations: Record<LocaleCode, Translations> = {
       selectedCategory: "Selected Category",
       noBooksInCategory: "No books available in this category.",
       freeDownload: "Free Download",
-      freeDownloadDescription: "All e-books are available for free for learning and da'wah",
+      freeDownloadDescription:
+        "All e-books are available for free for learning and da'wah",
       pages: "pages",
       rating: "Rating",
       downloads: "Downloads",
@@ -1455,7 +1493,8 @@ export const translations: Record<LocaleCode, Translations> = {
       useCurrentLocation: "Use Current Location",
       gettingLocation: "Getting location...",
       locationRequired: "Location Required",
-      locationRequiredDesc: "To display accurate prayer times, the app needs access to your location.",
+      locationRequiredDesc:
+        "To display accurate prayer times, the app needs access to your location.",
       allowLocationAccess: "Allow Location Access",
       prayerSchedule: "Today's Prayer Schedule",
       todaySchedule: "Today's Prayer Schedule",
@@ -1594,7 +1633,8 @@ export const translations: Record<LocaleCode, Translations> = {
         holdHorizontal: "امسك الجهاز أفقياً",
       },
       compassCalibration: "معايرة البوصلة",
-      calibrationDescription: "إذا كانت الإبرة غير دقيقة، حرك الجهاز في نمط الرقم 8 في الهواء عدة مرات لمعايرة مستشعر البوصلة.",
+      calibrationDescription:
+        "إذا كانت الإبرة غير دقيقة، حرك الجهاز في نمط الرقم 8 في الهواء عدة مرات لمعايرة مستشعر البوصلة.",
       calibrationMovement: "حركة المعايرة",
       accuracy: {
         high: "دقة عالية",
@@ -1687,7 +1727,8 @@ export const translations: Record<LocaleCode, Translations> = {
       favoriteDonation: "تبرع مفضل",
       share: "مشاركة",
       donationHistory: "سجل التبرعات",
-      motivationalQuote: "إن الصدقة تطفئ حر القبر لصاحبها، وإن المؤمن في يوم القيامة ليستظل بظل صدقته",
+      motivationalQuote:
+        "إن الصدقة تطفئ حر القبر لصاحبها، وإن المؤمن في يوم القيامة ليستظل بظل صدقته",
       donorName: "اسم المتبرع",
       donorNameRequired: "اسم المتبرع",
       email: "البريد الإلكتروني (اختياري)",
@@ -1701,8 +1742,10 @@ export const translations: Record<LocaleCode, Translations> = {
       messageOptional: "رسالة/دعاء (اختياري)",
       paymentMethod: "طريقة الدفع",
       selectBank: "اختر البنك",
-      scanQRIS: "امسح رمز QRIS أعلاه باستخدام المحفظة الإلكترونية (Gopay, OVO, Dana) أو الخدمات المصرفية عبر الهاتف المحمول.",
-      transferInstructions: "يرجى التحويل وفقًا للمبلغ حتى آخر 3 أرقام للتحقق التلقائي.",
+      scanQRIS:
+        "امسح رمز QRIS أعلاه باستخدام المحفظة الإلكترونية (Gopay, OVO, Dana) أو الخدمات المصرفية عبر الهاتف المحمول.",
+      transferInstructions:
+        "يرجى التحويل وفقًا للمبلغ حتى آخر 3 أرقام للتحقق التلقائي.",
       accountNumber: "رقم الحساب",
       confirmPayment: "تأكيد الدفع",
       processing: "جاري المعالجة...",
@@ -1782,7 +1825,8 @@ export const translations: Record<LocaleCode, Translations> = {
     },
     askUstadz: {
       title: "اسأل الأستاذ",
-      subtitle: "اطرح أسئلة حول الإسلام على أستاذ مختص. احصل على إجابات دقيقة وموثوقة.",
+      subtitle:
+        "اطرح أسئلة حول الإسلام على أستاذ مختص. احصل على إجابات دقيقة وموثوقة.",
       askQuestion: "اطرح سؤالاً",
       totalQuestions: "إجمالي الأسئلة",
       answered: "تمت الإجابة",
@@ -1800,7 +1844,8 @@ export const translations: Record<LocaleCode, Translations> = {
       importantDays: "الأيام المهمة",
       noImportantDays: "لا توجد أيام مهمة هذا الشهر",
       information: "معلومات",
-      infoDescription: "انقر على تاريخ في التقويم لرؤية تفاصيل اليوم المهم. التواريخ التي تحتوي على نقاط أو أيقونات هي أيام مهمة في الإسلام.",
+      infoDescription:
+        "انقر على تاريخ في التقويم لرؤية تفاصيل اليوم المهم. التواريخ التي تحتوي على نقاط أو أيقونات هي أيام مهمة في الإسلام.",
       explanation: "شرح",
       selectedDate: "التاريخ المحدد",
       importantDay: "يوم مهم",
@@ -1841,8 +1886,10 @@ export const translations: Record<LocaleCode, Translations> = {
       totalGroup: "إجمالي المجموعة:",
       people: "أشخاص",
       remainingInheritance: "الميراث المتبقي (الرد)",
-      remainingDescription: "يوجد ميراث متبقي لم يتم توزيعه بالكامل من قبل أصحاب الفروض. عادة ما يتم إرجاع هذا الباقي إلى الورثة بالنسب بما يتناسب مع حصصهم.",
-      disclaimer: "*يستخدم هذا الحساب محاكاة أساسية للأسر النووية. للحالات المعقدة (الجد، الجدة، الأشقاء، الكلالة)، يرجى استشارة عالم أو خبراء ميراث موثوقين.",
+      remainingDescription:
+        "يوجد ميراث متبقي لم يتم توزيعه بالكامل من قبل أصحاب الفروض. عادة ما يتم إرجاع هذا الباقي إلى الورثة بالنسب بما يتناسب مع حصصهم.",
+      disclaimer:
+        "*يستخدم هذا الحساب محاكاة أساسية للأسر النووية. للحالات المعقدة (الجد، الجدة، الأشقاء، الكلالة)، يرجى استشارة عالم أو خبراء ميراث موثوقين.",
     },
     zakatCalculator: {
       title: "حاسبة الزكاة",
@@ -1872,7 +1919,8 @@ export const translations: Record<LocaleCode, Translations> = {
       selectedCategory: "الفئة المختارة",
       noBooksInCategory: "لا توجد كتب متاحة في هذه الفئة.",
       freeDownload: "تحميل مجاني",
-      freeDownloadDescription: "جميع الكتب الإلكترونية متاحة مجانًا للتعلم والدعوة",
+      freeDownloadDescription:
+        "جميع الكتب الإلكترونية متاحة مجانًا للتعلم والدعوة",
       pages: "صفحة",
       rating: "التقييم",
       downloads: "التحميلات",
@@ -1940,7 +1988,8 @@ export const translations: Record<LocaleCode, Translations> = {
       useCurrentLocation: "استخدام الموقع الحالي",
       gettingLocation: "جاري الحصول على الموقع...",
       locationRequired: "الموقع مطلوب",
-      locationRequiredDesc: "لعرض أوقات الصلاة الدقيقة، يحتاج التطبيق إلى الوصول إلى موقعك.",
+      locationRequiredDesc:
+        "لعرض أوقات الصلاة الدقيقة، يحتاج التطبيق إلى الوصول إلى موقعك.",
       allowLocationAccess: "السماح بالوصول إلى الموقع",
       prayerSchedule: "جدول الصلاة اليوم",
       todaySchedule: "جدول الصلاة اليوم",
@@ -2009,7 +2058,8 @@ export const translations: Record<LocaleCode, Translations> = {
     quran: {
       title: "Le Coran",
       subtitle: "Le livre saint de l'Islam",
-      searchPlaceholder: "Rechercher une sourate (latin, signification, arabe)...",
+      searchPlaceholder:
+        "Rechercher une sourate (latin, signification, arabe)...",
       readQuran: "Lire le Coran",
       startFromFatihah: "Commencer par Al-Fatihah",
       bookmark: "Signet",
@@ -2045,7 +2095,8 @@ export const translations: Record<LocaleCode, Translations> = {
       noKajianFound: "Aucune étude trouvée pour le moment",
       noKajianMatch: "Aucune étude ne correspond au filtre",
       quickAccess: "Accès rapide",
-      getNotifications: "Recevoir des notifications pour les dernières études et le programme de diffusion en direct",
+      getNotifications:
+        "Recevoir des notifications pour les dernières études et le programme de diffusion en direct",
     },
     prayerTracker: {
       title: "Suivi de Prière",
@@ -2054,14 +2105,16 @@ export const translations: Record<LocaleCode, Translations> = {
       today: "Aujourd'hui",
       monthly: "Mensuel",
       loadingSchedule: "Chargement du programme de prière...",
-      failedToLoad: "Échec du chargement du programme de prière. Vérifiez votre connexion Internet.",
+      failedToLoad:
+        "Échec du chargement du programme de prière. Vérifiez votre connexion Internet.",
       checkConnection: "Vérifiez votre connexion Internet",
       motivationalQuote: "Et accomplis la prière pour Mon souvenir",
     },
     qibla: {
       title: "Direction de la Qibla",
       detectingLocation: "Détection de la localisation...",
-      ensureGpsActive: "Assurez-vous que le GPS est actif et autorisez l'accès à la localisation",
+      ensureGpsActive:
+        "Assurez-vous que le GPS est actif et autorisez l'accès à la localisation",
       failedToGetLocation: "Échec de l'obtention de la localisation",
       tryAgain: "Réessayer",
       facingQibla: "Vous êtes face à la Qibla!",
@@ -2075,11 +2128,13 @@ export const translations: Record<LocaleCode, Translations> = {
       tips: {
         enableGps: "Activez GPS/Localisation dans les paramètres de l'appareil",
         avoidMetal: "Éloignez-vous des objets métalliques ou magnétiques",
-        calibrateCompass: "Calibrez la boussole avec un mouvement en forme de 8",
+        calibrateCompass:
+          "Calibrez la boussole avec un mouvement en forme de 8",
         holdHorizontal: "Tenez l'appareil horizontalement",
       },
       compassCalibration: "Calibration de la boussole",
-      calibrationDescription: "Si l'aiguille n'est pas précise, déplacez l'appareil en forme de 8 dans l'air plusieurs fois pour calibrer le capteur de boussole.",
+      calibrationDescription:
+        "Si l'aiguille n'est pas précise, déplacez l'appareil en forme de 8 dans l'air plusieurs fois pour calibrer le capteur de boussole.",
       calibrationMovement: "Mouvement de calibration",
       accuracy: {
         high: "Précision élevée",
@@ -2155,12 +2210,15 @@ export const translations: Record<LocaleCode, Translations> = {
       menu: "Menu",
       menuAvailable: "menu disponible",
       noRestaurantsFound: "Aucun restaurant trouvé",
-      tryDifferentFilter: "Essayez de changer les filtres ou sélectionnez une autre ville",
-      motivationalQuote: "Mangez des choses licites et bonnes qu'Allah vous a fournies",
+      tryDifferentFilter:
+        "Essayez de changer les filtres ou sélectionnez une autre ville",
+      motivationalQuote:
+        "Mangez des choses licites et bonnes qu'Allah vous a fournies",
     },
     donation: {
       title: "Don & Charité",
-      subtitle: "Donnez votre meilleur don pour le bien de l'ummah. Chaque roupiah que vous donnez aidera ceux qui en ont besoin.",
+      subtitle:
+        "Donnez votre meilleur don pour le bien de l'ummah. Chaque roupiah que vous donnez aidera ceux qui en ont besoin.",
       donationList: "Liste des Dons",
       selectDonation: "Sélectionnez le don que vous souhaitez soutenir",
       donations: "Dons",
@@ -2168,11 +2226,13 @@ export const translations: Record<LocaleCode, Translations> = {
       days: "jours",
       donateNow: "Faire un Don",
       needHelp: "Besoin d'Aide?",
-      helpDescription: "Notre équipe est prête à vous aider dans le processus de don",
+      helpDescription:
+        "Notre équipe est prête à vous aider dans le processus de don",
       favoriteDonation: "Don Favori",
       share: "Partager",
       donationHistory: "Historique des Dons",
-      motivationalQuote: "En effet, la charité éteint la chaleur de la tombe pour son auteur, et en effet au Jour du Jugement un croyant trouvera refuge à l'ombre de sa charité",
+      motivationalQuote:
+        "En effet, la charité éteint la chaleur de la tombe pour son auteur, et en effet au Jour du Jugement un croyant trouvera refuge à l'ombre de sa charité",
       donorName: "Nom du Donateur",
       donorNameRequired: "Nom du Donateur",
       email: "Email (Optionnel)",
@@ -2186,8 +2246,10 @@ export const translations: Record<LocaleCode, Translations> = {
       messageOptional: "Message/Prière (Optionnel)",
       paymentMethod: "Méthode de Paiement",
       selectBank: "Sélectionner une Banque",
-      scanQRIS: "Scannez le QRIS ci-dessus en utilisant un portefeuille électronique (Gopay, OVO, Dana) ou une application bancaire mobile.",
-      transferInstructions: "Veuillez transférer selon le montant jusqu'aux 3 derniers chiffres pour vérification automatique.",
+      scanQRIS:
+        "Scannez le QRIS ci-dessus en utilisant un portefeuille électronique (Gopay, OVO, Dana) ou une application bancaire mobile.",
+      transferInstructions:
+        "Veuillez transférer selon le montant jusqu'aux 3 derniers chiffres pour vérification automatique.",
       accountNumber: "Numéro de Compte",
       confirmPayment: "Confirmer le Paiement",
       processing: "Traitement...",
@@ -2248,8 +2310,10 @@ export const translations: Record<LocaleCode, Translations> = {
       resetCount: "Réinitialiser le Nombre",
       completed: "Terminé",
       guideStep1: "Appuyez sur le grand cercle pour ajouter le nombre de dhikr",
-      guideStep2: "Cliquez sur l'icône des paramètres pour changer le type de dhikr et la cible",
-      guideStep3: "Utilisez le bouton de réinitialisation pour commencer à compter depuis le début",
+      guideStep2:
+        "Cliquez sur l'icône des paramètres pour changer le type de dhikr et la cible",
+      guideStep3:
+        "Utilisez le bouton de réinitialisation pour commencer à compter depuis le début",
     },
     article: {
       title: "Articles Islamiques",
@@ -2261,13 +2325,15 @@ export const translations: Record<LocaleCode, Translations> = {
       resetFilter: "Réinitialiser le Filtre",
       read: "Lire",
       noArticlesFound: "Aucun article trouvé",
-      tryDifferentKeyword: "Essayez de changer les mots-clés de recherche ou le filtre de catégorie",
+      tryDifferentKeyword:
+        "Essayez de changer les mots-clés de recherche ou le filtre de catégorie",
       viewAllArticles: "Voir Tous les Articles",
       min: "min",
     },
     askUstadz: {
       title: "Demander à l'Ustadz",
-      subtitle: "Posez des questions sur l'Islam à des ustadz compétents. Obtenez des réponses précises et fiables.",
+      subtitle:
+        "Posez des questions sur l'Islam à des ustadz compétents. Obtenez des réponses précises et fiables.",
       askQuestion: "Poser une Question",
       totalQuestions: "Total des Questions",
       answered: "Répondu",
@@ -2275,7 +2341,8 @@ export const translations: Record<LocaleCode, Translations> = {
       popular: "Populaire",
       questionList: "Liste des Questions",
       questions: "questions",
-      motivationalQuote: "Chercher la connaissance est obligatoire pour chaque musulman",
+      motivationalQuote:
+        "Chercher la connaissance est obligatoire pour chaque musulman",
     },
     hijriCalendar: {
       title: "Calendrier Hijri",
@@ -2285,7 +2352,8 @@ export const translations: Record<LocaleCode, Translations> = {
       importantDays: "Jours Importants",
       noImportantDays: "Aucun jour important ce mois-ci",
       information: "Information",
-      infoDescription: "Cliquez sur une date dans le calendrier pour voir les détails des jours importants. Les dates avec des points ou des icônes sont des jours importants en Islam.",
+      infoDescription:
+        "Cliquez sur une date dans le calendrier pour voir les détails des jours importants. Les dates avec des points ou des icônes sont des jours importants en Islam.",
       explanation: "Explication",
       selectedDate: "Date Sélectionnée",
       importantDay: "Jour Important",
@@ -2299,7 +2367,8 @@ export const translations: Record<LocaleCode, Translations> = {
       tryAgain: "Réessayer",
       download: "Télécharger",
       notFound: "Non trouvé",
-      tryDifferentKeyword: "Essayez de rechercher avec des mots-clés différents",
+      tryDifferentKeyword:
+        "Essayez de rechercher avec des mots-clés différents",
       needOtherFormat: "Besoin d'un autre format?",
       contactAdmin: "Contactez l'administrateur pour demander une lettre.",
     },
@@ -2326,8 +2395,10 @@ export const translations: Record<LocaleCode, Translations> = {
       totalGroup: "Total du Groupe:",
       people: "personnes",
       remainingInheritance: "Héritage Restant (Radd)",
-      remainingDescription: "Il y a un héritage restant qui n'a pas été entièrement distribué par Ashabul Furud. Ce reste est généralement retourné aux héritiers nasab proportionnellement à leurs parts.",
-      disclaimer: "*Ce calcul utilise une simulation de base pour les familles nucléaires. Pour les cas complexes (Grand-père, Grand-mère, Frères et Sœurs, Kalalah), veuillez consulter des Ulama ou des experts en héritage de confiance.",
+      remainingDescription:
+        "Il y a un héritage restant qui n'a pas été entièrement distribué par Ashabul Furud. Ce reste est généralement retourné aux héritiers nasab proportionnellement à leurs parts.",
+      disclaimer:
+        "*Ce calcul utilise une simulation de base pour les familles nucléaires. Pour les cas complexes (Grand-père, Grand-mère, Frères et Sœurs, Kalalah), veuillez consulter des Ulama ou des experts en héritage de confiance.",
     },
     zakatCalculator: {
       title: "Calculateur de Zakat",
@@ -2357,7 +2428,8 @@ export const translations: Record<LocaleCode, Translations> = {
       selectedCategory: "Catégorie Sélectionnée",
       noBooksInCategory: "Aucun livre disponible dans cette catégorie.",
       freeDownload: "Téléchargement Gratuit",
-      freeDownloadDescription: "Tous les livres électroniques sont disponibles gratuitement pour l'apprentissage et la da'wah",
+      freeDownloadDescription:
+        "Tous les livres électroniques sont disponibles gratuitement pour l'apprentissage et la da'wah",
       pages: "pages",
       rating: "Note",
       downloads: "Téléchargements",
@@ -2425,7 +2497,8 @@ export const translations: Record<LocaleCode, Translations> = {
       useCurrentLocation: "Utiliser la localisation actuelle",
       gettingLocation: "Obtention de la localisation...",
       locationRequired: "Localisation requise",
-      locationRequiredDesc: "Pour afficher des horaires de prière précis, l'application nécessite l'accès à votre localisation.",
+      locationRequiredDesc:
+        "Pour afficher des horaires de prière précis, l'application nécessite l'accès à votre localisation.",
       allowLocationAccess: "Autoriser l'accès à la localisation",
       prayerSchedule: "Horaires de prière d'aujourd'hui",
       todaySchedule: "Horaires de prière d'aujourd'hui",
@@ -2442,7 +2515,8 @@ export const translations: Record<LocaleCode, Translations> = {
       test: "Test",
       scheduledPrayers: "Adhan programmé aujourd'hui:",
       allPrayersPassed: "Tous les horaires de prière d'aujourd'hui sont passés",
-      allowNotification: "Autoriser les notifications du navigateur pour une meilleure expérience",
+      allowNotification:
+        "Autoriser les notifications du navigateur pour une meilleure expérience",
       prayerNames: {
         fajr: "Fajr",
         dhuhr: "Dhuhr",
@@ -2539,14 +2613,16 @@ export const translations: Record<LocaleCode, Translations> = {
       today: "오늘",
       monthly: "월간",
       loadingSchedule: "기도 일정 로딩 중...",
-      failedToLoad: "기도 일정을 불러오지 못했습니다. 인터넷 연결을 확인하세요.",
+      failedToLoad:
+        "기도 일정을 불러오지 못했습니다. 인터넷 연결을 확인하세요.",
       checkConnection: "인터넷 연결을 확인하세요",
       motivationalQuote: "나를 기억하기 위해 기도를 드리라",
     },
     qibla: {
       title: "키블라 방향",
       detectingLocation: "위치 감지 중...",
-      ensureGpsActive: "GPS가 활성화되어 있고 위치 액세스를 허용했는지 확인하세요",
+      ensureGpsActive:
+        "GPS가 활성화되어 있고 위치 액세스를 허용했는지 확인하세요",
       failedToGetLocation: "위치 가져오기 실패",
       tryAgain: "다시 시도",
       facingQibla: "키블라를 향하고 있습니다!",
@@ -2564,7 +2640,8 @@ export const translations: Record<LocaleCode, Translations> = {
         holdHorizontal: "기기를 수평으로 잡으세요",
       },
       compassCalibration: "나침반 보정",
-      calibrationDescription: "바늘이 정확하지 않으면 기기를 공중에서 8자 패턴으로 여러 번 움직여 나침반 센서를 보정하세요.",
+      calibrationDescription:
+        "바늘이 정확하지 않으면 기기를 공중에서 8자 패턴으로 여러 번 움직여 나침반 센서를 보정하세요.",
       calibrationMovement: "보정 움직임",
       accuracy: {
         high: "높은 정확도",
@@ -2645,7 +2722,8 @@ export const translations: Record<LocaleCode, Translations> = {
     },
     donation: {
       title: "기부 및 자선",
-      subtitle: "움마를 위한 최선의 기부를 하세요. 당신이 기부하는 모든 루피아는 필요한 사람들을 도울 것입니다.",
+      subtitle:
+        "움마를 위한 최선의 기부를 하세요. 당신이 기부하는 모든 루피아는 필요한 사람들을 도울 것입니다.",
       donationList: "기부 목록",
       selectDonation: "지원하고 싶은 기부를 선택하세요",
       donations: "기부",
@@ -2653,11 +2731,13 @@ export const translations: Record<LocaleCode, Translations> = {
       days: "일",
       donateNow: "지금 기부하기",
       needHelp: "도움이 필요하신가요?",
-      helpDescription: "저희 팀은 기부 과정에서 도움을 드릴 준비가 되어 있습니다",
+      helpDescription:
+        "저희 팀은 기부 과정에서 도움을 드릴 준비가 되어 있습니다",
       favoriteDonation: "즐겨찾기 기부",
       share: "공유",
       donationHistory: "기부 내역",
-      motivationalQuote: "실로 자선은 행한 자의 무덤의 열기를 끄고, 실로 심판의 날에 믿는 자는 자신의 자선의 그늘 아래에서 피난처를 얻을 것입니다",
+      motivationalQuote:
+        "실로 자선은 행한 자의 무덤의 열기를 끄고, 실로 심판의 날에 믿는 자는 자신의 자선의 그늘 아래에서 피난처를 얻을 것입니다",
       donorName: "기부자 이름",
       donorNameRequired: "기부자 이름",
       email: "이메일 (선택사항)",
@@ -2671,12 +2751,15 @@ export const translations: Record<LocaleCode, Translations> = {
       messageOptional: "메시지/기도 (선택사항)",
       paymentMethod: "결제 방법",
       selectBank: "은행 선택",
-      scanQRIS: "위의 QRIS를 전자지갑(Gopay, OVO, Dana) 또는 모바일 뱅킹을 사용하여 스캔하세요.",
-      transferInstructions: "자동 확인을 위해 금액에 따라 마지막 3자리까지 이체해 주세요.",
+      scanQRIS:
+        "위의 QRIS를 전자지갑(Gopay, OVO, Dana) 또는 모바일 뱅킹을 사용하여 스캔하세요.",
+      transferInstructions:
+        "자동 확인을 위해 금액에 따라 마지막 3자리까지 이체해 주세요.",
       accountNumber: "계좌번호",
       confirmPayment: "결제 확인",
       processing: "처리 중...",
-      donationSuccess: "기부가 성공적으로 생성되었습니다! 결제를 진행해 주세요.",
+      donationSuccess:
+        "기부가 성공적으로 생성되었습니다! 결제를 진행해 주세요.",
       pleasePay: "결제를 진행해 주세요.",
       noDonationsAvailable: "현재 사용 가능한 기부가 없습니다",
       page: "페이지",
@@ -2752,7 +2835,8 @@ export const translations: Record<LocaleCode, Translations> = {
     },
     askUstadz: {
       title: "우스타즈에게 물어보기",
-      subtitle: "유능한 우스타즈에게 이슬람에 대해 질문하세요. 정확하고 신뢰할 수 있는 답변을 받으세요.",
+      subtitle:
+        "유능한 우스타즈에게 이슬람에 대해 질문하세요. 정확하고 신뢰할 수 있는 답변을 받으세요.",
       askQuestion: "질문하기",
       totalQuestions: "총 질문",
       answered: "답변됨",
@@ -2770,7 +2854,8 @@ export const translations: Record<LocaleCode, Translations> = {
       importantDays: "중요한 날",
       noImportantDays: "이번 달에는 중요한 날이 없습니다",
       information: "정보",
-      infoDescription: "달력의 날짜를 클릭하여 중요한 날의 세부 정보를 확인하세요. 점이나 아이콘이 있는 날짜는 이슬람에서 중요한 날입니다.",
+      infoDescription:
+        "달력의 날짜를 클릭하여 중요한 날의 세부 정보를 확인하세요. 점이나 아이콘이 있는 날짜는 이슬람에서 중요한 날입니다.",
       explanation: "설명",
       selectedDate: "선택한 날짜",
       importantDay: "중요한 날",
@@ -2811,8 +2896,10 @@ export const translations: Record<LocaleCode, Translations> = {
       totalGroup: "그룹 총계:",
       people: "명",
       remainingInheritance: "남은 상속 (라드)",
-      remainingDescription: "아슈불 푸루드에 의해 완전히 분배되지 않은 남은 상속이 있습니다. 이 나머지는 일반적으로 그들의 지분에 비례하여 나삽 상속인에게 반환됩니다.",
-      disclaimer: "*이 계산은 핵가족에 대한 기본 시뮬레이션을 사용합니다. 복잡한 경우(할아버지, 할머니, 형제자매, 칼라라)의 경우 신뢰할 수 있는 울라마나 상속 전문가와 상담하세요.",
+      remainingDescription:
+        "아슈불 푸루드에 의해 완전히 분배되지 않은 남은 상속이 있습니다. 이 나머지는 일반적으로 그들의 지분에 비례하여 나삽 상속인에게 반환됩니다.",
+      disclaimer:
+        "*이 계산은 핵가족에 대한 기본 시뮬레이션을 사용합니다. 복잡한 경우(할아버지, 할머니, 형제자매, 칼라라)의 경우 신뢰할 수 있는 울라마나 상속 전문가와 상담하세요.",
     },
     zakatCalculator: {
       title: "자카트 계산기",
@@ -2842,7 +2929,8 @@ export const translations: Record<LocaleCode, Translations> = {
       selectedCategory: "선택된 카테고리",
       noBooksInCategory: "이 카테고리에 사용 가능한 책이 없습니다.",
       freeDownload: "무료 다운로드",
-      freeDownloadDescription: "모든 전자책은 학습 및 다와를 위해 무료로 제공됩니다",
+      freeDownloadDescription:
+        "모든 전자책은 학습 및 다와를 위해 무료로 제공됩니다",
       pages: "페이지",
       rating: "평점",
       downloads: "다운로드",
@@ -2910,7 +2998,8 @@ export const translations: Record<LocaleCode, Translations> = {
       useCurrentLocation: "현재 위치 사용",
       gettingLocation: "위치 가져오는 중...",
       locationRequired: "위치 필요",
-      locationRequiredDesc: "정확한 기도 시간을 표시하려면 앱이 위치에 액세스해야 합니다.",
+      locationRequiredDesc:
+        "정확한 기도 시간을 표시하려면 앱이 위치에 액세스해야 합니다.",
       allowLocationAccess: "위치 액세스 허용",
       prayerSchedule: "오늘의 기도 시간표",
       todaySchedule: "오늘의 기도 시간표",
@@ -3015,7 +3104,8 @@ export const translations: Record<LocaleCode, Translations> = {
       noKajianFound: "まだ研究が見つかりません",
       noKajianMatch: "フィルターに一致する研究がありません",
       quickAccess: "クイックアクセス",
-      getNotifications: "最新の研究とライブストリーミングスケジュールの通知を受け取る",
+      getNotifications:
+        "最新の研究とライブストリーミングスケジュールの通知を受け取る",
     },
     prayerTracker: {
       title: "礼拝トラッカー",
@@ -3024,14 +3114,16 @@ export const translations: Record<LocaleCode, Translations> = {
       today: "今日",
       monthly: "月間",
       loadingSchedule: "礼拝スケジュールを読み込み中...",
-      failedToLoad: "礼拝スケジュールの読み込みに失敗しました。インターネット接続を確認してください。",
+      failedToLoad:
+        "礼拝スケジュールの読み込みに失敗しました。インターネット接続を確認してください。",
       checkConnection: "インターネット接続を確認してください",
       motivationalQuote: "私を覚えるために礼拝を確立しなさい",
     },
     qibla: {
       title: "キブラの方向",
       detectingLocation: "位置情報を検出中...",
-      ensureGpsActive: "GPSが有効で、位置情報へのアクセスが許可されていることを確認してください",
+      ensureGpsActive:
+        "GPSが有効で、位置情報へのアクセスが許可されていることを確認してください",
       failedToGetLocation: "位置情報の取得に失敗しました",
       tryAgain: "再試行",
       facingQibla: "キブラを向いています！",
@@ -3049,7 +3141,8 @@ export const translations: Record<LocaleCode, Translations> = {
         holdHorizontal: "デバイスを水平に持ってください",
       },
       compassCalibration: "コンパス較正",
-      calibrationDescription: "針が正確でない場合は、デバイスを空中で8の字のパターンで数回動かしてコンパスセンサーを較正してください。",
+      calibrationDescription:
+        "針が正確でない場合は、デバイスを空中で8の字のパターンで数回動かしてコンパスセンサーを較正してください。",
       calibrationMovement: "較正の動き",
       accuracy: {
         high: "高精度",
@@ -3130,7 +3223,8 @@ export const translations: Record<LocaleCode, Translations> = {
     },
     donation: {
       title: "寄付と慈善",
-      subtitle: "ウンマの利益のために最善の寄付をしてください。あなたが寄付するすべてのルピアは、必要な人々を助けます。",
+      subtitle:
+        "ウンマの利益のために最善の寄付をしてください。あなたが寄付するすべてのルピアは、必要な人々を助けます。",
       donationList: "寄付リスト",
       selectDonation: "支援したい寄付を選択してください",
       donations: "寄付",
@@ -3138,11 +3232,13 @@ export const translations: Record<LocaleCode, Translations> = {
       days: "日",
       donateNow: "今すぐ寄付",
       needHelp: "ヘルプが必要ですか？",
-      helpDescription: "私たちのチームは寄付プロセスであなたをサポートする準備ができています",
+      helpDescription:
+        "私たちのチームは寄付プロセスであなたをサポートする準備ができています",
       favoriteDonation: "お気に入りの寄付",
       share: "共有",
       donationHistory: "寄付履歴",
-      motivationalQuote: "確かに慈善はその行為者の墓の熱を消し、確かに審判の日に信者は自分の慈善の陰に避難所を見つけるでしょう",
+      motivationalQuote:
+        "確かに慈善はその行為者の墓の熱を消し、確かに審判の日に信者は自分の慈善の陰に避難所を見つけるでしょう",
       donorName: "寄付者名",
       donorNameRequired: "寄付者名",
       email: "メール（オプション）",
@@ -3156,8 +3252,10 @@ export const translations: Record<LocaleCode, Translations> = {
       messageOptional: "メッセージ/祈り（オプション）",
       paymentMethod: "支払い方法",
       selectBank: "銀行を選択",
-      scanQRIS: "上記のQRISを電子財布（Gopay、OVO、Dana）またはモバイルバンキングでスキャンしてください。",
-      transferInstructions: "自動確認のために、金額に応じて最後の3桁まで送金してください。",
+      scanQRIS:
+        "上記のQRISを電子財布（Gopay、OVO、Dana）またはモバイルバンキングでスキャンしてください。",
+      transferInstructions:
+        "自動確認のために、金額に応じて最後の3桁まで送金してください。",
       accountNumber: "口座番号",
       confirmPayment: "支払い確認",
       processing: "処理中...",
@@ -3231,13 +3329,15 @@ export const translations: Record<LocaleCode, Translations> = {
       resetFilter: "フィルターをリセット",
       read: "読む",
       noArticlesFound: "記事が見つかりません",
-      tryDifferentKeyword: "検索キーワードまたはカテゴリフィルターを変更してみてください",
+      tryDifferentKeyword:
+        "検索キーワードまたはカテゴリフィルターを変更してみてください",
       viewAllArticles: "すべての記事を見る",
       min: "分",
     },
     askUstadz: {
       title: "ウスタズに尋ねる",
-      subtitle: "有能なウスタズにイスラムについて質問してください。正確で信頼できる回答を得られます。",
+      subtitle:
+        "有能なウスタズにイスラムについて質問してください。正確で信頼できる回答を得られます。",
       askQuestion: "質問する",
       totalQuestions: "総質問数",
       answered: "回答済み",
@@ -3255,7 +3355,8 @@ export const translations: Record<LocaleCode, Translations> = {
       importantDays: "重要な日",
       noImportantDays: "今月は重要な日がありません",
       information: "情報",
-      infoDescription: "カレンダーの日付をクリックして重要な日の詳細を確認してください。点やアイコンがある日付はイスラムで重要な日です。",
+      infoDescription:
+        "カレンダーの日付をクリックして重要な日の詳細を確認してください。点やアイコンがある日付はイスラムで重要な日です。",
       explanation: "説明",
       selectedDate: "選択した日付",
       importantDay: "重要な日",
@@ -3296,8 +3397,10 @@ export const translations: Record<LocaleCode, Translations> = {
       totalGroup: "グループ合計:",
       people: "人",
       remainingInheritance: "残りの相続（ラッド）",
-      remainingDescription: "アシュブル・フルードによって完全に分配されなかった残りの相続があります。この残りは通常、彼らのシェアに比例してナサブ相続人に返されます。",
-      disclaimer: "*この計算は核家族の基本的なシミュレーションを使用しています。複雑なケース（祖父、祖母、兄弟、カララ）については、信頼できるウラマーまたは相続の専門家に相談してください。",
+      remainingDescription:
+        "アシュブル・フルードによって完全に分配されなかった残りの相続があります。この残りは通常、彼らのシェアに比例してナサブ相続人に返されます。",
+      disclaimer:
+        "*この計算は核家族の基本的なシミュレーションを使用しています。複雑なケース（祖父、祖母、兄弟、カララ）については、信頼できるウラマーまたは相続の専門家に相談してください。",
     },
     zakatCalculator: {
       title: "ザカート計算機",
@@ -3327,7 +3430,8 @@ export const translations: Record<LocaleCode, Translations> = {
       selectedCategory: "選択されたカテゴリ",
       noBooksInCategory: "このカテゴリに利用可能な本がありません。",
       freeDownload: "無料ダウンロード",
-      freeDownloadDescription: "すべての電子書籍は学習とダワのために無料で提供されています",
+      freeDownloadDescription:
+        "すべての電子書籍は学習とダワのために無料で提供されています",
       pages: "ページ",
       rating: "評価",
       downloads: "ダウンロード",
@@ -3395,7 +3499,8 @@ export const translations: Record<LocaleCode, Translations> = {
       useCurrentLocation: "現在の位置を使用",
       gettingLocation: "位置情報を取得中...",
       locationRequired: "位置情報が必要",
-      locationRequiredDesc: "正確な礼拝時間を表示するには、アプリが位置情報にアクセスする必要があります。",
+      locationRequiredDesc:
+        "正確な礼拝時間を表示するには、アプリが位置情報にアクセスする必要があります。",
       allowLocationAccess: "位置情報へのアクセスを許可",
       prayerSchedule: "今日の礼拝スケジュール",
       todaySchedule: "今日の礼拝スケジュール",
@@ -3424,45 +3529,75 @@ export const translations: Record<LocaleCode, Translations> = {
   },
 };
 
-// Get current locale from localStorage or default to 'id'
+const translations: Record<LocaleCode, Dictionary> = {
+  id: { ...hardcodedTranslations.id, ...(idJson as Dictionary) },
+  en: { ...hardcodedTranslations.en, ...(enJson as Dictionary) },
+  ar: { ...hardcodedTranslations.ar, ...(arJson as Dictionary) },
+  fr: { ...hardcodedTranslations.fr, ...(frJson as Dictionary) },
+  kr: { ...hardcodedTranslations.kr, ...(krJson as Dictionary) },
+  jp: { ...hardcodedTranslations.jp, ...(jpJson as Dictionary) },
+};
+
+const LOCALE_STORAGE_KEY = "app_locale";
+
 export const getCurrentLocale = (): LocaleCode => {
   if (typeof window === "undefined") return "id";
-  const saved = localStorage.getItem("app_locale");
-  return (saved as LocaleCode) || "id";
+  const stored = localStorage.getItem(LOCALE_STORAGE_KEY) as LocaleCode;
+  // Cek apakah locale valid
+  return translations[stored] ? stored : "id";
 };
 
-// Set locale
 export const setLocale = (locale: LocaleCode) => {
   if (typeof window === "undefined") return;
-  localStorage.setItem("app_locale", locale);
+  localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  document.cookie = `NEXT_LOCALE=${locale}; path=/; max-age=31536000; SameSite=Lax`;
 };
 
-// Get translation
-export const t = (key: string, locale?: LocaleCode): string => {
-  const currentLocale = locale || getCurrentLocale();
-  const keys = key.split(".");
-  let value: unknown = translations[currentLocale];
+// 4. Helper untuk Traversing Object secara Aman (Tanpa 'any')
+// Fungsi ini menelusuri object berdasarkan array keys ['common', 'loading']
+function getNestedValue(
+  obj: Dictionary | string | undefined,
+  keys: string[],
+): string | undefined {
+  let current: Dictionary | string | undefined = obj;
 
-  for (const k of keys) {
-    if (value && typeof value === "object" && !Array.isArray(value)) {
-      value = (value as Record<string, unknown>)[k];
+  for (const key of keys) {
+    // Cek apakah current adalah object (Dictionary) dan bukan null
+    if (typeof current === "object" && current !== null && key in current) {
+      current = current[key];
     } else {
-      value = undefined;
-    }
-    if (value === undefined) {
-      // Fallback to Indonesian if translation not found
-      value = translations.id;
-      for (const fallbackKey of keys) {
-        if (value && typeof value === "object" && !Array.isArray(value)) {
-          value = (value as Record<string, unknown>)[fallbackKey];
-        } else {
-          value = undefined;
-          break;
-        }
-      }
-      break;
+      return undefined; // Key tidak ditemukan atau putus di tengah jalan
     }
   }
 
-  return typeof value === "string" ? value : key;
+  // Pastikan hasil akhirnya adalah string agar bisa dirender
+  if (typeof current === "string") {
+    return current;
+  }
+
+  return undefined;
+}
+// Get translation
+export const t = (keyStr: string, locale: LocaleCode = "id"): string => {
+  const keys = keyStr.split(".");
+
+  // Ambil root object berdasarkan locale dari gabungan tadi
+  const currentLangObj = translations[locale];
+
+  // Coba cari di bahasa yang dipilih
+  const result = getNestedValue(currentLangObj, keys);
+
+  if (result !== undefined) {
+    return result;
+  }
+
+  // Jika tidak ketemu, Fallback ke Bahasa Indonesia ('id')
+  const fallbackLangObj = translations["id"];
+  const fallbackResult = getNestedValue(fallbackLangObj, keys);
+
+  if (fallbackResult !== undefined) {
+    return fallbackResult;
+  }
+
+  return keyStr;
 };

@@ -1,0 +1,152 @@
+{
+  "common": {
+    "new": "新規",
+    "popular": "人気",
+    "search": "検索",
+    "retry": "再試行"
+  },
+  "features": {
+    "notFoundTitle": "機能が見つかりません",
+    "notFoundDesc": "別のキーワードで検索してみてください",
+    "prayer-time": {
+      "name": "礼拝時間 + アザーン",
+      "description": "現在地に基づいた礼拝スケジュールとアザーン通知"
+    },
+    "prayer-tracker": {
+      "name": "礼拝トラッカー",
+      "description": "毎日の礼拝を記録・管理"
+    },
+    "qibla": {
+      "name": "キブラの方角",
+      "description": "デジタルコンパスによる正確なキブラの方角"
+    },
+    "quran": {
+      "name": "クルアーン + 翻訳",
+      "description": "翻訳付きでクルアーンを読む"
+    },
+    "hadith": {
+      "name": "ハディース",
+      "description": "真正ハディース集と今日のハディース"
+    },
+    "doa-dzikir": {
+      "name": "ドゥア & ズィクル",
+      "description": "朝夕のドゥアとズィクル集"
+    },
+    "asmaul-husna": {
+      "name": "アスマウル・フスナ",
+      "description": "アッラーの99の美名とその意味"
+    },
+    "kajian": {
+      "name": "イスラーム講義",
+      "description": "音声形式のイスラーム講義集"
+    },
+    "halal": {
+      "name": "ハラール食品",
+      "description": "ハラール対応の飲食店とレストランのおすすめ"
+    },
+    "masjid": {
+      "name": "近くのモスク",
+      "description": "最寄りのモスクや礼拝室を探す"
+    },
+    "donasi": {
+      "name": "寄付 & ザカート",
+      "description": "寄付、ワクフ、ザカート、インファクのためのプラットフォーム"
+    },
+    "artikel": {
+      "name": "イスラーム記事",
+      "description": "ムスリムのためのイスラーム記事と生活の知恵"
+    },
+    "kamus-istilah": {
+      "name": "イスラーム用語辞典",
+      "description": "イスラーム用語とその意味の辞書"
+    },
+    "bahasa-arab": {
+      "name": "アラビア語学習",
+      "description": "クルアーン理解のための基礎アラビア語教材"
+    },
+    "tanya-ustadz": {
+      "name": "ウスタズに質問",
+      "description": "経験豊富な学者による宗教相談"
+    },
+    "tajwid": {
+      "name": "タジュウィード学",
+      "description": "クルアーンを正しく読むためのタジュウィード学習"
+    },
+    "kalender-hijriyah": {
+      "name": "ヒジュラ暦",
+      "description": "ヒジュラ日付付きのイスラームカレンダー"
+    },
+    "ebook": {
+      "name": "イスラーム電子書籍",
+      "description": "イスラームのデジタル書籍と参考資料集"
+    },
+    "tasbih": {
+      "name": "デジタル・タスビー",
+      "description": "毎日のズィクルを簡単にカウント"
+    },
+    "surat": {
+      "name": "書簡テンプレート",
+      "description": "宗教目的のための書簡テンプレート"
+    },
+    "kal-zakat": {
+      "name": "ザカート計算機",
+      "description": "ザカート・マールとフィトラの義務を計算"
+    },
+    "kal-waris": {
+      "name": "相続計算機",
+      "description": "イスラーム法に基づく遺産相続シミュレーション"
+    },
+    "event": {
+      "name": "イスラーム行事",
+      "description": "宗教的な集まりやイベントのスケジュール"
+    },
+    "sirah": {
+      "name": "預言者伝",
+      "description": "預言者、教友、イスラームの人物の物語"
+    },
+    "rukun-iman": {
+      "name": "信仰の柱",
+      "description": "イスラームの信仰の6柱を学ぶ"
+    },
+    "rukun-islam": {
+      "name": "イスラームの柱",
+      "description": "イスラームの5つの主要な柱を学ぶ"
+    },
+    "fatwa-syaikh": {
+      "name": "学者のファトワ",
+      "description": "学者によるファトワとQ&A集"
+    },
+    "panduan-haji": {
+      "name": "ハッジ & ウムラガイド",
+      "description": "ハッジとウムラ巡礼のための完全ガイド"
+    },
+    "perjalanan-haji": {
+      "name": "ハッジの旅程",
+      "description": "ハッジ巡礼の旅程を追跡・計画"
+    },
+    "badal-haji": {
+      "name": "バダル・ハッジ",
+      "description": "バダル・ハッジとウムラのための信頼できるサービス"
+    },
+    "bantuan": {
+      "name": "ヘルプセンター",
+      "description": "情報とユーザーサポート"
+    }
+  },
+  "categories": {
+    "ibadah": "礼拝",
+    "al_qur_an": "クルアーン",
+    "hadith": "ハディース",
+    "doa_dzikir": "ドゥア & ズィクル",
+    "kajian": "講義",
+    "kehidupan": "ライフスタイル",
+    "amal": "慈善",
+    "edukasi": "教育",
+    "konsultasi": "相談",
+    "kalender": "カレンダー",
+    "template": "テンプレート",
+    "kalkulator": "計算機",
+    "haji_umrah": "ハッジ & ウムラ",
+    "lainnya": "その他"
+  }
+}

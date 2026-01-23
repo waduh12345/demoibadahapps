@@ -1,0 +1,152 @@
+{
+  "common": {
+    "new": "신규",
+    "popular": "인기",
+    "search": "검색",
+    "retry": "재시도"
+  },
+  "features": {
+    "notFoundTitle": "기능을 찾을 수 없음",
+    "notFoundDesc": "다른 키워드로 검색해 보세요",
+    "prayer-time": {
+      "name": "기도 시간 + 아잔",
+      "description": "위치 기반 기도 일정 및 아잔 알림"
+    },
+    "prayer-tracker": {
+      "name": "기도 트래커",
+      "description": "매일의 기도를 모니터링하고 기록하세요"
+    },
+    "qibla": {
+      "name": "키블라 방향",
+      "description": "디지털 나침반을 이용한 정확한 키블라 방향"
+    },
+    "quran": {
+      "name": "꾸란 + 번역",
+      "description": "번역과 함께 꾸란 읽기"
+    },
+    "hadith": {
+      "name": "하디스",
+      "description": "정통 하디스 모음 및 오늘의 하디스"
+    },
+    "doa-dzikir": {
+      "name": "두아 & 지크르",
+      "description": "아침과 저녁을 위한 두아 및 지크르 모음"
+    },
+    "asmaul-husna": {
+      "name": "아스마울 후스나",
+      "description": "알라의 99가지 아름다운 이름과 그 의미"
+    },
+    "kajian": {
+      "name": "이슬람 강의",
+      "description": "오디오 형식의 이슬람 강의 모음"
+    },
+    "halal": {
+      "name": "할랄 음식",
+      "description": "할랄 음식 및 레스토랑 추천"
+    },
+    "masjid": {
+      "name": "주변 모스크",
+      "description": "가까운 모스크 및 기도실 찾기"
+    },
+    "donasi": {
+      "name": "기부 & 자카트",
+      "description": "기부, 와크프, 자카트 및 인파크 플랫폼"
+    },
+    "artikel": {
+      "name": "이슬람 기사",
+      "description": "무슬림을 위한 이슬람 기사 및 생활 팁"
+    },
+    "kamus-istilah": {
+      "name": "이슬람 용어 사전",
+      "description": "이슬람 용어 및 그 의미 사전"
+    },
+    "bahasa-arab": {
+      "name": "아랍어 배우기",
+      "description": "꾸란 이해를 위한 기초 아랍어 자료"
+    },
+    "tanya-ustadz": {
+      "name": "우스타즈에게 질문",
+      "description": "경험 많은 학자들과의 종교 상담"
+    },
+    "tajwid": {
+      "name": "타즈위드 과학",
+      "description": "꾸란을 올바르게 읽기 위한 타즈위드 학습"
+    },
+    "kalender-hijriyah": {
+      "name": "히즈라 달력",
+      "description": "히즈라 날짜가 포함된 이슬람 달력"
+    },
+    "ebook": {
+      "name": "이슬람 E-Book",
+      "description": "이슬람 디지털 서적 및 참고 자료 모음"
+    },
+    "tasbih": {
+      "name": "디지털 타스비",
+      "description": "매일의 지크르를 쉽게 세어보세요"
+    },
+    "surat": {
+      "name": "편지 템플릿",
+      "description": "종교적 목적을 위한 편지 템플릿"
+    },
+    "kal-zakat": {
+      "name": "자카트 계산기",
+      "description": "자카트 말 및 피트라 의무 계산"
+    },
+    "kal-waris": {
+      "name": "상속 계산기",
+      "description": "이슬람 상속 분배 시뮬레이션"
+    },
+    "event": {
+      "name": "이슬람 행사",
+      "description": "이슬람 모임 및 행사 일정"
+    },
+    "sirah": {
+      "name": "예언자 전기",
+      "description": "예언자, 동료 및 이슬람 인물의 이야기"
+    },
+    "rukun-iman": {
+      "name": "믿음의 기둥",
+      "description": "이슬람의 6가지 믿음의 기둥 배우기"
+    },
+    "rukun-islam": {
+      "name": "이슬람의 기둥",
+      "description": "이슬람의 5가지 주요 기둥 배우기"
+    },
+    "fatwa-syaikh": {
+      "name": "학자의 파트와",
+      "description": "학자들의 파트와 및 질의응답 모음"
+    },
+    "panduan-haji": {
+      "name": "하지 & 움라 가이드",
+      "description": "하지 및 움라 순례를 위한 완전 가이드"
+    },
+    "perjalanan-haji": {
+      "name": "하지 여정",
+      "description": "하지 순례 여정 추적 및 계획"
+    },
+    "badal-haji": {
+      "name": "바달 하지",
+      "description": "하지 및 움라 대행을 위한 신뢰할 수 있는 서비스"
+    },
+    "bantuan": {
+      "name": "도움말 센터",
+      "description": "정보 및 사용자 지원"
+    }
+  },
+  "categories": {
+    "ibadah": "예배",
+    "al_qur_an": "꾸란",
+    "hadith": "하디스",
+    "doa_dzikir": "두아 & 지크르",
+    "kajian": "강의",
+    "kehidupan": "라이프스타일",
+    "amal": "자선",
+    "edukasi": "교육",
+    "konsultasi": "상담",
+    "kalender": "달력",
+    "template": "템플릿",
+    "kalkulator": "계산기",
+    "haji_umrah": "하지 & 움라",
+    "lainnya": "기타"
+  }
+}
