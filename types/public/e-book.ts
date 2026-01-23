@@ -1,3 +1,5 @@
+import { TypeTranslation } from "./doa";
+
 // Tipe Data untuk Kategori E-Book
 export interface EbookCategory {
   id: number;
@@ -6,6 +8,7 @@ export interface EbookCategory {
   description: string;
   created_at: string;
   updated_at: string;
+  translations: TypeTranslation[];
 }
 
 // Tipe Data untuk E-Book (Buku)
@@ -25,6 +28,7 @@ export interface Ebook {
   cover: string;
   pdf: string;
   category: EbookCategory;
+  translations: TypeTranslation[];
 }
 
 // Params untuk Get Categories List

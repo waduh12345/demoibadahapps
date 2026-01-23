@@ -1,3 +1,5 @@
+import { TypeTranslation } from "./doa";
+
 // Tipe Data untuk Template Letter
 export interface TemplateLetter {
   id: number;
@@ -9,6 +11,7 @@ export interface TemplateLetter {
   attachment: string; // URL file download (doc/pdf)
   created_at: string;
   updated_at: string;
+  translations: TypeTranslation[];
 }
 
 // Params untuk Get Template Letter List

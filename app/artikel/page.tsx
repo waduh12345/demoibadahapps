@@ -24,6 +24,7 @@ import {
   useGetArticlesQuery,
 } from "@/services/public/article.service";
 import { useI18n } from "@/app/hooks/useI18n";
+import { Article, ArticleCategory } from "@/types/public/article";
 
 // Loading Skeleton
 const ArticleSkeleton = () => {
@@ -51,8 +52,54 @@ export default function ArtikelPage() {
   const { t, locale } = useI18n();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<number | undefined>(
-    undefined
+    undefined,
   );
+
+  // --- HELPER TRANSLATION ---
+  const getCategoryContent = (cat: ArticleCategory) => {
+    // FIX: Tambahkan (cat.translations || []) agar tidak error saat .find()
+    const translations = cat.translations || [];
+
+    if (translations.length > 0) {
+      const localized = translations.find((t) => t.locale === locale);
+      if (localized && localized.name) return { name: localized.name };
+
+      const idFallback = translations.find((t) => t.locale === "id");
+      if (idFallback && idFallback.name) return { name: idFallback.name };
+    }
+
+    return { name: cat.name };
+  };
+
+  const getArticleContent = (art: Article) => {
+    // Gunakan '|| []' untuk memastikan kita selalu bekerja dengan array, meskipun API tidak mengirimnya
+    const translations = art.translations || [];
+
+    if (translations.length > 0) {
+      const localized = translations.find((t) => t.locale === locale);
+      if (localized && localized.title) {
+        return {
+          title: localized.title,
+          content: localized.content ?? "",
+        };
+      }
+
+      const idFallback = translations.find((t) => t.locale === "id");
+      if (idFallback && idFallback.title) {
+        return {
+          title: idFallback.title,
+          content: idFallback.content ?? "",
+        };
+      }
+    }
+
+    // Fallback ke root object
+    return {
+      title: art.title,
+      content: art.content ?? "",
+    };
+  };
+  // --------------------------
 
   // Menggunakan API Categories
   const { data: categoriesData, isLoading: isLoadingCategories } =
@@ -69,7 +116,7 @@ export default function ArtikelPage() {
       category_id: selectedCategory,
     });
 
-  // Filter local untuk search query
+  // Filter local untuk search query (Updated to search within localized content)
   const filteredArtikelData = useMemo(() => {
     if (!articlesData?.data) return [];
 
@@ -77,18 +124,20 @@ export default function ArtikelPage() {
 
     if (searchQuery) {
       const lowerQuery = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (artikel) =>
-          artikel.title.toLowerCase().includes(lowerQuery) ||
-          artikel.content
+      filtered = filtered.filter((artikel) => {
+        const content = getArticleContent(artikel);
+        return (
+          content.title.toLowerCase().includes(lowerQuery) ||
+          content.content
             .replace(/<[^>]*>/g, "")
             .toLowerCase()
             .includes(lowerQuery)
-      );
+        );
+      });
     }
 
     return filtered;
-  }, [articlesData, searchQuery]);
+  }, [articlesData, searchQuery, locale]); // Add locale dependency
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -121,7 +170,7 @@ export default function ArtikelPage() {
   const isLoading = isLoadingArticles || isLoadingCategories;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 mb-20">
       {/* Header */}
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/80 border-b border-orange-100/50 shadow-sm">
         <div className="max-w-2xl mx-auto px-4 py-3">
@@ -135,7 +184,10 @@ export default function ArtikelPage() {
                 <ArrowLeft className="w-5 h-5 text-orange-800" />
               </Button>
             </Link>
-            <h1 className="text-lg font-bold text-orange-900 font-comfortaa">
+            <h1
+              className="text-lg font-bold text-orange-900 font-comfortaa"
+              suppressHydrationWarning
+            >
               {t("article.title")}
             </h1>
             <div className="w-10"></div>
@@ -145,7 +197,7 @@ export default function ArtikelPage() {
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Search Bar */}
-        <div className="relative">
+        <div className="relative" suppressHydrationWarning>
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-orange-400" />
           <Input
             type="text"
@@ -195,80 +247,85 @@ export default function ArtikelPage() {
               </div>
             ) : (
               <div className="grid gap-4">
-                {featuredArticles.map((artikel, idx) => (
-                  <Link key={artikel.id} href={`/artikel/${artikel.id}`}>
-                    <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden bg-gradient-to-br from-white to-orange-50/30 group cursor-pointer">
-                      <CardContent className="p-0">
-                        <div className="relative">
-                          {/* Featured Badge */}
-                          <div className="absolute top-3 left-3 z-10">
-                            <Badge className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg flex items-center gap-1 px-3">
-                              <Sparkles className="w-3 h-3" />
-                              #{idx + 1} Trending
-                            </Badge>
-                          </div>
+                {featuredArticles.map((artikel, idx) => {
+                  const content = getArticleContent(artikel);
+                  const categoryContent = getCategoryContent(artikel.category);
 
-                          {/* Image */}
-                          <div className="h-48 bg-gradient-to-br from-orange-200 to-amber-200 relative overflow-hidden">
-                            {artikel.image ? (
-                              <Image
-                                src={artikel.image}
-                                alt={artikel.title}
-                                fill
-                                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                            ) : (
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <BookOpen className="w-16 h-16 text-orange-400/50" />
-                              </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-
-                            <div className="absolute bottom-3 left-3">
-                              <Badge
-                                variant="secondary"
-                                className="bg-white/90 text-orange-800 border-0"
-                              >
-                                {artikel.category.name}
+                  return (
+                    <Link key={artikel.id} href={`/artikel/${artikel.id}`}>
+                      <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden bg-gradient-to-br from-white to-orange-50/30 group cursor-pointer">
+                        <CardContent className="p-0">
+                          <div className="relative">
+                            {/* Featured Badge */}
+                            <div className="absolute top-3 left-3 z-10">
+                              <Badge className="bg-gradient-to-r from-orange-500 to-amber-500 text-white border-0 shadow-lg flex items-center gap-1 px-3">
+                                <Sparkles className="w-3 h-3" />#{idx + 1}{" "}
+                                Trending
                               </Badge>
                             </div>
-                          </div>
 
-                          {/* Content */}
-                          <div className="p-5">
-                            <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-700 transition-colors font-comfortaa">
-                              {artikel.title}
-                            </h3>
-                            <p className="text-sm text-gray-600 line-clamp-2 mb-3 font-comfortaa">
-                              {artikel.content
-                                .replace(/<[^>]*>/g, "")
-                                .substring(0, 120)}
-                              ...
-                            </p>
+                            {/* Image */}
+                            <div className="h-48 bg-gradient-to-br from-orange-200 to-amber-200 relative overflow-hidden">
+                              {artikel.image ? (
+                                <Image
+                                  src={artikel.image}
+                                  alt={content.title}
+                                  fill
+                                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                              ) : (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <BookOpen className="w-16 h-16 text-orange-400/50" />
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
 
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3 text-xs text-gray-500 font-comfortaa">
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="w-3.5 h-3.5" />
-                                  {formatDate(artikel.published_at)}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Clock className="w-3.5 h-3.5" />
-                                  5 {t("article.min")}
-                                </div>
+                              <div className="absolute bottom-3 left-3">
+                                <Badge
+                                  variant="secondary"
+                                  className="bg-white/90 text-orange-800 border-0"
+                                >
+                                  {categoryContent.name}
+                                </Badge>
                               </div>
+                            </div>
 
-                              <div className="flex items-center gap-1 text-orange-600 text-sm font-medium group-hover:gap-2 transition-all font-comfortaa">
-                                {t("article.read")}
-                                <ChevronRight className="w-4 h-4" />
+                            {/* Content */}
+                            <div className="p-5">
+                              <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-700 transition-colors font-comfortaa">
+                                {content.title}
+                              </h3>
+                              <p className="text-sm text-gray-600 line-clamp-2 mb-3 font-comfortaa">
+                                {content.content
+                                  .replace(/<[^>]*>/g, "")
+                                  .substring(0, 120)}
+                                ...
+                              </p>
+
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3 text-xs text-gray-500 font-comfortaa">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-3.5 h-3.5" />
+                                    {formatDate(artikel.published_at)}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-3.5 h-3.5" />5{" "}
+                                    {t("article.min")}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-1 text-orange-600 text-sm font-medium group-hover:gap-2 transition-all font-comfortaa">
+                                  {t("article.read")}
+                                  <ChevronRight className="w-4 h-4" />
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -300,19 +357,22 @@ export default function ArtikelPage() {
               >
                 {t("article.all")}
               </button>
-              {categoriesData?.data.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`flex-shrink-0 rounded-full px-5 h-9 font-medium transition-all font-comfortaa ${
-                    selectedCategory === cat.id
-                      ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md"
-                      : "border-2 border-orange-200 text-orange-700 hover:bg-orange-50 bg-white"
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
+              {categoriesData?.data.map((cat) => {
+                const categoryContent = getCategoryContent(cat);
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`flex-shrink-0 rounded-full px-5 h-9 font-medium transition-all font-comfortaa ${
+                      selectedCategory === cat.id
+                        ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md"
+                        : "border-2 border-orange-200 text-orange-700 hover:bg-orange-50 bg-white"
+                    }`}
+                  >
+                    {categoryContent.name}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -343,66 +403,70 @@ export default function ArtikelPage() {
           {isLoading ? (
             <ArticleSkeleton />
           ) : filteredArtikelData.length > 0 ? (
-            filteredArtikelData.map((artikel) => (
-              <Link key={artikel.id} href={`/artikel/${artikel.id}`}>
-                <Card className="border border-orange-100 hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer bg-white">
-                  <CardContent className="p-0">
-                    <div className="flex gap-4 p-4">
-                      {/* Thumbnail */}
-                      <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center flex-shrink-0 overflow-hidden relative group-hover:scale-105 transition-transform">
-                        {artikel.image ? (
-                          <Image
-                            src={artikel.image}
-                            alt={artikel.title}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <BookOpen className="w-8 h-8 text-orange-400" />
-                        )}
-                      </div>
+            filteredArtikelData.map((artikel) => {
+              const content = getArticleContent(artikel);
+              const categoryContent = getCategoryContent(artikel.category);
 
-                      {/* Content */}
-                      <div className="flex-1 min-w-0 flex flex-col justify-between">
-                        <div>
-                          <Badge
-                            variant="secondary"
-                            className="mb-2 text-xs bg-orange-100 text-orange-700 border-0"
-                          >
-                            {artikel.category.name}
-                          </Badge>
-                          <h3 className="font-bold text-base text-gray-900 line-clamp-2 mb-1 group-hover:text-orange-700 transition-colors font-comfortaa">
-                            {artikel.title}
-                          </h3>
-                          <p className="text-xs text-gray-600 line-clamp-2 font-comfortaa">
-                            {artikel.content
-                              .replace(/<[^>]*>/g, "")
-                              .substring(0, 80)}
-                            ...
-                          </p>
+              return (
+                <Link key={artikel.id} href={`/artikel/${artikel.id}`}>
+                  <Card className="border border-orange-100 hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer bg-white">
+                    <CardContent className="p-0">
+                      <div className="flex gap-4 p-4">
+                        {/* Thumbnail */}
+                        <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center flex-shrink-0 overflow-hidden relative group-hover:scale-105 transition-transform">
+                          {artikel.image ? (
+                            <Image
+                              src={artikel.image}
+                              alt={content.title}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <BookOpen className="w-8 h-8 text-orange-400" />
+                          )}
                         </div>
 
-                        <div className="flex items-center gap-3 text-xs text-gray-500 mt-2 font-comfortaa">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {formatDate(artikel.published_at)}
+                        {/* Content */}
+                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                          <div>
+                            <Badge
+                              variant="secondary"
+                              className="mb-2 text-xs bg-orange-100 text-orange-700 border-0"
+                            >
+                              {categoryContent.name}
+                            </Badge>
+                            <h3 className="font-bold text-base text-gray-900 line-clamp-2 mb-1 group-hover:text-orange-700 transition-colors font-comfortaa">
+                              {content.title}
+                            </h3>
+                            <p className="text-xs text-gray-600 line-clamp-2 font-comfortaa">
+                              {content.content
+                                .replace(/<[^>]*>/g, "")
+                                .substring(0, 80)}
+                              ...
+                            </p>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            5 {t("article.min")}
+
+                          <div className="flex items-center gap-3 text-xs text-gray-500 mt-2 font-comfortaa">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              {formatDate(artikel.published_at)}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />5 {t("article.min")}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Arrow */}
-                      <div className="flex items-center">
-                        <ChevronRight className="w-5 h-5 text-orange-400 group-hover:translate-x-1 transition-transform" />
+                        {/* Arrow */}
+                        <div className="flex items-center">
+                          <ChevronRight className="w-5 h-5 text-orange-400 group-hover:translate-x-1 transition-transform" />
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })
           ) : (
             <Card className="border-0 shadow-lg">
               <CardContent className="p-12 text-center">

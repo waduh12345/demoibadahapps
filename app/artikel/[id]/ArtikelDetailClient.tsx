@@ -11,13 +11,15 @@ import {
   Share2,
   Bookmark,
   Heart,
-  Navigation,
   BookOpen,
   Loader2,
+  Navigation,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useGetArticleByIdQuery } from "@/services/public/article.service";
+import { useI18n } from "@/app/hooks/useI18n";
+import { Article, ArticleCategory } from "@/types/public/article";
 
 interface ArtikelDetailClientProps {
   articleId: number;
@@ -26,6 +28,8 @@ interface ArtikelDetailClientProps {
 export default function ArtikelDetailClient({
   articleId,
 }: ArtikelDetailClientProps) {
+  const { t, locale } = useI18n(); // Import hook i18n
+
   // Fetch Article Detail
   const {
     data: artikel,
@@ -33,14 +37,54 @@ export default function ArtikelDetailClient({
     isError,
   } = useGetArticleByIdQuery(articleId);
 
+  // --- HELPER TRANSLATION (Sama dengan Page List) ---
+  const getCategoryContent = (cat: ArticleCategory) => {
+    // FIX: Tambahkan optional chaining (?.) atau default empty array
+    const translations = cat?.translations || [];
+
+    const localized = translations.find((t) => t.locale === locale);
+    if (localized && localized.name) return { name: localized.name };
+
+    const idFallback = translations.find((t) => t.locale === "id");
+    if (idFallback && idFallback.name) return { name: idFallback.name };
+
+    return { name: cat.name };
+  };
+
+  const getArticleContent = (art: Article) => {
+    // FIX: Tambahkan optional chaining (?.) atau default empty array
+    const translations = art?.translations || [];
+
+    const localized = translations.find((t) => t.locale === locale);
+    if (localized && localized.title) {
+      return {
+        title: localized.title,
+        content: localized.content ?? "",
+      };
+    }
+
+    const idFallback = translations.find((t) => t.locale === "id");
+    if (idFallback && idFallback.title) {
+      return {
+        title: idFallback.title,
+        content: idFallback.content ?? "",
+      };
+    }
+
+    return {
+      title: art.title,
+      content: art.content ?? "",
+    };
+  };
+  // --------------------------
+
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
     if (artikel) {
-      // Load bookmark status
       const bookmarks = JSON.parse(
-        localStorage.getItem("artikel-bookmarks") || "[]"
+        localStorage.getItem("artikel-bookmarks") || "[]",
       );
       const likes = JSON.parse(localStorage.getItem("artikel-likes") || "[]");
 
@@ -53,7 +97,7 @@ export default function ArtikelDetailClient({
     if (!artikel) return;
 
     const bookmarks = JSON.parse(
-      localStorage.getItem("artikel-bookmarks") || "[]"
+      localStorage.getItem("artikel-bookmarks") || "[]",
     );
     const newBookmarks = isBookmarked
       ? bookmarks.filter((id: number) => id !== artikel.id)
@@ -78,9 +122,11 @@ export default function ArtikelDetailClient({
   const handleShare = async () => {
     if (!artikel) return;
 
+    const content = getArticleContent(artikel);
+
     const shareData = {
-      title: artikel.title,
-      text: `Baca artikel menarik ini: ${artikel.title}`,
+      title: content.title,
+      text: `Baca artikel menarik ini: ${content.title}`,
       url: window.location.href,
     };
 
@@ -102,14 +148,21 @@ export default function ArtikelDetailClient({
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("id-ID", {
+    const localeMap: Record<string, string> = {
+      id: "id-ID",
+      en: "en-US",
+      ar: "ar-SA",
+      fr: "fr-FR",
+      kr: "ko-KR",
+      jp: "ja-JP",
+    };
+    return date.toLocaleDateString(localeMap[locale] || "id-ID", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
   };
 
-  // Loading State
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-accent-50 to-accent-100">
@@ -118,7 +171,6 @@ export default function ArtikelDetailClient({
     );
   }
 
-  // Not Found / Error State
   if (isError || !artikel) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20">
@@ -136,7 +188,7 @@ export default function ArtikelDetailClient({
                   </Button>
                 </Link>
                 <h1 className="text-lg font-bold text-awqaf-primary font-comfortaa">
-                  Artikel
+                  {t("article.title")}
                 </h1>
                 <div className="w-10 h-10"></div>
               </div>
@@ -166,6 +218,10 @@ export default function ArtikelDetailClient({
     );
   }
 
+  // Calculate content once
+  const content = getArticleContent(artikel);
+  const categoryContent = getCategoryContent(artikel.category);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20">
       {/* Header */}
@@ -183,7 +239,7 @@ export default function ArtikelDetailClient({
                 </Button>
               </Link>
               <h1 className="text-lg font-bold text-awqaf-primary font-comfortaa">
-                Artikel
+                {t("article.title")}
               </h1>
               <div className="w-10 h-10"></div>
             </div>
@@ -199,7 +255,7 @@ export default function ArtikelDetailClient({
             <div className="relative w-full h-48 bg-gray-100">
               <Image
                 src={artikel.image}
-                alt={artikel.title}
+                alt={content.title}
                 fill
                 className="object-cover"
               />
@@ -210,13 +266,13 @@ export default function ArtikelDetailClient({
             {/* Category */}
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-xs">
-                {artikel.category.name}
+                {categoryContent.name}
               </Badge>
             </div>
 
             {/* Title */}
             <h1 className="text-xl font-bold text-card-foreground font-comfortaa leading-tight">
-              {artikel.title}
+              {content.title}
             </h1>
 
             {/* Meta Info */}
@@ -226,9 +282,8 @@ export default function ArtikelDetailClient({
                   <Calendar className="w-3 h-3" />
                   {formatDate(artikel.published_at)}
                 </div>
-                {/* Simulasi readtime */}
                 <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />5 min
+                  <Clock className="w-3 h-3" />5 {t("article.min")}
                 </div>
               </div>
             </div>
@@ -278,7 +333,7 @@ export default function ArtikelDetailClient({
           <CardContent className="p-4">
             <div
               className="prose prose-sm max-w-none font-comfortaa prose-img:rounded-lg prose-headings:font-bold prose-a:text-awqaf-primary"
-              dangerouslySetInnerHTML={{ __html: artikel.content }}
+              dangerouslySetInnerHTML={{ __html: content.content }}
             />
           </CardContent>
         </Card>
@@ -288,7 +343,7 @@ export default function ArtikelDetailClient({
           <Link href="/artikel">
             <Button variant="outline" size="sm" className="font-comfortaa">
               <Navigation className="w-4 h-4 mr-2" />
-              Lihat Semua Artikel
+              {t("article.viewAllArticles")}
             </Button>
           </Link>
         </div>

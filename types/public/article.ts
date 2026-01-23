@@ -1,3 +1,5 @@
+import { TypeTranslation } from "./doa";
+
 // Tipe Data untuk Kategori Artikel
 export interface ArticleCategory {
   id: number;
@@ -6,6 +8,7 @@ export interface ArticleCategory {
   description: string | null;
   created_at: string;
   updated_at: string;
+  translations: TypeTranslation[];
 }
 
 // Tipe Data untuk Artikel
@@ -19,6 +22,7 @@ export interface Article {
   created_at: string;
   updated_at: string;
   image: string;
+  translations: TypeTranslation[];
   category: ArticleCategory;
 }
 

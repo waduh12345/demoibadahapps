@@ -5,15 +5,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, BookOpen, BookA, Loader2 } from "lucide-react";
+import { ArrowLeft, Search, BookA, Loader2, BookOpen } from "lucide-react";
 import Link from "next/link";
 // Import Service & Types
 import { useGetDictionaryEntriesQuery } from "@/services/public/dictionary.service";
 import { DictionaryEntry } from "@/types/public/dictionary";
+import { useI18n } from "@/app/hooks/useI18n";
 
 const ALPHABETS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 export default function KamusPage() {
+  const { t, locale } = useI18n(); // Import hook i18n
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLetter, setSelectedLetter] = useState<string>("ALL");
 
@@ -24,15 +26,35 @@ export default function KamusPage() {
     error,
   } = useGetDictionaryEntriesQuery();
 
+  // --- HELPER TRANSLATION ---
+  const getDefinition = (entry: DictionaryEntry) => {
+    // 1. Cari translation sesuai locale aktif
+    const localized = entry.translations.find((t) => t.locale === locale);
+
+    // 2. Jika ada dan definition tidak kosong
+    if (localized && localized.definition) {
+      return localized.definition;
+    }
+
+    // 3. Fallback ke 'id' jika locale aktif kosong
+    const idFallback = entry.translations.find((t) => t.locale === "id");
+    if (idFallback && idFallback.definition) {
+      return idFallback.definition;
+    }
+
+    // 4. Fallback terakhir ke root object
+    return entry.definition;
+  };
+  // --------------------------
+
   // 1. Filter Logic
   const filteredTerms = useMemo(() => {
     if (!dictionaryEntries) return [];
 
     return dictionaryEntries.filter((item) => {
       const q = searchQuery.toLowerCase();
-      // Strip HTML tags from definition for search comparison if needed,
-      // or just search in raw HTML string (simple approach)
-      const definitionText = item.definition.toLowerCase();
+      // Gunakan definition yang sudah diterjemahkan untuk pencarian
+      const definitionText = getDefinition(item).toLowerCase();
 
       const matchesSearch =
         item.term.toLowerCase().includes(q) || definitionText.includes(q);
@@ -42,18 +64,21 @@ export default function KamusPage() {
 
       return matchesSearch && matchesLetter;
     });
-  }, [dictionaryEntries, searchQuery, selectedLetter]);
+  }, [dictionaryEntries, searchQuery, selectedLetter, locale]); // Add locale dependency
 
   // 2. Grouping Logic (Group by Alphabet)
   const groupedTerms = useMemo(() => {
-    return filteredTerms.reduce((acc, item) => {
-      const letter = item.alphabet_index;
-      if (!acc[letter]) {
-        acc[letter] = [];
-      }
-      acc[letter].push(item);
-      return acc;
-    }, {} as Record<string, DictionaryEntry[]>);
+    return filteredTerms.reduce(
+      (acc, item) => {
+        const letter = item.alphabet_index;
+        if (!acc[letter]) {
+          acc[letter] = [];
+        }
+        acc[letter].push(item);
+        return acc;
+      },
+      {} as Record<string, DictionaryEntry[]>,
+    );
   }, [filteredTerms]);
 
   // Sort keys alphabetically
@@ -78,7 +103,9 @@ export default function KamusPage() {
             </Link>
             <div className="flex items-center gap-2">
               <BookA className="w-6 h-6" />
-              <h1 className="text-xl font-bold font-comfortaa">Kamus Islam</h1>
+              <h1 className="text-xl font-bold font-comfortaa">
+                {t("dictionary.title") || "Kamus Islam"}
+              </h1>
             </div>
           </div>
 
@@ -86,7 +113,10 @@ export default function KamusPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Cari istilah (cth: Taqwa)..."
+              placeholder={
+                t("dictionary.searchPlaceholder") ||
+                "Cari istilah (cth: Taqwa)..."
+              }
               className="pl-9 h-10 bg-white text-gray-800 border-none rounded-full font-comfortaa focus-visible:ring-2 focus-visible:ring-teal-300 placeholder:text-gray-400"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -134,19 +164,21 @@ export default function KamusPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-500">
             <Loader2 className="w-10 h-10 animate-spin mb-4 text-teal-600" />
-            <p className="font-comfortaa">Memuat kamus...</p>
+            <p className="font-comfortaa">
+              {t("dictionary.loading") || "Memuat kamus..."}
+            </p>
           </div>
         ) : error ? (
           <div className="text-center py-20">
             <p className="text-red-500 font-comfortaa">
-              Gagal memuat data kamus.
+              {t("dictionary.failedToLoad") || "Gagal memuat data kamus."}
             </p>
             <Button
               variant="outline"
               className="mt-4"
               onClick={() => window.location.reload()}
             >
-              Coba Lagi
+              {t("common.retry") || "Coba Lagi"}
             </Button>
           </div>
         ) : (
@@ -168,33 +200,38 @@ export default function KamusPage() {
 
                   {/* Terms Cards */}
                   <div className="space-y-3">
-                    {groupedTerms[letter].map((item) => (
-                      <Card
-                        key={item.id}
-                        className="border-awqaf-border-light hover:border-teal-200 transition-colors group"
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start">
-                            <h3 className="font-bold text-gray-800 text-lg font-comfortaa mb-1 group-hover:text-teal-600 transition-colors">
-                              {item.term}
-                            </h3>
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] font-mono text-gray-400"
-                            >
-                              {item.alphabet_index}
-                            </Badge>
-                          </div>
-                          {/* Render HTML Definition */}
-                          <div
-                            className="text-sm text-gray-600 font-comfortaa leading-relaxed"
-                            dangerouslySetInnerHTML={{
-                              __html: item.definition,
-                            }}
-                          />
-                        </CardContent>
-                      </Card>
-                    ))}
+                    {groupedTerms[letter].map((item) => {
+                      // Ambil definisi yang sudah diterjemahkan
+                      const definition = getDefinition(item);
+
+                      return (
+                        <Card
+                          key={item.id}
+                          className="border-awqaf-border-light hover:border-teal-200 transition-colors group"
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start">
+                              <h3 className="font-bold text-gray-800 text-lg font-comfortaa mb-1 group-hover:text-teal-600 transition-colors">
+                                {item.term}
+                              </h3>
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] font-mono text-gray-400"
+                              >
+                                {item.alphabet_index}
+                              </Badge>
+                            </div>
+                            {/* Render HTML Definition (Localized) */}
+                            <div
+                              className="text-sm text-gray-600 font-comfortaa leading-relaxed"
+                              dangerouslySetInnerHTML={{
+                                __html: definition,
+                              }}
+                            />
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 </div>
               ))
@@ -204,10 +241,11 @@ export default function KamusPage() {
                   <BookOpen className="w-10 h-10 text-gray-300" />
                 </div>
                 <h3 className="text-gray-900 font-bold font-comfortaa">
-                  Istilah tidak ditemukan
+                  {t("dictionary.noTermsFound") || "Istilah tidak ditemukan"}
                 </h3>
                 <p className="text-sm text-gray-500 font-comfortaa">
-                  Coba cari dengan kata kunci lain.
+                  {t("dictionary.tryDifferentKeyword") ||
+                    "Coba cari dengan kata kunci lain."}
                 </p>
               </div>
             )}
@@ -217,7 +255,8 @@ export default function KamusPage() {
         {!isLoading && !error && (
           <div className="text-center py-6">
             <p className="text-xs text-gray-400 font-comfortaa">
-              Menampilkan {filteredTerms.length} istilah
+              {t("dictionary.showing") || "Menampilkan"} {filteredTerms.length}{" "}
+              {t("dictionary.terms") || "istilah"}
             </p>
           </div>
         )}

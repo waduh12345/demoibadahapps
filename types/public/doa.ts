@@ -9,6 +9,9 @@ export interface TypeTranslation {
   updated_at: string;
   translation: string;
   ustadz_kajian_id: number;
+  content: string;
+  definition: string;
+  event_id: number;
 }
 export interface DoaCategory {
   id: number;

@@ -18,11 +18,11 @@ import {
 import Link from "next/link";
 // Import Services & Types
 import { useGetTemplateLettersQuery } from "@/services/public/template-surat.service";
-import Swal from "sweetalert2"; // Import SweetAlert2
+import { TemplateLetter } from "@/types/public/template-surat"; // Pastikan type diimport
+import Swal from "sweetalert2";
 import { useI18n } from "@/app/hooks/useI18n";
 
-// Categories untuk filter UI (Client side filtering)
-// Note: Idealnya kategori ini juga didapat dari API atau unique values dari data API
+// Categories untuk filter UI
 const CATEGORIES = [
   { id: "all", label: "Semua" },
   { id: "Nikah", label: "Pernikahan" },
@@ -43,26 +43,65 @@ export default function TemplateSuratPage() {
     isError,
   } = useGetTemplateLettersQuery({
     page: 1,
-    paginate: 100, // Fetch banyak untuk client-side filtering
+    paginate: 100,
   });
+
+  // --- HELPER TRANSLATION ---
+  const getTemplateContent = (item: TemplateLetter) => {
+    // 1. Cari translation sesuai locale aktif
+    if (item.translations && item.translations.length > 0) {
+      const localized = item.translations.find((t) => t.locale === locale);
+      if (localized && localized.title) {
+        return {
+          title: localized.title,
+          description: localized.description ?? "",
+        };
+      }
+
+      // 2. Fallback ke 'id' jika locale aktif kosong
+      const idFallback = item.translations.find((t) => t.locale === "id");
+      if (idFallback && idFallback.title) {
+        return {
+          title: idFallback.title,
+          description: idFallback.description ?? "",
+        };
+      }
+    }
+
+    // 3. Fallback terakhir ke root object
+    return {
+      title: item.title,
+      description: item.description ?? "",
+    };
+  };
+  // --------------------------
 
   // Logic Filtering
   const filteredTemplates = useMemo(() => {
     if (!templateData?.data) return [];
 
     return templateData.data.filter((item) => {
+      // Ambil konten sesuai bahasa untuk keperluan search
+      const content = getTemplateContent(item);
+
       const matchCategory =
         selectedCategory === "all" ||
         item.category.toLowerCase() === selectedCategory.toLowerCase();
 
       const q = searchQuery.toLowerCase();
+
+      // Search pada konten yang sudah diterjemahkan
+      // Kita strip HTML tags dari deskripsi untuk pencarian yang lebih akurat
+      const cleanDescription = content.description
+        .replace(/<[^>]*>?/gm, "")
+        .toLowerCase();
+
       const matchSearch =
-        item.title.toLowerCase().includes(q) ||
-        (item.description && item.description.toLowerCase().includes(q));
+        content.title.toLowerCase().includes(q) || cleanDescription.includes(q);
 
       return matchCategory && matchSearch;
     });
-  }, [templateData, selectedCategory, searchQuery]);
+  }, [templateData, selectedCategory, searchQuery, locale]); // Tambahkan locale ke dependency
 
   // Helper untuk warna badge kategori
   const getCategoryColor = (cat: string) => {
@@ -81,7 +120,7 @@ export default function TemplateSuratPage() {
 
   // Helper untuk icon file berdasarkan ekstensi file attachment
   const getFileIcon = (fileUrl: string) => {
-    if (fileUrl.endsWith(".pdf")) {
+    if (fileUrl && fileUrl.endsWith(".pdf")) {
       return <FileType className="w-8 h-8 text-red-500" />;
     }
     // Default docx/doc icon style
@@ -94,7 +133,10 @@ export default function TemplateSuratPage() {
         id: { title: "Gagal", text: "Link download tidak tersedia" },
         en: { title: "Failed", text: "Download link is not available" },
         ar: { title: "فشل", text: "رابط التحميل غير متاح" },
-        fr: { title: "Échec", text: "Le lien de téléchargement n'est pas disponible" },
+        fr: {
+          title: "Échec",
+          text: "Le lien de téléchargement n'est pas disponible",
+        },
         kr: { title: "실패", text: "다운로드 링크를 사용할 수 없습니다" },
         jp: { title: "失敗", text: "ダウンロードリンクが利用できません" },
       };
@@ -192,54 +234,62 @@ export default function TemplateSuratPage() {
               </Button>
             </div>
           ) : filteredTemplates.length > 0 ? (
-            filteredTemplates.map((template) => (
-              <Card
-                key={template.id}
-                className="border-awqaf-border-light hover:shadow-md transition-shadow duration-200 group"
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    {/* Icon Container */}
-                    <div className="w-12 h-12 bg-white rounded-xl border border-gray-100 flex items-center justify-center shadow-sm shrink-0">
-                      {getFileIcon(template.attachment)}
-                    </div>
+            filteredTemplates.map((template) => {
+              const content = getTemplateContent(template);
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-bold text-gray-800 font-comfortaa line-clamp-2 text-sm leading-tight">
-                          {template.title}
-                        </h3>
+              return (
+                <Card
+                  key={template.id}
+                  className="border-awqaf-border-light hover:shadow-md transition-shadow duration-200 group"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-4">
+                      {/* Icon Container */}
+                      <div className="w-12 h-12 bg-white rounded-xl border border-gray-100 flex items-center justify-center shadow-sm shrink-0">
+                        {getFileIcon(template.attachment)}
                       </div>
-                      <p className="text-xs text-gray-500 font-comfortaa mt-1 line-clamp-2">
-                        {template.description || "Tidak ada deskripsi"}
-                      </p>
 
-                      {/* Footer: Category & Action */}
-                      <div className="flex items-center justify-between mt-3">
-                        <Badge
-                          variant="outline"
-                          className={`text-[10px] py-0 h-5 border ${getCategoryColor(
-                            template.category
-                          )}`}
-                        >
-                          {template.category}
-                        </Badge>
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="font-bold text-gray-800 font-comfortaa line-clamp-2 text-sm leading-tight">
+                            {content.title}
+                          </h3>
+                        </div>
+                        {/* Render Description HTML */}
+                        <div
+                          className="text-xs text-gray-500 font-comfortaa mt-1 line-clamp-2"
+                          dangerouslySetInnerHTML={{
+                            __html: content.description,
+                          }}
+                        />
 
-                        <Button
-                          size="sm"
-                          className="h-7 px-3 text-xs bg-accent-50 text-awqaf-primary hover:bg-accent-100 hover:text-awqaf-primary border border-accent-100 font-comfortaa"
-                          onClick={() => handleDownload(template.attachment)}
-                        >
-                          <Download className="w-3 h-3 mr-1.5" />
-                          {t("templateLetter.download")}
-                        </Button>
+                        {/* Footer: Category & Action */}
+                        <div className="flex items-center justify-between mt-3">
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] py-0 h-5 border ${getCategoryColor(
+                              template.category,
+                            )}`}
+                          >
+                            {template.category}
+                          </Badge>
+
+                          <Button
+                            size="sm"
+                            className="h-7 px-3 text-xs bg-accent-50 text-awqaf-primary hover:bg-accent-100 hover:text-awqaf-primary border border-accent-100 font-comfortaa"
+                            onClick={() => handleDownload(template.attachment)}
+                          >
+                            <Download className="w-3 h-3 mr-1.5" />
+                            {t("templateLetter.download")}
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                  </CardContent>
+                </Card>
+              );
+            })
           ) : (
             // Empty State
             <div className="text-center py-10">

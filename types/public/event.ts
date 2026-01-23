@@ -1,3 +1,5 @@
+import { TypeTranslation } from "./doa";
+
 // Tipe Data untuk Event
 export interface Event {
   id: number;
@@ -12,6 +14,7 @@ export interface Event {
   created_at: string;
   updated_at: string;
   image: string;
+  translations: TypeTranslation[];
 }
 
 // Params untuk Get Event List
