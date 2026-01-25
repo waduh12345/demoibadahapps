@@ -28,7 +28,6 @@ import { ProductCategory } from "@/types/public/store/category";
 import { dummyProducts } from "./data/dummy-products";
 import { useI18n } from "@/app/hooks/useI18n";
 import { getCurrentLocale } from "@/lib/i18n";
-
 /* ================= Utils ================= */
 
 const formatRupiah = (num: number, locale: string = "id") => {

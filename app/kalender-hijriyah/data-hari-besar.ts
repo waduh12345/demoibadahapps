@@ -174,77 +174,92 @@ export const namaHari = [
   "Sabtu",
 ];
 
-// Fungsi untuk mengkonversi tanggal Masehi ke Hijriyah (lebih akurat)
+// Fungsi untuk mengkonversi tanggal Masehi ke Hijriyah
+// Menggunakan algoritma yang akurat berdasarkan Julian Day Number
 export function toHijriyah(date: Date): {
   year: number;
   month: number;
   day: number;
 } {
-  // Epoch Hijriyah: 16 Juli 622 M (1 Muharram 1 H)
-  const hijriEpoch = new Date(622, 6, 16);
-  const currentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  // Ambil komponen tanggal
+  const gDay = date.getDate();
+  const gMonth = date.getMonth() + 1; // 1-12
+  const gYear = date.getFullYear();
+
+  // Konversi ke Julian Day Number
+  const a = Math.floor((14 - gMonth) / 12);
+  const y = gYear + 4800 - a;
+  const m = gMonth + 12 * a - 3;
   
-  // Hitung selisih hari
-  const diffTime = currentDate.getTime() - hijriEpoch.getTime();
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const julianDay = gDay + Math.floor((153 * m + 2) / 5) + 
+                   365 * y + Math.floor(y / 4) - 
+                   Math.floor(y / 100) + Math.floor(y / 400) - 32045;
 
-  if (diffDays < 0) {
-    return { year: 1, month: 1, day: 1 };
-  }
-
-  // Algoritma konversi yang lebih akurat
-  // Hitung tahun Hijriyah dengan memperhitungkan tahun kabisat
+  // Epoch Islamic Calendar (Julian Day untuk 1 Muharram 1 AH = 16 Juli 622 M)
+  const islamicEpoch = 1948440;
+  
+  // Hitung jumlah hari sejak epoch
+  let daysSinceEpoch = julianDay - islamicEpoch;
+  
+  // Siklus 30 tahun Hijriyah (10631 hari)
+  const cycle = Math.floor(daysSinceEpoch / 10631);
+  daysSinceEpoch = daysSinceEpoch % 10631;
+  
+  // Tahun kabisat dalam siklus 30 tahun (sistem Kuwaiti)
   const leapYears = [2, 5, 7, 10, 13, 16, 18, 21, 24, 26, 29];
-  let hijriYear = 1;
-  let remainingDays = diffDays;
-
-  // Hitung tahun dengan memperhitungkan siklus 30 tahun
-  while (remainingDays >= 0) {
-    const yearInCycle = ((hijriYear - 1) % 30) + 1;
-    const isLeapYear = leapYears.includes(yearInCycle);
-    const yearDays = isLeapYear ? 355 : 354;
+  
+  // Hitung tahun dalam siklus
+  let hijriYear = 0;
+  let remainingDays = daysSinceEpoch;
+  
+  for (let year = 1; year <= 30; year++) {
+    const isLeap = leapYears.includes(year);
+    const daysInYear = isLeap ? 355 : 354;
     
-    if (remainingDays < yearDays) {
+    if (remainingDays < daysInYear) {
+      hijriYear = year;
       break;
     }
     
-    remainingDays -= yearDays;
-    hijriYear++;
+    remainingDays -= daysInYear;
   }
-
-  // Array panjang bulan Hijriyah dalam satu tahun (354 hari)
-  const hijriMonthLengths = [30, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30, 29];
   
-  // Cek apakah tahun ini kabisat
+  // Hitung tahun total
+  hijriYear = cycle * 30 + hijriYear;
+  
+  // Panjang bulan Hijriyah (default)
+  const monthLengths = [30, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30, 29];
+  
+  // Cek apakah tahun kabisat
   const yearInCycle = ((hijriYear - 1) % 30) + 1;
   const isLeapYear = leapYears.includes(yearInCycle);
+  
   if (isLeapYear) {
-    hijriMonthLengths[11] = 30; // Dzulhijjah menjadi 30 hari
+    monthLengths[11] = 30; // Dzulhijjah menjadi 30 hari
   }
-
+  
+  // Hitung bulan dan hari
   let hijriMonth = 1;
   let hijriDay = 1;
-
-  // Hitung bulan dan hari
-  for (let i = 0; i < hijriMonthLengths.length; i++) {
-    if (remainingDays < hijriMonthLengths[i]) {
+  
+  for (let i = 0; i < 12; i++) {
+    if (remainingDays < monthLengths[i]) {
       hijriMonth = i + 1;
       hijriDay = Math.floor(remainingDays) + 1;
       break;
     }
-    remainingDays -= hijriMonthLengths[i];
+    remainingDays -= monthLengths[i];
   }
-
-  // Normalisasi
-  if (hijriDay < 1) hijriDay = 1;
-  if (hijriDay > hijriMonthLengths[hijriMonth - 1]) {
-    hijriDay = hijriMonthLengths[hijriMonth - 1];
-  }
+  
+  // Pastikan nilai dalam range yang valid
+  hijriYear = Math.max(1, hijriYear);
+  hijriMonth = Math.min(12, Math.max(1, hijriMonth));
+  hijriDay = Math.min(monthLengths[hijriMonth - 1], Math.max(1, hijriDay));
 
   return {
-    year: Math.max(1, hijriYear),
-    month: Math.min(12, Math.max(1, hijriMonth)),
-    day: Math.min(30, Math.max(1, hijriDay)),
+    year: hijriYear,
+    month: hijriMonth,
+    day: hijriDay,
   };
 }
 

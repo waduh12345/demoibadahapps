@@ -14,9 +14,21 @@ import {
   CheckCircle,
   Star,
   Navigation,
+  AlertCircle,
+  XCircle,
+  Check,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useI18n } from "@/app/hooks/useI18n";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface TajwidRule {
   id: string;
@@ -165,6 +177,11 @@ export default function TajwidPage() {
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(
     new Set()
   );
+  
+  // Confirmation dialog states
+  const [isMarkConfirmOpen, setIsMarkConfirmOpen] = useState(false);
+  const [isUnmarkConfirmOpen, setIsUnmarkConfirmOpen] = useState(false);
+  const [pendingRuleId, setPendingRuleId] = useState<string | null>(null);
 
   // Load progress from localStorage
   useEffect(() => {
@@ -210,8 +227,23 @@ export default function TajwidPage() {
     setIsMuted(!isMuted);
   };
 
-  const handleRuleComplete = (ruleId: string) => {
-    const newProgress = { ...userProgress, [ruleId]: 100 };
+  // Open confirmation dialog for marking complete
+  const handleMarkCompleteClick = (ruleId: string) => {
+    setPendingRuleId(ruleId);
+    setIsMarkConfirmOpen(true);
+  };
+
+  // Open confirmation dialog for unmarking
+  const handleUnmarkClick = (ruleId: string) => {
+    setPendingRuleId(ruleId);
+    setIsUnmarkConfirmOpen(true);
+  };
+
+  // Confirm mark as complete
+  const confirmMarkComplete = () => {
+    if (!pendingRuleId) return;
+
+    const newProgress = { ...userProgress, [pendingRuleId]: 100 };
     setUserProgress(newProgress);
 
     // Check if lesson is completed
@@ -224,6 +256,43 @@ export default function TajwidPage() {
         setCompletedLessons((prev) => new Set([...prev, selectedLesson.id]));
       }
     }
+
+    setIsMarkConfirmOpen(false);
+    setPendingRuleId(null);
+  };
+
+  // Confirm unmark
+  const confirmUnmark = () => {
+    if (!pendingRuleId) return;
+
+    const newProgress = { ...userProgress };
+    delete newProgress[pendingRuleId];
+    setUserProgress(newProgress);
+
+    // Remove lesson from completed if it was completed
+    if (selectedLesson) {
+      const allRulesCompleted = selectedLesson.rules.every(
+        (rule) => rule.id === pendingRuleId ? false : newProgress[rule.id] === 100
+      );
+
+      if (!allRulesCompleted) {
+        setCompletedLessons((prev) => {
+          const newSet = new Set([...prev]);
+          newSet.delete(selectedLesson.id);
+          return newSet;
+        });
+      }
+    }
+
+    setIsUnmarkConfirmOpen(false);
+    setPendingRuleId(null);
+  };
+
+  // Cancel confirmation
+  const cancelConfirmation = () => {
+    setIsMarkConfirmOpen(false);
+    setIsUnmarkConfirmOpen(false);
+    setPendingRuleId(null);
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -560,30 +629,155 @@ export default function TajwidPage() {
                   </Button>
                 </div>
 
-                <div className="pt-4 border-t">
-                  <Button
-                    onClick={() => handleRuleComplete(selectedRule.id)}
-                    className="w-full"
-                    disabled={userProgress[selectedRule.id] === 100}
-                  >
-                    {userProgress[selectedRule.id] === 100 ? (
-                      <>
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        {t("tajwid.alreadyMastered")}
-                      </>
-                    ) : (
-                      <>
+                <div className="pt-4 border-t space-y-3">
+                  {userProgress[selectedRule.id] === 100 ? (
+                    <>
+                      {/* Already Completed - Show Status and Unmark Button */}
+                      <div className="bg-success/10 border border-success/30 rounded-lg p-4">
+                        <div className="flex items-center justify-center gap-2 text-success mb-2">
+                          <CheckCircle className="w-5 h-5" />
+                          <span className="font-semibold font-comfortaa">
+                            {t("tajwid.alreadyMastered")}
+                          </span>
+                        </div>
+                        <p className="text-xs text-center text-awqaf-foreground-secondary font-comfortaa">
+                          Anda telah menyelesaikan materi ini
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => handleUnmarkClick(selectedRule.id)}
+                        variant="outline"
+                        className="w-full border-error text-error hover:bg-error/10 hover:text-error font-comfortaa"
+                      >
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Batalkan Penyelesaian
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      {/* Not Completed - Show Mark Complete Button */}
+                      <Button
+                        onClick={() => handleMarkCompleteClick(selectedRule.id)}
+                        className="w-full bg-success hover:bg-success/90 text-white font-comfortaa"
+                      >
                         <Star className="w-4 h-4 mr-2" />
                         {t("tajwid.markComplete")}
-                      </>
-                    )}
-                  </Button>
+                      </Button>
+                      <p className="text-xs text-center text-awqaf-foreground-secondary font-comfortaa">
+                        Tandai sebagai selesai setelah Anda menguasai materi ini
+                      </p>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
           </div>
         )}
       </main>
+
+      {/* Confirmation Dialog - Mark Complete */}
+      <Dialog open={isMarkConfirmOpen} onOpenChange={setIsMarkConfirmOpen}>
+        <DialogContent className="border-awqaf-border-light p-0 max-w-sm">
+          <DialogHeader className="p-6 pb-4">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-success" />
+              </div>
+            </div>
+            <DialogTitle className="font-comfortaa text-center text-lg">
+              Tandai Sebagai Selesai?
+            </DialogTitle>
+            <DialogDescription className="text-center font-comfortaa text-sm text-awqaf-foreground-secondary">
+              {selectedRule && (
+                <>
+                  Anda akan menandai materi <span className="font-semibold text-awqaf-primary">{selectedRule.name}</span> sebagai selesai dipelajari.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="px-6 pb-6 space-y-3">
+            <div className="bg-accent-50 border border-awqaf-border-light rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-info flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
+                  Pastikan Anda sudah memahami dan menguasai materi ini dengan baik sebelum menandai sebagai selesai.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={cancelConfirmation}
+                className="flex-1 font-comfortaa"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Batal
+              </Button>
+              <Button
+                onClick={confirmMarkComplete}
+                className="flex-1 bg-success hover:bg-success/90 text-white font-comfortaa"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                Ya, Tandai
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog - Unmark */}
+      <Dialog open={isUnmarkConfirmOpen} onOpenChange={setIsUnmarkConfirmOpen}>
+        <DialogContent className="border-awqaf-border-light p-0 max-w-sm">
+          <DialogHeader className="p-6 pb-4">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center">
+                <XCircle className="w-8 h-8 text-error" />
+              </div>
+            </div>
+            <DialogTitle className="font-comfortaa text-center text-lg">
+              Batalkan Penyelesaian?
+            </DialogTitle>
+            <DialogDescription className="text-center font-comfortaa text-sm text-awqaf-foreground-secondary">
+              {selectedRule && (
+                <>
+                  Anda akan membatalkan status selesai untuk materi <span className="font-semibold text-awqaf-primary">{selectedRule.name}</span>.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="px-6 pb-6 space-y-3">
+            <div className="bg-error/5 border border-error/20 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-error flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
+                  Progress penyelesaian materi ini akan dihapus dan Anda perlu menandainya kembali nanti.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={cancelConfirmation}
+                className="flex-1 font-comfortaa"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Batal
+              </Button>
+              <Button
+                onClick={confirmUnmark}
+                className="flex-1 bg-error hover:bg-error/90 text-white font-comfortaa"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                Ya, Batalkan
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

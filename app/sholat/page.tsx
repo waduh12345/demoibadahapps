@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Clock,
   MapPin,
@@ -15,9 +15,21 @@ import {
   VolumeX,
   Play,
   Square,
+  Check,
+  Circle,
+  CheckCircle2,
+  Award,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { useI18n } from "@/app/hooks/useI18n";
 
 interface Location {
@@ -74,6 +86,11 @@ export default function SholatPage() {
   const [currentAdhanPrayer, setCurrentAdhanPrayer] = useState<string | null>(
     null
   );
+
+  // Prayer Checklist States
+  const [prayerChecklist, setPrayerChecklist] = useState<Record<string, boolean>>({});
+  const [showMotivationDialog, setShowMotivationDialog] = useState(false);
+  const [completedPrayerName, setCompletedPrayerName] = useState<string>("");
 
   // Refs
   const adhanAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -180,6 +197,25 @@ export default function SholatPage() {
     }
   };
 
+  // Load prayer checklist from localStorage
+  useEffect(() => {
+    const today = new Date().toDateString();
+    const savedChecklist = localStorage.getItem(`prayer-checklist-${today}`);
+    
+    if (savedChecklist) {
+      setPrayerChecklist(JSON.parse(savedChecklist));
+    } else {
+      // Reset checklist for new day
+      setPrayerChecklist({});
+    }
+  }, []);
+
+  // Save prayer checklist to localStorage
+  useEffect(() => {
+    const today = new Date().toDateString();
+    localStorage.setItem(`prayer-checklist-${today}`, JSON.stringify(prayerChecklist));
+  }, [prayerChecklist]);
+
   // Update prayer names when locale changes
   useEffect(() => {
     if (prayerTimes.length > 0 && location) {
@@ -200,6 +236,33 @@ export default function SholatPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locale, t]);
+
+  // Calculate prayer progress
+  const prayerProgress = useMemo(() => {
+    if (prayerTimes.length === 0) return 0;
+    const checkedCount = Object.values(prayerChecklist).filter(Boolean).length;
+    return Math.round((checkedCount / prayerTimes.length) * 100);
+  }, [prayerChecklist, prayerTimes]);
+
+  // Toggle prayer checklist
+  const togglePrayerCheck = (prayerName: string) => {
+    const newChecklist = { ...prayerChecklist };
+    const isCurrentlyChecked = newChecklist[prayerName];
+    
+    if (!isCurrentlyChecked) {
+      // Checking the prayer
+      newChecklist[prayerName] = true;
+      setPrayerChecklist(newChecklist);
+      
+      // Show motivation dialog
+      setCompletedPrayerName(prayerName);
+      setShowMotivationDialog(true);
+    } else {
+      // Unchecking the prayer
+      newChecklist[prayerName] = false;
+      setPrayerChecklist(newChecklist);
+    }
+  };
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -826,11 +889,11 @@ export default function SholatPage() {
         {location && prayerTimes.length > 0 && (
           <Card className="border-awqaf-border-light">
             <CardContent className="p-4">
-              <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-accent-100 rounded-full flex items-center justify-center">
                   <Calendar className="w-5 h-5 text-awqaf-primary" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h3 className="font-semibold text-card-foreground font-comfortaa">
                     {t("prayer.todaySchedule")}
                   </h3>
@@ -853,67 +916,129 @@ export default function SholatPage() {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                {prayerTimes.map((prayer) => (
-                  <div
-                    key={prayer.name}
-                    className={`
-                    flex items-center justify-between py-3 px-4 rounded-xl transition-all duration-200
-                    ${
-                      prayer.status === "current"
-                        ? "bg-accent-100 border border-accent-200"
-                        : "hover:bg-accent-50"
-                    }
-                  `}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`
-                        w-10 h-10 rounded-full flex items-center justify-center
-                        ${
-                          prayer.status === "current"
-                            ? "bg-awqaf-primary text-white"
-                            : "bg-accent-100 text-awqaf-primary"
-                        }
-                      `}
-                      >
-                        <Clock className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <span className="text-card-foreground font-comfortaa font-semibold text-lg">
-                          {prayer.name}
-                        </span>
-                        <p className="text-sm text-awqaf-primary font-tajawal">
-                          {prayer.arabic}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span
-                        className={`
-                        font-comfortaa font-bold text-xl
-                        ${
-                          prayer.status === "current"
-                            ? "text-awqaf-primary"
-                            : "text-awqaf-foreground-secondary"
-                        }
-                      `}
-                      >
-                        {prayer.time}
-                      </span>
-                      {prayer.status === "current" && (
-                        <p className="text-xs text-success font-comfortaa mt-1">
-                          {t("prayer.currentlyOngoing")}
-                        </p>
-                      )}
-                      {prayer.status === "completed" && (
-                        <p className="text-xs text-awqaf-foreground-secondary font-comfortaa mt-1">
-                          {t("prayer.completed")}
-                        </p>
-                      )}
-                    </div>
+              {/* Prayer Progress */}
+              <div className="mb-6 p-4 bg-gradient-to-br from-accent-50 to-accent-100 rounded-xl border border-awqaf-border-light">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Award className="w-5 h-5 text-awqaf-primary" />
+                    <span className="font-semibold text-card-foreground font-comfortaa">
+                      Progress Sholat Hari Ini
+                    </span>
                   </div>
-                ))}
+                  <span className={`text-2xl font-bold font-comfortaa ${prayerProgress === 100 ? "text-success" : "text-awqaf-primary"}`}>
+                    {prayerProgress}%
+                  </span>
+                </div>
+                <Progress value={prayerProgress} className="h-3 bg-accent-200" />
+                <div className="flex items-center justify-between mt-2 text-xs font-comfortaa">
+                  <span className="text-awqaf-foreground-secondary">
+                    {Object.values(prayerChecklist).filter(Boolean).length} / {prayerTimes.length} Sholat
+                  </span>
+                  {prayerProgress === 100 ? (
+                    <span className="text-success font-semibold flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Alhamdulillah, lengkap!
+                    </span>
+                  ) : (
+                    <span className="text-awqaf-primary font-semibold">
+                      Tetap semangat! 💪
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-center text-awqaf-foreground-secondary font-comfortaa mt-3 italic">
+                  Klik lingkaran untuk menandai sholat yang sudah dikerjakan
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {prayerTimes.map((prayer) => {
+                  const isChecked = prayerChecklist[prayer.name] || false;
+                  
+                  return (
+                    <div
+                      key={prayer.name}
+                      className={`
+                        flex items-center justify-between py-3 px-4 rounded-xl transition-all duration-200
+                        ${
+                          isChecked
+                            ? "bg-success/10 border-2 border-success/30"
+                            : prayer.status === "current"
+                            ? "bg-accent-100 border border-accent-200"
+                            : "hover:bg-accent-50 border border-transparent"
+                        }
+                      `}
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        {/* Checkbox */}
+                        <button
+                          onClick={() => togglePrayerCheck(prayer.name)}
+                          className={`
+                            w-10 h-10 rounded-full flex items-center justify-center transition-all
+                            ${
+                              isChecked
+                                ? "bg-success text-white"
+                                : prayer.status === "current"
+                                ? "bg-awqaf-primary text-white hover:bg-awqaf-primary/90"
+                                : "bg-accent-100 text-awqaf-primary hover:bg-accent-200"
+                            }
+                          `}
+                        >
+                          {isChecked ? (
+                            <CheckCircle2 className="w-6 h-6" />
+                          ) : (
+                            <Circle className="w-6 h-6" />
+                          )}
+                        </button>
+
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-card-foreground font-comfortaa font-semibold text-lg ${isChecked ? "line-through opacity-70" : ""}`}>
+                              {prayer.name}
+                            </span>
+                            {isChecked && (
+                              <CheckCircle className="w-4 h-4 text-success" />
+                            )}
+                          </div>
+                          <p className="text-sm text-awqaf-primary font-tajawal">
+                            {prayer.arabic}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <span
+                          className={`
+                            font-comfortaa font-bold text-xl
+                            ${
+                              isChecked
+                                ? "text-success"
+                                : prayer.status === "current"
+                                ? "text-awqaf-primary"
+                                : "text-awqaf-foreground-secondary"
+                            }
+                          `}
+                        >
+                          {prayer.time}
+                        </span>
+                        {isChecked && (
+                          <p className="text-xs text-success font-comfortaa mt-1 font-semibold">
+                            ✓ Sudah Sholat
+                          </p>
+                        )}
+                        {!isChecked && prayer.status === "current" && (
+                          <p className="text-xs text-success font-comfortaa mt-1">
+                            {t("prayer.currentlyOngoing")}
+                          </p>
+                        )}
+                        {!isChecked && prayer.status === "completed" && (
+                          <p className="text-xs text-awqaf-foreground-secondary font-comfortaa mt-1">
+                            {t("prayer.completed")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -951,6 +1076,50 @@ export default function SholatPage() {
           </div>
         )}
       </main>
+
+      {/* Motivation Dialog */}
+      <Dialog open={showMotivationDialog} onOpenChange={setShowMotivationDialog}>
+        <DialogContent className="border-awqaf-border-light p-0 max-w-sm">
+          <DialogHeader className="p-6 pb-4">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center animate-pulse">
+                <CheckCircle2 className="w-12 h-12 text-success" />
+              </div>
+            </div>
+            <DialogTitle className="font-comfortaa text-center text-xl">
+              Alhamdulillah! 🎉
+            </DialogTitle>
+            <DialogDescription className="text-center font-comfortaa text-sm text-awqaf-foreground-secondary">
+              Anda telah menyelesaikan sholat <span className="font-semibold text-awqaf-primary">{completedPrayerName}</span>
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="px-6 pb-6 space-y-4">
+            <div className="bg-gradient-to-br from-accent-50 to-accent-100 p-4 rounded-lg border border-awqaf-border-light">
+              <p className="text-sm text-center text-awqaf-foreground font-comfortaa leading-relaxed">
+                &quot;Sesungguhnya sholat itu mencegah dari perbuatan keji dan mungkar&quot;
+              </p>
+              <p className="text-xs text-center text-awqaf-foreground-secondary font-comfortaa mt-2">
+                - QS. Al-Ankabut: 45
+              </p>
+            </div>
+
+            <div className="text-center">
+              <p className="text-sm text-awqaf-foreground-secondary font-comfortaa">
+                Terus jaga sholat 5 waktu untuk kebaikan dunia dan akhirat! 💪
+              </p>
+            </div>
+
+            <Button
+              onClick={() => setShowMotivationDialog(false)}
+              className="w-full bg-success hover:bg-success/90 text-white font-comfortaa"
+            >
+              <Check className="w-4 h-4 mr-2" />
+              Alhamdulillah
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

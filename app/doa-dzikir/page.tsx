@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,10 @@ import {
   RefreshCw,
   Loader2,
   Filter,
+  Play,
+  Pause,
+  Square,
+  Volume2,
 } from "lucide-react";
 import Link from "next/link";
 // Import Services & Types
@@ -49,6 +53,12 @@ export default function DoaDzikirPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [page, setPage] = useState(1);
+
+  // Audio Player States
+  const [playingDoaId, setPlayingDoaId] = useState<number | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // --- HELPER FUNCTIONS FOR TRANSLATION ---
 
@@ -260,6 +270,95 @@ export default function DoaDzikirPage() {
     return null;
   }, [doaListData]);
 
+  // Audio Player Functions
+  const handlePlayAudio = async (doaId: number, audioUrl: string | null) => {
+    // Guard against null audio URL
+    if (!audioUrl) {
+      alert("URL audio tidak tersedia.");
+      return;
+    }
+
+    try {
+      // If same audio is playing, just toggle pause/play
+      if (playingDoaId === doaId && audioRef.current) {
+        if (isPlaying) {
+          audioRef.current.pause();
+          setIsPlaying(false);
+        } else {
+          await audioRef.current.play();
+          setIsPlaying(true);
+        }
+        return;
+      }
+
+      // Stop current audio if playing different one
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+
+      // Create new audio element
+      setIsLoading(true);
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+
+      // Set up event listeners
+      audio.addEventListener("canplay", () => {
+        setIsLoading(false);
+      });
+
+      audio.addEventListener("ended", () => {
+        setIsPlaying(false);
+        setPlayingDoaId(null);
+      });
+
+      audio.addEventListener("error", () => {
+        setIsLoading(false);
+        setIsPlaying(false);
+        setPlayingDoaId(null);
+        alert("Gagal memutar audio. Pastikan URL audio valid.");
+      });
+
+      // Play audio
+      await audio.play();
+      setPlayingDoaId(doaId);
+      setIsPlaying(true);
+      setIsLoading(false);
+    } catch (err) {
+      console.error("Error playing audio:", err);
+      setIsLoading(false);
+      setIsPlaying(false);
+      setPlayingDoaId(null);
+      alert("Gagal memutar audio. Silakan coba lagi.");
+    }
+  };
+
+  const handlePauseAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const handleStopAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setIsPlaying(false);
+      setPlayingDoaId(null);
+    }
+  };
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20">
       {/* Header */}
@@ -320,6 +419,69 @@ export default function DoaDzikirPage() {
                   );
                 })()}
               </div>
+
+              {/* Audio Player for Doa of the Day */}
+              {doaOfTheDay.audio && (
+                <div className="bg-white/90 p-3 rounded-lg border border-awqaf-border-light">
+                  <div className="flex items-center gap-2">
+                    <Volume2 className="w-4 h-4 text-awqaf-primary" />
+                    <span className="text-xs font-semibold text-awqaf-primary font-comfortaa flex-1">
+                      Audio Panduan
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {playingDoaId === doaOfTheDay.id && isPlaying ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handlePauseAudio}
+                          className="h-8 px-3 bg-awqaf-primary text-white hover:bg-awqaf-primary/90"
+                        >
+                          <Pause className="w-4 h-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePlayAudio(doaOfTheDay.id, doaOfTheDay.audio)}
+                          disabled={isLoading && playingDoaId === doaOfTheDay.id}
+                          className="h-8 px-3"
+                        >
+                          {isLoading && playingDoaId === doaOfTheDay.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Play className="w-4 h-4" />
+                          )}
+                        </Button>
+                      )}
+                      
+                      {playingDoaId === doaOfTheDay.id && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleStopAudio}
+                          className="h-8 px-3"
+                        >
+                          <Square className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {playingDoaId === doaOfTheDay.id && isPlaying && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="flex gap-1 items-end">
+                        <div className="w-1 h-2 bg-awqaf-primary rounded-full animate-pulse" style={{ animationDelay: "0ms" }}></div>
+                        <div className="w-1 h-3 bg-awqaf-primary rounded-full animate-pulse" style={{ animationDelay: "150ms" }}></div>
+                        <div className="w-1 h-4 bg-awqaf-primary rounded-full animate-pulse" style={{ animationDelay: "300ms" }}></div>
+                        <div className="w-1 h-3 bg-awqaf-primary rounded-full animate-pulse" style={{ animationDelay: "450ms" }}></div>
+                      </div>
+                      <span className="text-xs text-awqaf-primary font-comfortaa animate-pulse">
+                        Sedang diputar...
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex items-center gap-2">
                 <Button
@@ -547,6 +709,72 @@ export default function DoaDzikirPage() {
                           }}
                         />
                       </div>
+
+                      {/* Audio Player - Show only if audio URL exists */}
+                      {item.audio && (
+                        <div className="bg-gradient-to-r from-accent-50 to-accent-100 p-3 rounded-lg border border-awqaf-border-light">
+                          <div className="flex items-center gap-2">
+                            <Volume2 className="w-4 h-4 text-awqaf-primary" />
+                            <span className="text-xs font-semibold text-awqaf-primary font-comfortaa flex-1">
+                              Audio Panduan
+                            </span>
+                            <div className="flex items-center gap-1">
+                              {/* Play/Pause Button */}
+                              {playingDoaId === item.id && isPlaying ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handlePauseAudio}
+                                  className="h-8 px-3 bg-awqaf-primary text-white hover:bg-awqaf-primary/90"
+                                >
+                                  <Pause className="w-4 h-4" />
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handlePlayAudio(item.id, item.audio)}
+                                  disabled={isLoading && playingDoaId === item.id}
+                                  className="h-8 px-3"
+                                >
+                                  {isLoading && playingDoaId === item.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <Play className="w-4 h-4" />
+                                  )}
+                                </Button>
+                              )}
+                              
+                              {/* Stop Button - Show only when this audio is playing */}
+                              {playingDoaId === item.id && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handleStopAudio}
+                                  className="h-8 px-3"
+                                >
+                                  <Square className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Playing indicator */}
+                          {playingDoaId === item.id && isPlaying && (
+                            <div className="mt-2 flex items-center gap-2">
+                              <div className="flex gap-1 items-end">
+                                <div className="w-1 h-2 bg-awqaf-primary rounded-full animate-pulse" style={{ animationDelay: "0ms" }}></div>
+                                <div className="w-1 h-3 bg-awqaf-primary rounded-full animate-pulse" style={{ animationDelay: "150ms" }}></div>
+                                <div className="w-1 h-4 bg-awqaf-primary rounded-full animate-pulse" style={{ animationDelay: "300ms" }}></div>
+                                <div className="w-1 h-3 bg-awqaf-primary rounded-full animate-pulse" style={{ animationDelay: "450ms" }}></div>
+                              </div>
+                              <span className="text-xs text-awqaf-primary font-comfortaa animate-pulse">
+                                Sedang diputar...
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       {/* Actions */}
                       <div className="flex items-center gap-2 pt-2 border-t">

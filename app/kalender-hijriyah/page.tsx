@@ -39,60 +39,104 @@ import {
 import { useI18n } from "@/app/hooks/useI18n";
 
 interface CalendarDay {
-  day: number;
+  gregorianDay: number;
+  gregorianMonth: number;
+  gregorianYear: number;
   hijriDate: { year: number; month: number; day: number };
   hariBesar: HariBesar | null;
   isToday: boolean;
+  isCurrentMonth: boolean;
 }
 
 export default function KalenderHijriyahPage() {
   const { t, locale } = useI18n();
-  const [currentHijriDate, setCurrentHijriDate] = useState(toHijriyah(new Date()));
+  const today = new Date();
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth()); // 0-11
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const currentHijriDate = toHijriyah(new Date(currentYear, currentMonth, 1));
   const [selectedHariBesar, setSelectedHariBesar] = useState<HariBesar | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null);
   const hariBesarSectionRef = useRef<HTMLDivElement>(null);
 
-  // Update current hijri date
-  useEffect(() => {
-    setCurrentHijriDate(toHijriyah(new Date()));
-  }, []);
+  // Nama bulan Masehi
+  const namaBulanMasehi = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  ];
 
-  // Generate calendar days
+  // Generate calendar days for Gregorian calendar
   const generateCalendarDays = (): CalendarDay[] => {
-    const year = currentHijriDate.year;
-    const month = currentHijriDate.month;
-    const daysInMonth = getHijriMonthDays(year, month);
-    const firstDayOfWeek = getHijriDayOfWeek(year, month, 1);
-    
-    const todayHijri = toHijriyah(new Date());
-    const isCurrentMonth = year === todayHijri.year && month === todayHijri.month;
-
     const days: CalendarDay[] = [];
-
-    // Add empty cells for days before month starts
-    for (let i = 0; i < firstDayOfWeek; i++) {
-      days.push({
-        day: 0,
-        hijriDate: { year, month, day: 0 },
-        hariBesar: null,
-        isToday: false,
-      });
-    }
-
-    // Add days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const hariBesar = getHariBesar(month, day);
-      const isToday = isCurrentMonth && day === todayHijri.day;
+    const today = new Date();
+    
+    // Get first day of the month (0 = Sunday, 1 = Monday, etc.)
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const firstDayOfWeek = firstDay.getDay();
+    
+    // Get number of days in current month
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    
+    // Get number of days in previous month
+    const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
+    
+    // Add empty cells for days from previous month
+    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+      const day = daysInPrevMonth - i;
+      const date = new Date(currentYear, currentMonth - 1, day);
+      const hijriDate = toHijriyah(date);
+      const hariBesar = getHariBesar(hijriDate.month, hijriDate.day);
       
       days.push({
-        day,
-        hijriDate: { year, month, day },
+        gregorianDay: day,
+        gregorianMonth: currentMonth - 1,
+        gregorianYear: currentYear,
+        hijriDate,
         hariBesar,
-        isToday,
+        isToday: false,
+        isCurrentMonth: false,
       });
     }
-
+    
+    // Add days of current month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentYear, currentMonth, day);
+      const hijriDate = toHijriyah(date);
+      const hariBesar = getHariBesar(hijriDate.month, hijriDate.day);
+      const isToday = 
+        day === today.getDate() && 
+        currentMonth === today.getMonth() && 
+        currentYear === today.getFullYear();
+      
+      days.push({
+        gregorianDay: day,
+        gregorianMonth: currentMonth,
+        gregorianYear: currentYear,
+        hijriDate,
+        hariBesar,
+        isToday,
+        isCurrentMonth: true,
+      });
+    }
+    
+    // Add days from next month to complete the grid
+    const remainingCells = 42 - days.length; // 6 rows × 7 days
+    for (let day = 1; day <= remainingCells; day++) {
+      const date = new Date(currentYear, currentMonth + 1, day);
+      const hijriDate = toHijriyah(date);
+      const hariBesar = getHariBesar(hijriDate.month, hijriDate.day);
+      
+      days.push({
+        gregorianDay: day,
+        gregorianMonth: currentMonth + 1,
+        gregorianYear: currentYear,
+        hijriDate,
+        hariBesar,
+        isToday: false,
+        isCurrentMonth: false,
+      });
+    }
+    
     return days;
   };
 
@@ -100,31 +144,32 @@ export default function KalenderHijriyahPage() {
 
   // Navigation functions
   const goToPreviousMonth = () => {
-    setCurrentHijriDate((prev) => {
-      if (prev.month === 1) {
-        return { year: prev.year - 1, month: 12, day: 1 };
-      }
-      return { ...prev, month: prev.month - 1, day: 1 };
-    });
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonth(currentMonth - 1);
+    }
   };
 
   const goToNextMonth = () => {
-    setCurrentHijriDate((prev) => {
-      if (prev.month === 12) {
-        return { year: prev.year + 1, month: 1, day: 1 };
-      }
-      return { ...prev, month: prev.month + 1, day: 1 };
-    });
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonth(currentMonth + 1);
+    }
   };
 
   const goToToday = () => {
-    const today = toHijriyah(new Date());
-    setCurrentHijriDate(today);
+    const today = new Date();
+    setCurrentMonth(today.getMonth());
+    setCurrentYear(today.getFullYear());
   };
 
   // Handle day click
   const handleDayClick = (day: CalendarDay) => {
-    if (day.day === 0) return; // Empty cell
+    if (!day.isCurrentMonth) return; // Skip days from other months
     
     setSelectedDay(day);
     
@@ -178,11 +223,22 @@ export default function KalenderHijriyahPage() {
     }
   };
 
-  // Get hari besar for current month
+  // Get hari besar for current month (check all days in current month)
   const getHariBesarThisMonth = () => {
-    return hariBesarData.filter(
-      (hari) => hari.date.month === currentHijriDate.month
-    );
+    const hariBesarInMonth: HariBesar[] = [];
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentYear, currentMonth, day);
+      const hijriDate = toHijriyah(date);
+      const hariBesar = getHariBesar(hijriDate.month, hijriDate.day);
+      
+      if (hariBesar && !hariBesarInMonth.find(h => h.id === hariBesar.id)) {
+        hariBesarInMonth.push(hariBesar);
+      }
+    }
+    
+    return hariBesarInMonth;
   };
 
   const hariBesarThisMonth = getHariBesarThisMonth();
@@ -208,7 +264,7 @@ export default function KalenderHijriyahPage() {
                   {t("hijriCalendar.title")}
                 </h1>
                 <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
-                  {currentHijriDate.year} H
+                  {namaBulanMasehi[currentMonth]} {currentYear}
                 </p>
               </div>
               <Button
@@ -230,26 +286,34 @@ export default function KalenderHijriyahPage() {
         <Card className="border-awqaf-border-light bg-gradient-to-br from-awqaf-primary to-awqaf-primary/80 text-white overflow-hidden">
           <CardContent className="p-6 relative">
             <div className="absolute top-0 right-0 opacity-10">
-              <Moon className="w-32 h-32 -mt-4 -mr-4" />
+              <Sun className="w-32 h-32 -mt-4 -mr-4" />
+            </div>
+            <div className="absolute top-0 left-0 opacity-10">
+              <Moon className="w-24 h-24 -mt-2 -ml-2" />
             </div>
             <div className="relative z-10">
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Calendar className="w-5 h-5" />
                 <span className="text-sm font-comfortaa opacity-90">
-                  {namaBulanHijriyah[currentHijriDate.month - 1]} {currentHijriDate.year} H
+                  Hari Ini
                 </span>
               </div>
-              <h2 className="text-3xl font-bold font-arabic text-center mb-2">
-                {currentHijriDate.day} {namaBulanHijriyah[currentHijriDate.month - 1]}
+              <h2 className="text-3xl font-bold font-comfortaa text-center mb-2">
+                {new Date().getDate()} {namaBulanMasehi[new Date().getMonth()]} {new Date().getFullYear()}
               </h2>
-              <p className="text-sm text-center font-comfortaa opacity-90">
-                {new Date().toLocaleDateString(locale === "id" ? "id-ID" : locale === "en" ? "en-US" : locale === "ar" ? "ar-SA" : locale === "fr" ? "fr-FR" : locale === "kr" ? "ko-KR" : "ja-JP", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </p>
+              <div className="text-center mb-2">
+                <p className="text-sm font-comfortaa opacity-90">
+                  {new Date().toLocaleDateString(locale === "id" ? "id-ID" : locale === "en" ? "en-US" : locale === "ar" ? "ar-SA" : locale === "fr" ? "fr-FR" : locale === "kr" ? "ko-KR" : "ja-JP", {
+                    weekday: "long",
+                  })}
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-2 pt-2 border-t border-white/20">
+                <Moon className="w-4 h-4" />
+                <p className="text-sm font-arabic opacity-90">
+                  {toHijriyah(new Date()).day} {namaBulanHijriyah[toHijriyah(new Date()).month - 1]} {toHijriyah(new Date()).year} H
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -270,10 +334,10 @@ export default function KalenderHijriyahPage() {
 
               <div className="text-center">
                 <p className="text-sm font-semibold text-awqaf-primary font-comfortaa">
-                  {namaBulanHijriyah[currentHijriDate.month - 1]}
+                  {namaBulanMasehi[currentMonth]}
                 </p>
                 <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
-                  {currentHijriDate.year} H
+                  {currentYear}
                 </p>
               </div>
 
@@ -308,38 +372,46 @@ export default function KalenderHijriyahPage() {
             {/* Calendar Days */}
             <div className="grid grid-cols-7 gap-1">
               {calendarDays.map((day, index) => {
-                if (day.day === 0) {
-                  return <div key={index} className="h-14"></div>;
-                }
-
-                const { day: dayNumber, hariBesar, isToday } = day;
+                const { gregorianDay, hijriDate, hariBesar, isToday, isCurrentMonth } = day;
                 const typeInfo = hariBesar ? getTypeInfo(hariBesar.type) : null;
 
                 return (
                   <button
                     key={index}
                     onClick={() => handleDayClick(day)}
-                    className={`h-14 flex flex-col items-center justify-center text-xs font-comfortaa rounded-lg cursor-pointer transition-all duration-200 relative group ${
-                      isToday
-                        ? "bg-gradient-to-br from-awqaf-primary to-awqaf-primary/80 text-white shadow-lg scale-105"
+                    disabled={!isCurrentMonth}
+                    className={`h-16 flex flex-col items-center justify-center text-xs font-comfortaa rounded-lg transition-all duration-200 relative group ${
+                      !isCurrentMonth
+                        ? "opacity-30 cursor-default"
+                        : isToday
+                        ? "bg-gradient-to-br from-awqaf-primary to-awqaf-primary/80 text-white shadow-lg scale-105 cursor-pointer"
                         : hariBesar
-                        ? `${typeInfo?.bgColor} hover:shadow-md border-2 ${typeInfo?.color.split(' ')[2]}`
-                        : "hover:bg-accent-100 border border-transparent hover:border-awqaf-border-light"
+                        ? `${typeInfo?.bgColor} hover:shadow-md border-2 ${typeInfo?.color.split(' ')[2]} cursor-pointer`
+                        : "hover:bg-accent-100 border border-transparent hover:border-awqaf-border-light cursor-pointer"
                     }`}
                   >
-                    <span className={`font-semibold ${isToday ? "text-white" : "text-card-foreground"}`}>
-                      {dayNumber}
+                    {/* Tanggal Masehi (besar) */}
+                    <span className={`font-bold text-base ${isToday ? "text-white" : isCurrentMonth ? "text-card-foreground" : "text-gray-400"}`}>
+                      {gregorianDay}
                     </span>
-                    {hariBesar && (
-                      <div className="text-xs mt-0.5">
+                    
+                    {/* Tanggal Hijriyah (kecil di bawah) */}
+                    {isCurrentMonth && (
+                      <span className={`text-[9px] leading-tight font-arabic mt-0.5 ${isToday ? "text-white/90" : "text-awqaf-foreground-secondary"}`}>
+                        {hijriDate.day} {namaBulanHijriyah[hijriDate.month - 1].slice(0, 3)}
+                      </span>
+                    )}
+                    
+                    {/* Icon hari besar */}
+                    {hariBesar && isCurrentMonth && (
+                      <div className="absolute -top-1 -right-1 text-xs">
                         {hariBesar.icon}
                       </div>
                     )}
+                    
+                    {/* Indicator hari ini */}
                     {isToday && (
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full border-2 border-white"></div>
-                    )}
-                    {hariBesar && !isToday && (
-                      <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 rounded-full bg-awqaf-primary"></div>
+                      <div className="absolute -top-1 -left-1 w-2 h-2 bg-yellow-400 rounded-full border border-white animate-pulse"></div>
                     )}
                   </button>
                 );
@@ -367,7 +439,7 @@ export default function KalenderHijriyahPage() {
           <div className="flex items-center gap-2">
             <Star className="w-5 h-5 text-awqaf-primary" />
             <h2 className="text-lg font-semibold text-awqaf-primary font-comfortaa">
-              {t("hijriCalendar.importantDays")} {namaBulanHijriyah[currentHijriDate.month - 1]}
+              {t("hijriCalendar.importantDays")} {namaBulanMasehi[currentMonth]}
             </h2>
             {hariBesarThisMonth.length > 0 && (
               <Badge variant="secondary" className="bg-awqaf-primary text-white">
@@ -502,8 +574,11 @@ export default function KalenderHijriyahPage() {
                         {t("hijriCalendar.selectedDate")}
                       </h4>
                     </div>
+                    <p className="text-sm text-blue-800 font-comfortaa mb-1">
+                      <span className="font-semibold">Masehi:</span> {selectedDay.gregorianDay} {namaBulanMasehi[selectedDay.gregorianMonth]} {selectedDay.gregorianYear}
+                    </p>
                     <p className="text-sm text-blue-800 font-comfortaa">
-                      {selectedDay.hijriDate.day} {namaBulanHijriyah[selectedDay.hijriDate.month - 1]} {selectedDay.hijriDate.year} H
+                      <span className="font-semibold">Hijriyah:</span> {selectedDay.hijriDate.day} {namaBulanHijriyah[selectedDay.hijriDate.month - 1]} {selectedDay.hijriDate.year} H
                     </p>
                   </div>
                 )}
