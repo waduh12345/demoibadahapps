@@ -199,21 +199,33 @@ export default function SholatPage() {
 
   // Load prayer checklist from localStorage
   useEffect(() => {
-    const today = new Date().toDateString();
-    const savedChecklist = localStorage.getItem(`prayer-checklist-${today}`);
-    
-    if (savedChecklist) {
-      setPrayerChecklist(JSON.parse(savedChecklist));
-    } else {
-      // Reset checklist for new day
+    try {
+      const today = new Date().toDateString();
+      const savedChecklist = localStorage.getItem(`prayer-checklist-${today}`);
+      
+      if (savedChecklist) {
+        const parsed = JSON.parse(savedChecklist);
+        setPrayerChecklist(parsed || {});
+      } else {
+        // Reset checklist for new day
+        setPrayerChecklist({});
+      }
+    } catch (error) {
+      console.error("Error loading prayer checklist:", error);
       setPrayerChecklist({});
     }
   }, []);
 
   // Save prayer checklist to localStorage
   useEffect(() => {
-    const today = new Date().toDateString();
-    localStorage.setItem(`prayer-checklist-${today}`, JSON.stringify(prayerChecklist));
+    try {
+      const today = new Date().toDateString();
+      if (prayerChecklist && Object.keys(prayerChecklist).length >= 0) {
+        localStorage.setItem(`prayer-checklist-${today}`, JSON.stringify(prayerChecklist));
+      }
+    } catch (error) {
+      console.error("Error saving prayer checklist:", error);
+    }
   }, [prayerChecklist]);
 
   // Update prayer names when locale changes
@@ -239,28 +251,45 @@ export default function SholatPage() {
 
   // Calculate prayer progress
   const prayerProgress = useMemo(() => {
-    if (prayerTimes.length === 0) return 0;
-    const checkedCount = Object.values(prayerChecklist).filter(Boolean).length;
-    return Math.round((checkedCount / prayerTimes.length) * 100);
+    if (!prayerTimes || prayerTimes.length === 0) return 0;
+    if (!prayerChecklist) return 0;
+    
+    try {
+      const checkedCount = Object.values(prayerChecklist).filter(Boolean).length;
+      return Math.round((checkedCount / prayerTimes.length) * 100);
+    } catch (error) {
+      console.error("Error calculating prayer progress:", error);
+      return 0;
+    }
   }, [prayerChecklist, prayerTimes]);
 
   // Toggle prayer checklist
   const togglePrayerCheck = (prayerName: string) => {
-    const newChecklist = { ...prayerChecklist };
-    const isCurrentlyChecked = newChecklist[prayerName];
-    
-    if (!isCurrentlyChecked) {
-      // Checking the prayer
-      newChecklist[prayerName] = true;
-      setPrayerChecklist(newChecklist);
+    try {
+      if (!prayerName) {
+        console.error("Prayer name is required");
+        return;
+      }
+
+      const newChecklist = { ...(prayerChecklist || {}) };
+      const isCurrentlyChecked = newChecklist[prayerName];
       
-      // Show motivation dialog
-      setCompletedPrayerName(prayerName);
-      setShowMotivationDialog(true);
-    } else {
-      // Unchecking the prayer
-      newChecklist[prayerName] = false;
-      setPrayerChecklist(newChecklist);
+      if (!isCurrentlyChecked) {
+        // Checking the prayer
+        newChecklist[prayerName] = true;
+        setPrayerChecklist(newChecklist);
+        
+        // Show motivation dialog
+        setCompletedPrayerName(prayerName);
+        setShowMotivationDialog(true);
+      } else {
+        // Unchecking the prayer
+        newChecklist[prayerName] = false;
+        setPrayerChecklist(newChecklist);
+      }
+    } catch (error) {
+      console.error("Error toggling prayer check:", error);
+      alert("Terjadi kesalahan. Silakan coba lagi.");
     }
   };
 
