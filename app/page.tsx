@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
+
 // Components
 import WidgetCard from "./components/WidgetCard";
 import ProgressWidget from "./components/ProgressWidget";
@@ -13,21 +14,92 @@ import FeatureNavigation from "./components/FeatureNavigation";
 import ArticleCard from "./components/ArticleCard";
 import SearchModal from "./components/SearchModal";
 import LanguageSwitcher from "./components/LanguageSwitcher";
+
 // Services
 import { useGetArticlesQuery } from "@/services/public/article.service";
 import { usePrayerTracker } from "@/app/prayer-tracker/hooks/usePrayerTracker";
 import { useGetSurahsQuery } from "@/services/public/quran.service";
-// I18n
+
+// I18n & Types
 import { useI18n } from "./hooks/useI18n";
+import { Article } from "@/types/public/article";
+
+// --- TIPE & DICTIONARY ---
+type LocaleCode = "id" | "en" | "ar" | "fr" | "kr" | "jp";
+// Definisi tipe khusus untuk key sholat agar tidak any
+type PrayerKey = "fajr" | "dhuhr" | "asr" | "maghrib" | "isha";
+
+interface HomeTranslations {
+  latestArticles: string;
+  viewAll: string;
+  noArticles: string;
+  loading: string;
+  quran: {
+    verse: string;
+    surah: string;
+    notRead: string;
+  };
+}
+
+const HOME_TEXT: Record<LocaleCode, HomeTranslations> = {
+  id: {
+    latestArticles: "Artikel Terbaru",
+    viewAll: "Lihat Semua",
+    noArticles: "Belum ada artikel terbaru.",
+    loading: "Memuat...",
+    quran: { verse: "Ayat", surah: "Surah", notRead: "Belum ada aktivitas" },
+  },
+  en: {
+    latestArticles: "Latest Articles",
+    viewAll: "View All",
+    noArticles: "No latest articles yet.",
+    loading: "Loading...",
+    quran: { verse: "Verse", surah: "Surah", notRead: "No activity yet" },
+  },
+  ar: {
+    latestArticles: "أحدث المقالات",
+    viewAll: "عرض الكل",
+    noArticles: "لا توجد مقالات جديدة.",
+    loading: "جار التحميل...",
+    quran: { verse: "آية", surah: "سورة", notRead: "لا يوجد نشاط" },
+  },
+  fr: {
+    latestArticles: "Derniers articles",
+    viewAll: "Voir tout",
+    noArticles: "Aucun article récent.",
+    loading: "Chargement...",
+    quran: { verse: "Verset", surah: "Sourate", notRead: "Aucune activité" },
+  },
+  kr: {
+    latestArticles: "최신 기사",
+    viewAll: "모두 보기",
+    noArticles: "최신 기사가 없습니다.",
+    loading: "로딩 중...",
+    quran: { verse: "절", surah: "수라", notRead: "활동 없음" },
+  },
+  jp: {
+    latestArticles: "最新記事",
+    viewAll: "すべて見る",
+    noArticles: "最新の記事はありません。",
+    loading: "読み込み中...",
+    quran: { verse: "節", surah: "スーラ", notRead: "活動なし" },
+  },
+};
 
 export default function Home() {
   const { t, locale } = useI18n();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const currentHour = new Date().getHours();
 
-  // --- 1. Sapaan Berdasarkan Waktu (Inline Translation) ---
+  // Safe Locale Access
+  const safeLocale = (
+    HOME_TEXT[locale as LocaleCode] ? locale : "id"
+  ) as LocaleCode;
+  const uiText = HOME_TEXT[safeLocale];
+  const isRtl = safeLocale === "ar";
+
+  // --- 1. Sapaan Berdasarkan Waktu ---
   const getGreeting = () => {
-    const hour = currentHour;
     const greetings: Record<
       string,
       { morning: string; afternoon: string; evening: string }
@@ -63,48 +135,36 @@ export default function Home() {
         evening: "こんばんは",
       },
     };
-    const greetingSet = greetings[locale] || greetings.id;
-    return hour < 12
-      ? greetingSet.morning
-      : hour < 18
-        ? greetingSet.afternoon
-        : greetingSet.evening;
+    const set = greetings[locale] || greetings.id;
+    return currentHour < 12
+      ? set.morning
+      : currentHour < 18
+        ? set.afternoon
+        : set.evening;
   };
 
   const greeting = getGreeting();
 
-  // Fetch Data
+  // --- API HOOKS ---
   const { data: articlesData, isLoading: isLoadingArticles } =
-    useGetArticlesQuery({ page: 1, paginate: 10 });
+    useGetArticlesQuery({
+      page: 1,
+      paginate: 5,
+    });
 
   const { data: surahList } = useGetSurahsQuery({ lang: "id" });
   const { currentPrayerKey, prayerTimes } = usePrayerTracker();
 
-  // Local State for Last Quran Activity
-  const [lastQuranActivity, setLastQuranActivity] = useState(t("home.loading"));
+  // Local State for Quran Widget
+  const [lastQuranActivity, setLastQuranActivity] = useState(uiText.loading);
 
-  // --- 2. Logic Aktivitas Quran (Inline Translation) ---
+  // --- Logic Widget Quran ---
   useEffect(() => {
     const lastRead = localStorage.getItem("quran-last-read");
-
-    // Dictionary untuk teks Quran
-    const quranTexts: Record<
-      string,
-      { verse: string; surah: string; notRead: string }
-    > = {
-      id: { verse: "Ayat", surah: "Surah", notRead: "Belum ada aktivitas" },
-      en: { verse: "Verse", surah: "Surah", notRead: "No activity yet" },
-      ar: { verse: "آية", surah: "سورة", notRead: "لا يوجد نشاط" },
-      fr: { verse: "Verset", surah: "Sourate", notRead: "Aucune activité" },
-      kr: { verse: "절", surah: "수라", notRead: "활동 없음" },
-      jp: { verse: "節", surah: "スーラ", notRead: "活動なし" },
-    };
-    const txt = quranTexts[locale] || quranTexts.id;
-
     if (lastRead) {
       const parsed = JSON.parse(lastRead);
       setLastQuranActivity(
-        `${parsed.surahName} : ${txt.verse} ${parsed.verse}`,
+        `${parsed.surahName} : ${uiText.quran.verse} ${parsed.verse}`,
       );
     } else {
       const recent = localStorage.getItem("quran-recent");
@@ -115,18 +175,19 @@ export default function Home() {
           const surahName = surahList?.find(
             (s) => s.id === surahId,
           )?.transliteration;
-
           setLastQuranActivity(
-            surahName ? `${txt.surah} ${surahName}` : `${txt.surah} ${surahId}`,
+            surahName
+              ? `${uiText.quran.surah} ${surahName}`
+              : `${uiText.quran.surah} ${surahId}`,
           );
         }
       } else {
-        setLastQuranActivity(txt.notRead);
+        setLastQuranActivity(uiText.quran.notRead);
       }
     }
-  }, [surahList, locale]); // Penting: Refresh saat locale berubah
+  }, [surahList, locale, uiText]);
 
-  // Helpers Format Tanggal
+  // --- Helper Format Tanggal ---
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const localeMap: Record<string, string> = {
@@ -144,32 +205,67 @@ export default function Home() {
     });
   };
 
+  // --- Logic Mapping Artikel (Translation Aware) ---
   const latestArticles = useMemo(() => {
     if (!articlesData?.data) return [];
+
+    // Sorting Descending by Date
     const sorted = [...articlesData.data].sort(
       (a, b) =>
         new Date(b.published_at).getTime() - new Date(a.published_at).getTime(),
     );
 
-    return sorted.slice(0, 3).map((artikel) => ({
-      id: artikel.id.toString(),
-      slug: artikel.id.toString(),
-      title: artikel.title,
-      excerpt:
-        artikel.content.replace(/<[^>]*>?/gm, "").substring(0, 100) + "...",
-      category: artikel.category.name,
-      readTime: "5 min",
-      views: "1.2K",
-      publishedAt: formatDate(artikel.published_at),
-      image: artikel.image,
-    }));
+    return sorted.map((article: Article) => {
+      let title = article.title;
+      let content = article.content;
+      let categoryName = article.category?.name || "Umum"; // Safe access category
+
+      // --- PERBAIKAN: Safe Access Array Translation ---
+      // Pastikan translations adalah array sebelum di-find
+      const articleTranslations = article.translations || [];
+      const localized = articleTranslations.find((t) => t.locale === locale);
+
+      if (localized) {
+        if (localized.title) title = localized.title;
+        if (localized.content) content = localized.content;
+      } else {
+        const idFallback = articleTranslations.find((t) => t.locale === "id");
+        if (idFallback) {
+          if (idFallback.title) title = idFallback.title;
+          if (idFallback.content) content = idFallback.content;
+        }
+      }
+
+      // Safe access category translations
+      const catTranslations = article.category?.translations || [];
+      const catTrans =
+        catTranslations.find((t) => t.locale === locale) ||
+        catTranslations.find((t) => t.locale === "id");
+      if (catTrans && catTrans.name) categoryName = catTrans.name;
+
+      // Clean HTML
+      const cleanContent = content ? content.replace(/<[^>]*>?/gm, "") : "";
+
+      return {
+        id: article.id.toString(),
+        slug: article.id.toString(),
+        title: title,
+        excerpt: cleanContent.substring(0, 100) + "...",
+        category: categoryName,
+        readTime: "5 min",
+        views: "1.2K",
+        publishedAt: formatDate(article.published_at),
+        image: article.image,
+      };
+    });
   }, [articlesData, locale]);
 
-  // --- 3. Logic Widget Sholat (Inline Translation Nama Sholat) ---
+  // --- Logic Widget Prayer ---
   const prayerWidgetData = useMemo(() => {
-    if (!prayerTimes) return { title: t("home.loading"), time: "--:--" };
+    if (!prayerTimes) return { title: uiText.loading, time: "--:--" };
 
-    const prayerNames: Record<string, Record<string, string>> = {
+    // Gunakan Tipe PrayerKey yang sudah didefinisikan
+    const prayerNames: Record<string, Record<PrayerKey, string>> = {
       id: {
         fajr: "Subuh",
         dhuhr: "Dzuhur",
@@ -214,48 +310,23 @@ export default function Home() {
       },
     };
 
-    const parseTime = (timeStr: string): number => {
-      const [hours, minutes] = timeStr.split(":").map(Number);
-      return hours * 60 + minutes;
-    };
+    const activeNames = prayerNames[locale] || prayerNames.id;
+    const key = (currentPrayerKey || "fajr") as PrayerKey;
 
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-    const times = {
-      fajr: parseTime(prayerTimes.fajr),
-      dhuhr: parseTime(prayerTimes.dhuhr),
-      asr: parseTime(prayerTimes.asr),
-      maghrib: parseTime(prayerTimes.maghrib),
-      isha: parseTime(prayerTimes.isha),
-    };
-
-    type PrayerKey = "fajr" | "dhuhr" | "asr" | "maghrib" | "isha";
-    let activePrayer: PrayerKey | null = null;
-
-    if (currentMinutes >= times.fajr && currentMinutes < times.dhuhr)
-      activePrayer = "fajr";
-    else if (currentMinutes >= times.dhuhr && currentMinutes < times.asr)
-      activePrayer = "dhuhr";
-    else if (currentMinutes >= times.asr && currentMinutes < times.maghrib)
-      activePrayer = "asr";
-    else if (currentMinutes >= times.maghrib && currentMinutes < times.isha)
-      activePrayer = "maghrib";
-    else activePrayer = "isha";
-
-    const prayerKey: PrayerKey = (activePrayer ||
-      currentPrayerKey ||
-      "fajr") as PrayerKey;
-    const names = prayerNames[locale] || prayerNames.id;
+    // Type casting aman karena kita tahu struktur prayerTimes dari hook
+    const times = prayerTimes as unknown as Record<string, string>;
 
     return {
-      title: names[prayerKey],
-      time: prayerTimes[prayerKey],
+      title: activeNames[key] || key,
+      time: times[key] || "--:--",
     };
-  }, [prayerTimes, currentPrayerKey, locale]); // Refresh saat locale berubah
+  }, [prayerTimes, currentPrayerKey, locale, uiText]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20">
+    <div
+      className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20"
+      dir={isRtl ? "rtl" : "ltr"}
+    >
       {/* Header */}
       <header className="sticky top-0 z-30">
         <div className="max-w-md mx-auto px-4 py-4">
@@ -311,18 +382,16 @@ export default function Home() {
         <Card className="border-awqaf-border-light bg-gradient-to-r from-accent-100 to-accent-200">
           <CardContent className="p-6 text-center">
             <h2 className="text-lg font-semibold text-awqaf-primary font-comfortaa mb-2">
-              {/* Tampilkan Greeting sesuai bahasa */}
               {greeting}
             </h2>
             <p className="text-sm text-awqaf-foreground-secondary font-comfortaa mb-3">
-              <span className="font-tajawal text-awqaf-primary">
+              <span className="font-tajawal text-awqaf-primary text-lg">
                 السلام عليكم
               </span>
               <br />
               Assalamu&apos;alaikum
             </p>
             <p className="text-xs text-awqaf-foreground-secondary font-comfortaa italic">
-              {/* Inline Quotes */}
               {(() => {
                 const quotes: Record<string, string> = {
                   id: '"Dan barangsiapa yang bertakwa kepada Allah, niscaya Dia akan mengadakan baginya jalan keluar."',
@@ -345,7 +414,6 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-4">
           <WidgetCard
             type="prayer"
-            // Mengambil judul dari i18n atau fallback
             title={t("widgets.prayer")}
             subtitle={prayerWidgetData.title}
             time={prayerWidgetData.time}
@@ -354,7 +422,6 @@ export default function Home() {
           />
           <WidgetCard
             type="activity"
-            // Inline Translation untuk Judul Widget
             title={(() => {
               const titles: Record<string, string> = {
                 id: "Aktivitas Terakhir",
@@ -372,28 +439,14 @@ export default function Home() {
           />
         </div>
 
-        {/* Progress Widget (Otomatis menyesuaikan bahasa karena sudah diupdate sebelumnya) */}
         <ProgressWidget />
-
-        {/* Feature Navigation (Otomatis menyesuaikan bahasa karena sudah diupdate sebelumnya) */}
         <FeatureNavigation />
 
         {/* Articles Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-awqaf-primary font-comfortaa">
-              {/* Inline Translation untuk Judul Artikel */}
-              {(() => {
-                const titles: Record<string, string> = {
-                  id: "Artikel Terbaru",
-                  en: "Latest Articles",
-                  ar: "المقالات الأخيرة",
-                  fr: "Derniers articles",
-                  kr: "최신 기사",
-                  jp: "最新記事",
-                };
-                return titles[locale] || titles.id;
-              })()}
+              {uiText.latestArticles}
             </h2>
             <Link href="/artikel">
               <Button
@@ -401,7 +454,7 @@ export default function Home() {
                 size="sm"
                 className="text-awqaf-foreground-secondary hover:text-awqaf-primary hover:bg-accent-100 font-comfortaa"
               >
-                {t("home.viewAll")}
+                {uiText.viewAll}
               </Button>
             </Link>
           </div>
@@ -416,19 +469,8 @@ export default function Home() {
                 <ArticleCard key={article.id} article={article} />
               ))
             ) : (
-              <p className="text-center text-sm text-gray-500 py-4 font-comfortaa">
-                {/* Inline Translation untuk Pesan Kosong */}
-                {(() => {
-                  const msg: Record<string, string> = {
-                    id: "Belum ada artikel terbaru.",
-                    en: "No latest articles yet.",
-                    ar: "لا توجد مقالات جديدة",
-                    fr: "Aucun article récent.",
-                    kr: "최신 기사가 없습니다.",
-                    jp: "最新の記事はありません。",
-                  };
-                  return msg[locale] || msg.id;
-                })()}
+              <p className="text-center text-sm text-gray-500 py-4 font-comfortaa bg-white/50 rounded-xl border border-dashed border-gray-200">
+                {uiText.noArticles}
               </p>
             )}
           </div>

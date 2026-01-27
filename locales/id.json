@@ -22,6 +22,10 @@
       "name": "Al-Qur'an + Terjemahan",
       "description": "Baca Al-Qur'an dengan terjemahan bahasa Indonesia"
     },
+    "ramadhan": {
+      "name": "Ramadhan",
+      "description": "Dashboard khusus Ramadhan dengan khatam Qur'an dan tracking ibadah"
+    },
     "hadith": {
       "name": "Hadits",
       "description": "Kumpulan hadits shahih dan hadits harian"
@@ -134,6 +138,7 @@
   "categories": {
     "ibadah": "Ibadah",
     "al_qur_an": "Al-Qur'an",
+    "ramadhan": "Ramadhan",
     "hadith": "Hadits",
     "doa_dzikir": "Doa & Dzikir",
     "kehidupan": "Gaya Hidup",

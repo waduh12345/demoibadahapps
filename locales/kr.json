@@ -128,6 +128,10 @@
       "name": "바달 하지",
       "description": "하지 및 움라 대행을 위한 신뢰할 수 있는 서비스"
     },
+    "ramadhan": {
+      "name": "라마단",
+      "description": "꾸란 완독 및 예배 추적 기능이 있는 라마단 특별 대시보드"
+    },
     "bantuan": {
       "name": "도움말 센터",
       "description": "정보 및 사용자 지원"
@@ -136,6 +140,7 @@
   "categories": {
     "ibadah": "예배",
     "al_qur_an": "꾸란",
+    "ramadhan": "라마단",
     "hadith": "하디스",
     "doa_dzikir": "두아 & 지크르",
     "kajian": "강의",

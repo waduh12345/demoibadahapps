@@ -128,6 +128,10 @@
       "name": "バダル・ハッジ",
       "description": "バダル・ハッジとウムラのための信頼できるサービス"
     },
+    "ramadhan": {
+      "name": "ラマダン",
+      "description": "コーラン完読と礼拝追跡機能を備えたラマダン特別ダッシュボード"
+    },
     "bantuan": {
       "name": "ヘルプセンター",
       "description": "情報とユーザーサポート"
@@ -136,6 +140,7 @@
   "categories": {
     "ibadah": "礼拝",
     "al_qur_an": "クルアーン",
+    "ramadhan": "ラマダン",
     "hadith": "ハディース",
     "doa_dzikir": "ドゥア & ズィクル",
     "kajian": "講義",

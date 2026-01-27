@@ -128,6 +128,10 @@
       "name": "Badal Hajj",
       "description": "Service de confiance pour le Badal Hajj et Omra"
     },
+    "ramadhan": {
+      "name": "Ramadan",
+      "description": "Tableau de bord spécial Ramadan avec lecture du Coran et suivi du culte"
+    },
     "bantuan": {
       "name": "Centre d'Aide",
       "description": "Informations et support utilisateur"
@@ -136,6 +140,7 @@
   "categories": {
     "ibadah": "Culte",
     "al_qur_an": "Al-Coran",
+    "ramadhan": "Ramadan",
     "hadith": "Hadith",
     "doa_dzikir": "Douas & Dhikr",
     "kajian": "Conférences",

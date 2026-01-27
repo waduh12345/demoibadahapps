@@ -131,11 +131,16 @@
     "bantuan": {
       "name": "Help Center",
       "description": "Information and user support"
+    },
+    "ramadhan": {
+      "name": "Ramadan",
+      "description": "Special Ramadan dashboard with Quran completion and worship tracker"
     }
   },
   "categories": {
     "ibadah": "Worship",
     "al_qur_an": "Al-Quran",
+    "ramadhan": "Ramadan",
     "hadith": "Hadith",
     "doa_dzikir": "Dua & Dhikr",
     "kajian": "Lectures",
