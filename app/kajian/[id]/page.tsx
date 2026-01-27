@@ -20,14 +20,55 @@ import { useGetKajianListQuery } from "@/services/public/kajian.service";
 // Import i18n
 import { useI18n } from "@/app/hooks/useI18n";
 import { Kajian } from "@/types/public/kajian";
+import { LocaleCode } from "@/lib/i18n";
+
+interface TranslationKeys {
+  title: string;
+  notFound: string;
+}
+
+// --- 2. DICTIONARY TRANSLATION LOKAL ---
+const UI_TRANSLATIONS: Record<LocaleCode, TranslationKeys> = {
+  id: {
+    title: "Kajian Audio",
+    notFound: "Kajian tidak ditemukan.",
+  },
+  en: {
+    title: "Audio Lecture",
+    notFound: "Lecture not found.",
+  },
+  ar: {
+    title: "محاضرة صوتية",
+    notFound: "المحاضرة غير موجودة.",
+  },
+  fr: {
+    title: "Conférence Audio",
+    notFound: "Conférence introuvable.",
+  },
+  kr: {
+    title: "오디오 강의",
+    notFound: "강의를 찾을 수 없습니다.",
+  },
+  jp: {
+    title: "音声講義",
+    notFound: "講義が見つかりません。",
+  },
+};
 
 export default function KajianDetailPage() {
-  const { locale } = useI18n(); // Ambil locale
+  const { locale } = useI18n(); // Ambil locale dari hook
   const params = useParams();
   const router = useRouter();
   const kajianId = Number(params.id);
 
-  // --- HELPER TRANSLATION ---
+  // Safe Locale Access
+  const currentLocale = (
+    UI_TRANSLATIONS[locale as LocaleCode] ? locale : "id"
+  ) as LocaleCode;
+  const t = UI_TRANSLATIONS[currentLocale];
+  const isRtl = currentLocale === "ar";
+
+  // --- HELPER TRANSLATION (Konten Dinamis) ---
   const getKajianContent = (item: Kajian) => {
     // 1. Cari translation sesuai locale aktif
     const localized = item.translations.find((t) => t.locale === locale);
@@ -57,11 +98,10 @@ export default function KajianDetailPage() {
   };
   // --------------------------
 
-  // Fetch Kajian List untuk mencari detail (Workaround jika belum ada endpoint detail spesifik)
-  // Idealnya ada endpoint: /public/ustadz/kajian/:id
+  // Fetch Kajian List
   const { data: kajianData, isLoading } = useGetKajianListQuery({
     page: 1,
-    paginate: 100, // Ambil cukup banyak untuk probability ketemu
+    paginate: 100,
   });
 
   const kajian = useMemo(
@@ -73,7 +113,7 @@ export default function KajianDetailPage() {
   const content = useMemo(() => {
     if (!kajian) return { title: "", description: "" };
     return getKajianContent(kajian);
-  }, [kajian, locale]); // Recalculate if locale changes
+  }, [kajian, locale]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -138,6 +178,24 @@ export default function KajianDetailPage() {
     setCurrentTime(newTime);
   };
 
+  // Helper Format Tanggal Lokal
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const localeMap: Record<string, string> = {
+      id: "id-ID",
+      en: "en-US",
+      ar: "ar-SA",
+      fr: "fr-FR",
+      kr: "ko-KR",
+      jp: "ja-JP",
+    };
+    return date.toLocaleDateString(localeMap[currentLocale] || "id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-accent-50 to-accent-100">
@@ -148,14 +206,17 @@ export default function KajianDetailPage() {
 
   if (!kajian) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Kajian tidak ditemukan.</p>
+      <div className="min-h-screen flex items-center justify-center font-comfortaa text-slate-500">
+        <p>{t.notFound}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20">
+    <div
+      className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20"
+      dir={isRtl ? "rtl" : "ltr"}
+    >
       {/* Header */}
       <header className="sticky top-0 z-30">
         <div className="max-w-md mx-auto px-4 py-4">
@@ -167,10 +228,12 @@ export default function KajianDetailPage() {
                 onClick={() => router.back()}
                 className="w-10 h-10 p-0 rounded-full hover:bg-accent-100 transition-colors duration-200"
               >
-                <ArrowLeft className="w-5 h-5 text-awqaf-primary" />
+                <ArrowLeft
+                  className={`w-5 h-5 text-awqaf-primary ${isRtl ? "rotate-180" : ""}`}
+                />
               </Button>
               <h1 className="text-lg font-bold text-awqaf-primary font-comfortaa text-center flex-1">
-                Kajian Audio
+                {t.title}
               </h1>
               <div className="w-10 h-10" />
             </div>
@@ -186,15 +249,10 @@ export default function KajianDetailPage() {
               {content.title}
             </h2>
             <p className="text-sm text-awqaf-foreground-secondary font-comfortaa">
-              {kajian.ustadz?.name} •{" "}
-              {new Date(kajian.created_at).toLocaleDateString("id-ID", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+              {kajian.ustadz?.name} • {formatDate(kajian.created_at)}
             </p>
             <div
-              className="text-sm text-awqaf-foreground-secondary font-comfortaa mt-2"
+              className={`text-sm text-awqaf-foreground-secondary font-comfortaa mt-2 ${isRtl ? "text-right font-tajawal" : "text-justify"}`}
               dangerouslySetInnerHTML={{ __html: content.description || "" }}
             />
           </CardContent>
@@ -246,6 +304,7 @@ export default function KajianDetailPage() {
                 value={Math.floor(currentTime)}
                 onChange={(e) => handleSeek(Number(e.target.value))}
                 className="w-full accent-awqaf-primary h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                dir="ltr" // Selalu LTR untuk slider agar tidak terbalik di mode RTL
               />
             </div>
 
@@ -268,7 +327,9 @@ export default function KajianDetailPage() {
                 {isPlaying ? (
                   <Pause className="w-6 h-6 text-white fill-current" />
                 ) : (
-                  <Play className="w-6 h-6 text-white fill-current ml-1" />
+                  <Play
+                    className={`w-6 h-6 text-white fill-current ${isRtl ? "mr-1" : "ml-1"}`}
+                  />
                 )}
               </Button>
 

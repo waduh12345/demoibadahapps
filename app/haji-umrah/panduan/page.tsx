@@ -12,26 +12,30 @@ import {
   ChevronRight,
   Map,
   LucideIcon,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/app/hooks/useI18n";
+
+// Import Service & Types
+import { useGetGuidesQuery, GuideItem } from "@/services/public/guide.service";
 
 // Import komponen detail
 import GuideDetail from "./detail";
 
-// --- 1. TIPE DATA ---
-export type LocaleCode = "id" | "en" | "ar" | "fr" | "kr" | "jp";
+// --- Types & Helper ---
+type LocaleCode = "id" | "en" | "ar" | "fr" | "kr" | "jp";
 export type GuideCategory = "umrah" | "hajj";
 
-export interface GuideStep {
-  id: string;
+export interface ProcessedGuideStep {
+  id: number;
   category: GuideCategory;
   stepNumber: number;
   title: string;
-  description: string;
-  content: string; // HTML content (Doa & Tata Cara)
+  summary: string; // Short description (cleaned)
+  content: string; // Full HTML content
 }
 
 interface UIText {
@@ -40,187 +44,10 @@ interface UIText {
   tabUmrah: string;
   step: string;
   read: string;
+  loading: string;
+  error: string;
+  retry: string;
 }
-
-// --- 2. DATA DUMMY ---
-const GUIDE_DATA: Record<LocaleCode, GuideStep[]> = {
-  id: [
-    // UMRAH
-    {
-      id: "u1",
-      category: "umrah",
-      stepNumber: 1,
-      title: "Ihram & Niat",
-      description: "Memakai pakaian ihram dan berniat dari Miqat.",
-      content: `<p>Sunnah mandi besar, memotong kuku, dan memakai wewangian sebelum Ihram. Niat Umrah: <i>Labbaikallahumma 'Umratan</i>.</p>`,
-    },
-    {
-      id: "u2",
-      category: "umrah",
-      stepNumber: 2,
-      title: "Tawaf",
-      description: "Mengelilingi Ka'bah sebanyak 7 kali putaran.",
-      content: `<p>Dimulai dari Hajar Aswad, Ka'bah berada di sisi kiri. Memperbanyak doa dan dzikir saat putaran.</p>`,
-    },
-    {
-      id: "u3",
-      category: "umrah",
-      stepNumber: 3,
-      title: "Sa'i",
-      description: "Berlari-lari kecil antara bukit Safa dan Marwah 7 kali.",
-      content: `<p>Dimulai dari Safa dan berakhir di Marwah. Disunnahkan berlari kecil di antara dua pilar hijau.</p>`,
-    },
-    {
-      id: "u4",
-      category: "umrah",
-      stepNumber: 4,
-      title: "Tahallul",
-      description: "Mencukur atau memotong sebagian rambut.",
-      content: `<p>Sebagai tanda selesainya ibadah Umrah. Bagi laki-laki disunnahkan gundul (Tahallul Qulub).</p>`,
-    },
-    // HAJI (Simplified)
-    {
-      id: "h1",
-      category: "hajj",
-      stepNumber: 1,
-      title: "Ihram",
-      description: "Berniat Haji dari Miqat.",
-      content: "<p>Niat: Labbaikallahumma Hajjan.</p>",
-    },
-    {
-      id: "h2",
-      category: "hajj",
-      stepNumber: 2,
-      title: "Wukuf di Arafah",
-      description: "Puncak haji pada 9 Dzulhijjah.",
-      content:
-        "<p>Berdiam diri, berdoa, dan beristighfar dari dzuhur hingga terbenam matahari.</p>",
-    },
-    {
-      id: "h3",
-      category: "hajj",
-      stepNumber: 3,
-      title: "Mabit di Muzdalifah",
-      description: "Menginap dan mencari kerikil.",
-      content: "<p>Setelah dari Arafah, bermalam di Muzdalifah.</p>",
-    },
-    {
-      id: "h4",
-      category: "hajj",
-      stepNumber: 4,
-      title: "Lempar Jumrah",
-      description: "Melempar Jumrah Aqabah.",
-      content: "<p>Melempar 7 kerikil ke tiang Jumrah.</p>",
-    },
-  ],
-  en: [
-    {
-      id: "u1",
-      category: "umrah",
-      stepNumber: 1,
-      title: "Ihram",
-      description: "Entering the state of sanctity.",
-      content: "<p>Intention for Umrah...</p>",
-    },
-    {
-      id: "u2",
-      category: "umrah",
-      stepNumber: 2,
-      title: "Tawaf",
-      description: "Circumambulating the Kaaba 7 times.",
-      content: "<p>Start from Hajar al-Aswad...</p>",
-    },
-    // ... filler for logic
-    {
-      id: "h1",
-      category: "hajj",
-      stepNumber: 1,
-      title: "Ihram",
-      description: "Intention for Hajj.",
-      content: "<p>...</p>",
-    },
-  ],
-  ar: [
-    {
-      id: "u1",
-      category: "umrah",
-      stepNumber: 1,
-      title: "الإحرام",
-      description: "نية الدخول في النسك.",
-      content: "<p>لبيك اللهم عمرة...</p>",
-    },
-    {
-      id: "u2",
-      category: "umrah",
-      stepNumber: 2,
-      title: "الطواف",
-      description: "سبعة أشواط حول الكعبة.",
-      content: "<p>...</p>",
-    },
-    {
-      id: "h1",
-      category: "hajj",
-      stepNumber: 1,
-      title: "الإحرام",
-      description: "نية الحج.",
-      content: "<p>...</p>",
-    },
-  ],
-  fr: [
-    {
-      id: "u1",
-      category: "umrah",
-      stepNumber: 1,
-      title: "Ihrâm",
-      description: "Entrée en état de sacralisation.",
-      content: "<p>...</p>",
-    },
-    {
-      id: "h1",
-      category: "hajj",
-      stepNumber: 1,
-      title: "Ihrâm",
-      description: "Intention du Hajj.",
-      content: "<p>...</p>",
-    },
-  ],
-  kr: [
-    {
-      id: "u1",
-      category: "umrah",
-      stepNumber: 1,
-      title: "이흐람",
-      description: "순례의 시작.",
-      content: "<p>...</p>",
-    },
-    {
-      id: "h1",
-      category: "hajj",
-      stepNumber: 1,
-      title: "이흐람",
-      description: "하지의 시작.",
-      content: "<p>...</p>",
-    },
-  ],
-  jp: [
-    {
-      id: "u1",
-      category: "umrah",
-      stepNumber: 1,
-      title: "イフラーム",
-      description: "巡礼の聖域に入る。",
-      content: "<p>...</p>",
-    },
-    {
-      id: "h1",
-      category: "hajj",
-      stepNumber: 1,
-      title: "イフラーム",
-      description: "ハッジの意図。",
-      content: "<p>...</p>",
-    },
-  ],
-};
 
 const UI_TEXT: Record<LocaleCode, UIText> = {
   id: {
@@ -229,6 +56,9 @@ const UI_TEXT: Record<LocaleCode, UIText> = {
     tabUmrah: "Umrah",
     step: "Langkah",
     read: "Lihat Detail",
+    loading: "Memuat panduan...",
+    error: "Gagal memuat data",
+    retry: "Coba Lagi",
   },
   en: {
     title: "Pilgrimage Guide",
@@ -236,6 +66,9 @@ const UI_TEXT: Record<LocaleCode, UIText> = {
     tabUmrah: "Umrah",
     step: "Step",
     read: "View Details",
+    loading: "Loading guides...",
+    error: "Failed to load data",
+    retry: "Retry",
   },
   ar: {
     title: "دليل المناسك",
@@ -243,6 +76,9 @@ const UI_TEXT: Record<LocaleCode, UIText> = {
     tabUmrah: "العمرة",
     step: "خطوة",
     read: "التفاصيل",
+    loading: "جار التحميل...",
+    error: "فشل التحميل",
+    retry: "أعد المحاولة",
   },
   fr: {
     title: "Guide du Pèlerinage",
@@ -250,6 +86,9 @@ const UI_TEXT: Record<LocaleCode, UIText> = {
     tabUmrah: "Omra",
     step: "Étape",
     read: "Détails",
+    loading: "Chargement...",
+    error: "Échec du chargement",
+    retry: "Réessayer",
   },
   kr: {
     title: "순례 가이드",
@@ -257,6 +96,9 @@ const UI_TEXT: Record<LocaleCode, UIText> = {
     tabUmrah: "움라",
     step: "단계",
     read: "자세히 보기",
+    loading: "로딩 중...",
+    error: "로드 실패",
+    retry: "재시도",
   },
   jp: {
     title: "巡礼ガイド",
@@ -264,37 +106,98 @@ const UI_TEXT: Record<LocaleCode, UIText> = {
     tabUmrah: "ウムラ",
     step: "ステップ",
     read: "詳細を見る",
+    loading: "読み込み中...",
+    error: "読み込み失敗",
+    retry: "再試行",
   },
 };
 
 export default function GuidePage() {
   const { locale } = useI18n();
-  const safeLocale = (GUIDE_DATA[locale] ? locale : "id") as LocaleCode;
-
+  const safeLocale = (
+    UI_TEXT[locale as LocaleCode] ? locale : "id"
+  ) as LocaleCode;
   const t = UI_TEXT[safeLocale];
 
   // STATE
   const [activeTab, setActiveTab] = useState<GuideCategory>("umrah");
-  const [selectedStep, setSelectedStep] = useState<GuideStep | null>(null);
+  const [selectedStep, setSelectedStep] = useState<ProcessedGuideStep | null>(
+    null,
+  );
 
-  // Helper untuk Icon
+  // --- API HOOK ---
+  // Mengambil data berdasarkan activeTab (umrah / hajj)
+  const {
+    data: apiResponse,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetGuidesQuery({
+    type: activeTab,
+  });
+
+  const rawData = apiResponse?.data || [];
+
+  // --- HELPER: Get Translation ---
+  const getTranslation = (
+    item: GuideItem,
+    field: "title" | "summary" | "description",
+  ) => {
+    const trans = item.translations?.find((tr) => tr.locale === safeLocale);
+    if (trans && trans[field]) return trans[field];
+
+    const enTrans = item.translations?.find((tr) => tr.locale === "en");
+    if (enTrans && enTrans[field]) return enTrans[field];
+
+    if (field === "title") return item.title;
+    if (field === "summary") return item.summary;
+    return item.description;
+  };
+
+  const stripHtml = (html: string) => {
+    if (typeof window === "undefined") return html.replace(/<[^>]*>?/gm, "");
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  };
+
+  // Helper Icon
   const getIcon = (title: string): LucideIcon => {
     const lower = title.toLowerCase();
     if (lower.includes("ihram") || lower.includes("إحرام")) return Shirt;
     if (lower.includes("tawaf") || lower.includes("طواف")) return Repeat;
     if (lower.includes("sa'i") || lower.includes("سعي")) return Footprints;
-    if (lower.includes("tahallul") || lower.includes("cukur")) return Scissors;
-    if (lower.includes("wukuf") || lower.includes("mina")) return Tent;
+    if (
+      lower.includes("tahallul") ||
+      lower.includes("cukur") ||
+      lower.includes("halq")
+    )
+      return Scissors;
+    if (
+      lower.includes("wukuf") ||
+      lower.includes("mina") ||
+      lower.includes("arafah")
+    )
+      return Tent;
     return Map; // Default
   };
 
-  // Filter Data
+  // Process Data
   const steps = useMemo(() => {
-    const raw = GUIDE_DATA[safeLocale] || GUIDE_DATA.id;
-    return raw
-      .filter((item) => item.category === activeTab)
-      .sort((a, b) => a.stepNumber - b.stepNumber);
-  }, [safeLocale, activeTab]);
+    if (!rawData) return [];
+
+    // Sort by order
+    const sorted = [...rawData].sort((a, b) => a.order - b.order);
+
+    return sorted.map((item) => ({
+      id: item.id,
+      category: item.type,
+      stepNumber: item.order,
+      title: getTranslation(item, "title"),
+      summary: stripHtml(getTranslation(item, "summary")), // Cleaned short desc
+      content: getTranslation(item, "description"), // Full HTML
+    }));
+  }, [rawData, safeLocale]);
 
   // RENDER DETAIL
   if (selectedStep) {
@@ -368,52 +271,78 @@ export default function GuidePage() {
 
         {/* Timeline Content */}
         <main className="px-5 py-6 space-y-0 relative">
-          {/* Vertical Line (Timeline) */}
+          {/* Vertical Line */}
           <div
             className={`absolute top-6 bottom-10 w-0.5 bg-accent-100 ${safeLocale === "ar" ? "right-[2.6rem]" : "left-[2.6rem]"} z-0`}
           ></div>
 
-          {steps.map((item, index) => {
-            const Icon = getIcon(item.title);
-            return (
-              <div
-                key={item.id}
-                className="relative z-10 mb-6 last:mb-0 group cursor-pointer"
-                onClick={() => setSelectedStep(item)}
-              >
-                <div className="flex gap-4 items-start">
-                  {/* Step Number Bubble */}
-                  <div className="flex-shrink-0 flex flex-col items-center gap-1">
-                    <div className="w-10 h-10 rounded-full bg-white border-2 border-accent-100 flex items-center justify-center shadow-sm group-hover:border-awqaf-primary group-hover:scale-110 transition-all duration-300">
-                      <span className="text-sm font-bold text-awqaf-primary">
-                        {item.stepNumber}
-                      </span>
-                    </div>
-                  </div>
+          {/* Loading */}
+          {isLoading && (
+            <div className="flex flex-col items-center justify-center py-20 relative z-10 bg-white/80 rounded-xl">
+              <Loader2 className="w-8 h-8 text-awqaf-primary animate-spin mb-2" />
+              <p className="text-sm text-slate-500">{t.loading}</p>
+            </div>
+          )}
 
-                  {/* Card Content */}
-                  <Card className="flex-1 border-none shadow-sm hover:shadow-md transition-all duration-200 bg-white ring-1 ring-slate-100 rounded-xl overflow-hidden group-hover:bg-accent-50/30">
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="p-2.5 bg-accent-50 rounded-lg text-awqaf-primary group-hover:bg-white group-hover:shadow-sm transition-colors">
-                        <Icon className="w-5 h-5" />
+          {/* Error */}
+          {isError && (
+            <div className="flex flex-col items-center justify-center py-10 relative z-10 bg-white rounded-xl shadow-sm border border-red-100 p-6 text-center mx-4 mt-4">
+              <AlertCircle className="w-10 h-10 text-red-500 mb-3" />
+              <p className="text-sm text-slate-600 mb-4">{t.error}</p>
+              <Button
+                onClick={() => refetch()}
+                variant="outline"
+                className="border-red-200 text-red-600 hover:bg-red-50"
+              >
+                {t.retry}
+              </Button>
+            </div>
+          )}
+
+          {/* List Items */}
+          {!isLoading &&
+            !isError &&
+            steps.map((item) => {
+              const Icon = getIcon(item.title);
+              return (
+                <div
+                  key={item.id}
+                  className="relative z-10 mb-6 last:mb-0 group cursor-pointer"
+                  onClick={() => setSelectedStep(item)}
+                >
+                  <div className="flex gap-4 items-start">
+                    {/* Step Number */}
+                    <div className="flex-shrink-0 flex flex-col items-center gap-1">
+                      <div className="w-10 h-10 rounded-full bg-white border-2 border-accent-100 flex items-center justify-center shadow-sm group-hover:border-awqaf-primary group-hover:scale-110 transition-all duration-300">
+                        <span className="text-sm font-bold text-awqaf-primary">
+                          {item.stepNumber}
+                        </span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-awqaf-primary font-comfortaa text-base mb-1">
-                          {item.title}
-                        </h3>
-                        <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
-                          {item.description}
-                        </p>
-                      </div>
-                      <ChevronRight
-                        className={`w-4 h-4 text-slate-300 group-hover:text-awqaf-primary ${safeLocale === "ar" ? "rotate-180" : ""}`}
-                      />
-                    </CardContent>
-                  </Card>
+                    </div>
+
+                    {/* Card Content */}
+                    <Card className="flex-1 border-none shadow-sm hover:shadow-md transition-all duration-200 bg-white ring-1 ring-slate-100 rounded-xl overflow-hidden group-hover:bg-accent-50/30">
+                      <CardContent className="p-4 flex items-center gap-4">
+                        <div className="p-2.5 bg-accent-50 rounded-lg text-awqaf-primary group-hover:bg-white group-hover:shadow-sm transition-colors">
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-awqaf-primary font-comfortaa text-base mb-1">
+                            {item.title}
+                          </h3>
+                          <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
+                            {item.summary}
+                          </p>
+                        </div>
+                        <ChevronRight
+                          className={`w-4 h-4 text-slate-300 group-hover:text-awqaf-primary ${safeLocale === "ar" ? "rotate-180" : ""}`}
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </main>
       </div>
     </div>

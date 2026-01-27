@@ -1,18 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import {
-  ArrowLeft,
-  MapPin,
-  Calendar,
-  CheckSquare, // Untuk list kegiatan
-  Info,
-  LucideIcon,
-} from "lucide-react";
+import { ArrowLeft, MapPin, CheckSquare, Info, LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DailyActivity, LocaleCode } from "./page";
+import { DailyActivity } from "./page";
+import { LocaleCode } from "@/lib/i18n";
 
 interface JourneyDetailProps {
   data: DailyActivity;
@@ -38,7 +32,6 @@ export default function JourneyDetail({
           : "Amalan & Kegiatan",
     location:
       locale === "en" ? "Location" : locale === "ar" ? "الموقع" : "Lokasi",
-    date: locale === "en" ? "Date" : locale === "ar" ? "التاريخ" : "Tanggal",
   };
 
   useEffect(() => {
@@ -48,9 +41,9 @@ export default function JourneyDetail({
   return (
     <div className="min-h-screen bg-slate-50" dir={isRtl ? "rtl" : "ltr"}>
       <div className="max-w-md mx-auto min-h-screen bg-white relative pb-20 shadow-xl overflow-hidden">
-        {/* HERO HEADER - High Contrast for Title */}
+        {/* HERO HEADER */}
         <div className="relative bg-awqaf-primary h-72 rounded-b-[40px] overflow-hidden shadow-md">
-          {/* Pattern Decoration */}
+          {/* Pattern */}
           <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]"></div>
 
           {/* Top Nav */}
@@ -67,17 +60,14 @@ export default function JourneyDetail({
 
           {/* Center Info */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-10 px-6 pb-10">
-            {/* Icon Wrapper */}
             <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-5 border border-white/20 shadow-lg">
               <Icon className="w-8 h-8 text-white" />
             </div>
 
-            {/* Title - WHITE text on DARK GREEN bg = High Contrast */}
             <h1 className="text-2xl font-bold text-center font-comfortaa leading-tight mb-2 drop-shadow-sm">
               {data.phase}
             </h1>
 
-            {/* Sub-info Badges */}
             <div className="flex items-center gap-2 mt-2">
               <Badge
                 variant="outline"
@@ -99,7 +89,6 @@ export default function JourneyDetail({
             <CardContent className="p-6">
               <div className="flex items-start gap-3">
                 <Info className="w-5 h-5 text-awqaf-secondary flex-shrink-0 mt-1" />
-                {/* Text: Slate-700 on White = Good Readability */}
                 <p className="text-slate-700 font-medium leading-loose font-comfortaa text-sm text-justify">
                   {data.description}
                 </p>
@@ -121,11 +110,9 @@ export default function JourneyDetail({
                     key={idx}
                     className="bg-white border border-slate-100 rounded-xl p-4 shadow-sm flex items-center gap-4 hover:border-awqaf-secondary/50 transition-colors"
                   >
-                    {/* Numbering Circle */}
                     <div className="w-8 h-8 rounded-full bg-accent-50 text-awqaf-primary font-bold text-sm flex items-center justify-center flex-shrink-0 border border-accent-100">
                       {idx + 1}
                     </div>
-                    {/* Activity Text: Slate-800 on White */}
                     <span className="text-slate-800 font-medium font-comfortaa text-sm">
                       {activity}
                     </span>
@@ -133,13 +120,13 @@ export default function JourneyDetail({
                 ))
               ) : (
                 <div className="text-center py-8 text-slate-400 italic bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                  Tidak ada data aktivitas spesifik.
+                  Tidak ada data aktivitas.
                 </div>
               )}
             </div>
           </div>
 
-          {/* 3. Location Detail Box */}
+          {/* 3. Location Detail */}
           <div className="bg-gradient-to-r from-accent-50 to-white rounded-xl p-5 border border-accent-100 flex items-center gap-4">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-awqaf-primary">
               <MapPin className="w-5 h-5" />

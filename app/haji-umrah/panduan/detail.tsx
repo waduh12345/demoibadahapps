@@ -1,14 +1,21 @@
 "use client";
 
-import { useEffect } from "react";
-import { ArrowLeft, CheckCircle2, Share2, LucideIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Share2,
+  LucideIcon,
+  Check,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { GuideStep, LocaleCode } from "./page";
+import { ProcessedGuideStep } from "./page";
+import { LocaleCode } from "@/lib/i18n";
 
 interface GuideDetailProps {
-  step: GuideStep;
+  step: ProcessedGuideStep;
   locale: LocaleCode;
   onBack: () => void;
   totalSteps: number;
@@ -23,10 +30,10 @@ export default function GuideDetail({
   icon: Icon,
 }: GuideDetailProps) {
   const isRtl = locale === "ar";
+  const [copied, setCopied] = useState(false);
 
   const LABELS = {
     step: locale === "en" ? "Step" : locale === "ar" ? "خطوة" : "Langkah",
-    of: locale === "en" ? "of" : locale === "ar" ? "من" : "dari",
     finish:
       locale === "en"
         ? "Back to Guide"
@@ -39,12 +46,37 @@ export default function GuideDetail({
     window.scrollTo(0, 0);
   }, []);
 
+  // --- SHARE FUNCTIONALITY ---
+  const handleShare = async () => {
+    // Bersihkan HTML tag untuk text share yang rapi
+    const cleanSummary = step.summary.replace(/<[^>]*>?/gm, "");
+    const shareText = `${step.title} (${step.category.toUpperCase()})\n\n${cleanSummary}\n\nLink: ${window.location.href}`;
+
+    const shareData = {
+      title: step.title,
+      text: shareText,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareText);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch (err) {
+      console.error("Error sharing:", err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50" dir={isRtl ? "rtl" : "ltr"}>
       <div className="max-w-md mx-auto min-h-screen bg-white relative pb-20 shadow-xl overflow-hidden">
         {/* HERO HEADER */}
         <div className="relative bg-awqaf-primary h-64 rounded-b-[40px] overflow-hidden">
-          {/* Background Map Pattern (CSS only approximation) */}
+          {/* Background Map Pattern */}
           <div
             className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"
             style={{ backgroundSize: "20px 20px" }}
@@ -60,12 +92,19 @@ export default function GuideDetail({
             >
               <ArrowLeft className={`w-6 h-6 ${isRtl ? "rotate-180" : ""}`} />
             </Button>
+
+            {/* Functional Share Button */}
             <Button
+              onClick={handleShare}
               variant="ghost"
               size="icon"
               className="text-white hover:bg-white/20 rounded-full"
             >
-              <Share2 className="w-5 h-5" />
+              {copied ? (
+                <Check className="w-5 h-5 text-emerald-300" />
+              ) : (
+                <Share2 className="w-5 h-5" />
+              )}
             </Button>
           </div>
 
@@ -99,7 +138,7 @@ export default function GuideDetail({
               <div className="flex gap-3 mb-6 p-4 bg-accent-50 rounded-xl border border-accent-100">
                 <CheckCircle2 className="w-5 h-5 text-awqaf-primary flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-slate-700 font-medium leading-relaxed">
-                  {step.description}
+                  {step.summary}
                 </p>
               </div>
 

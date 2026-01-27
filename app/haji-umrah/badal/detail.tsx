@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -10,20 +10,24 @@ import {
   UserCheck,
   Shield,
   Phone,
+  Share2,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BadalPackage, LocaleCode } from "./page";
+import { ProcessedBadalPackage } from "./page";
+import { LocaleCode } from "@/lib/i18n";
 
 interface BadalDetailProps {
-  pkg: BadalPackage;
+  pkg: ProcessedBadalPackage;
   locale: LocaleCode;
   onBack: () => void;
 }
 
 export default function BadalDetail({ pkg, locale, onBack }: BadalDetailProps) {
   const isRtl = locale === "ar";
+  const [copied, setCopied] = useState(false);
 
   const LABELS = {
     includes:
@@ -52,11 +56,39 @@ export default function BadalDetail({ pkg, locale, onBack }: BadalDetailProps) {
         : locale === "ar"
           ? "استشارة"
           : "Konsultasi",
+    trust:
+      locale === "en"
+        ? "100% Trustworthy"
+        : locale === "ar"
+          ? "موثوق 100٪"
+          : "Amanah 100%",
   };
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // --- SHARE FUNCTIONALITY ---
+  const handleShare = async () => {
+    const shareText = `${pkg.title}\nHarga: ${pkg.priceDisplay}\n\n${pkg.shortDesc}\n\nLink: ${window.location.href}`;
+    const shareData = {
+      title: pkg.title,
+      text: shareText,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareText);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch (err) {
+      console.error("Error sharing:", err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white" dir={isRtl ? "rtl" : "ltr"}>
@@ -76,8 +108,24 @@ export default function BadalDetail({ pkg, locale, onBack }: BadalDetailProps) {
               >
                 <ArrowLeft className={`w-6 h-6 ${isRtl ? "rotate-180" : ""}`} />
               </Button>
-              <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white border border-white/20">
-                {pkg.type.toUpperCase()}
+
+              <div className="flex items-center gap-2">
+                <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white border border-white/20">
+                  {pkg.type.toUpperCase()}
+                </div>
+                {/* Share Button */}
+                <Button
+                  onClick={handleShare}
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/10 rounded-full h-8 w-8"
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4 text-emerald-300" />
+                  ) : (
+                    <Share2 className="w-4 h-4" />
+                  )}
+                </Button>
               </div>
             </div>
 
@@ -124,13 +172,7 @@ export default function BadalDetail({ pkg, locale, onBack }: BadalDetailProps) {
                   key={i}
                   className="flex items-center gap-2.5 p-3 bg-slate-50 rounded-xl border border-slate-100"
                 >
-                  {i === 0 ? (
-                    <FileCheck className="w-4 h-4 text-awqaf-primary" />
-                  ) : i === 1 ? (
-                    <Video className="w-4 h-4 text-awqaf-primary" />
-                  ) : (
-                    <CheckCircle2 className="w-4 h-4 text-awqaf-primary" />
-                  )}
+                  <FileCheck className="w-4 h-4 text-awqaf-primary" />
                   <span className="text-xs font-medium text-slate-700">
                     {feat}
                   </span>
@@ -139,7 +181,7 @@ export default function BadalDetail({ pkg, locale, onBack }: BadalDetailProps) {
               <div className="flex items-center gap-2.5 p-3 bg-slate-50 rounded-xl border border-slate-100">
                 <Shield className="w-4 h-4 text-awqaf-primary" />
                 <span className="text-xs font-medium text-slate-700">
-                  Amanah 100%
+                  {LABELS.trust}
                 </span>
               </div>
             </div>
