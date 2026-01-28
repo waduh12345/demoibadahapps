@@ -11,8 +11,52 @@ interface HelpDetailProps {
   onBack: () => void;
 }
 
+// Translation untuk teks statis di halaman detail
+const DETAIL_TEXT: Record<
+  LocaleCode,
+  { title: string; helpful: string; yes: string; no: string }
+> = {
+  id: {
+    title: "Detail Bantuan",
+    helpful: "Apakah ini membantu?",
+    yes: "Ya",
+    no: "Tidak",
+  },
+  en: {
+    title: "Help Detail",
+    helpful: "Was this helpful?",
+    yes: "Yes",
+    no: "No",
+  },
+  ar: {
+    title: "تفاصيل المساعدة",
+    helpful: "هل كان هذا مفيدًا؟",
+    yes: "نعم",
+    no: "لا",
+  },
+  fr: {
+    title: "Détails de l'aide",
+    helpful: "Cela vous a-t-il aidé ?",
+    yes: "Oui",
+    no: "Non",
+  },
+  kr: {
+    title: "도움말 상세",
+    helpful: "도움이 되었나요?",
+    yes: "네",
+    no: "아니요",
+  },
+  jp: {
+    title: "ヘルプ詳細",
+    helpful: "役に立ちましたか？",
+    yes: "はい",
+    no: "いいえ",
+  },
+};
+
 export default function HelpDetail({ item, locale, onBack }: HelpDetailProps) {
   const isRtl = locale === "ar";
+  const t = DETAIL_TEXT[locale] || DETAIL_TEXT.id;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -32,7 +76,7 @@ export default function HelpDetail({ item, locale, onBack }: HelpDetailProps) {
             <ArrowLeft className={`w-6 h-6 ${isRtl ? "rotate-180" : ""}`} />
           </Button>
           <span className="font-bold text-lg text-slate-800 font-comfortaa">
-            Detail
+            {t.title}
           </span>
         </div>
 
@@ -55,20 +99,20 @@ export default function HelpDetail({ item, locale, onBack }: HelpDetailProps) {
           {/* Feedback */}
           <div className="mt-10 pt-6 border-t border-slate-100">
             <p className="text-center text-sm text-slate-400 mb-4">
-              {locale === "en" ? "Was this helpful?" : "Apakah ini membantu?"}
+              {t.helpful}
             </p>
             <div className="flex justify-center gap-4">
               <Button
                 variant="outline"
                 className="rounded-full gap-2 border-slate-200 text-slate-600 hover:text-awqaf-primary hover:border-awqaf-primary hover:bg-white"
               >
-                <ThumbsUp className="w-4 h-4" /> Ya
+                <ThumbsUp className="w-4 h-4" /> {t.yes}
               </Button>
               <Button
                 variant="outline"
                 className="rounded-full gap-2 border-slate-200 text-slate-600 hover:text-red-500 hover:border-red-500 hover:bg-white"
               >
-                <ThumbsDown className="w-4 h-4" /> Tidak
+                <ThumbsDown className="w-4 h-4" /> {t.no}
               </Button>
             </div>
           </div>

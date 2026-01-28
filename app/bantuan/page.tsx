@@ -9,14 +9,13 @@ import {
   MessageCircle,
   ChevronRight,
   FileQuestion,
-  LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useI18n } from "@/app/hooks/useI18n";
 
-// Import Detail
+// Import Detail Component
 import HelpDetail from "./detail";
 
 // --- 1. TYPES ---
@@ -43,7 +42,7 @@ interface UIText {
   };
 }
 
-// --- 2. DATA DUMMY ---
+// --- 2. DATA DUMMY (6 BAHASA) ---
 const HELP_DATA: Record<LocaleCode, HelpItem[]> = {
   id: [
     {
@@ -81,7 +80,14 @@ const HELP_DATA: Record<LocaleCode, HelpItem[]> = {
       category: "quran",
       question: "How to download Quran audio?",
       answer:
-        "<p>Go to the Surah page and tap the <strong>Download</strong> icon.</p>",
+        "<p>Go to the Surah page and tap the <strong>Download</strong> icon in the top right corner. Ensure your internet connection is stable.</p>",
+    },
+    {
+      id: "3",
+      category: "app",
+      question: "The app does not play Adhan sound",
+      answer:
+        "<p>Ensure notification permissions are enabled in your phone settings. Also, check if 'Do Not Disturb' mode is active.</p>",
     },
   ],
   ar: [
@@ -90,7 +96,21 @@ const HELP_DATA: Record<LocaleCode, HelpItem[]> = {
       category: "prayer",
       question: "لماذا أوقات الصلاة غير صحيحة؟",
       answer:
-        "<p>تختلف أوقات الصلاة حسب طريقة الحساب المختارة. يرجى التحقق من الإعدادات.</p>",
+        "<p>تختلف أوقات الصلاة حسب طريقة الحساب المختارة. يرجى التحقق من <strong>الإعدادات > طريقة الحساب</strong> للتعديل.</p>",
+    },
+    {
+      id: "2",
+      category: "quran",
+      question: "كيف يمكنني تحميل صوت القرآن؟",
+      answer:
+        "<p>ادخل إلى صفحة السورة، واضغط على أيقونة <strong>التحميل</strong> في الزاوية العلوية. تأكد من استقرار اتصالك بالإنترنت.</p>",
+    },
+    {
+      id: "3",
+      category: "app",
+      question: "التطبيق لا يصدر صوت الأذان",
+      answer:
+        "<p>تأكد من تفعيل إذن الإشعارات في إعدادات هاتفك. تحقق أيضًا مما إذا كان وضع 'عدم الإزعاج' نشطًا.</p>",
     },
   ],
   fr: [
@@ -98,7 +118,22 @@ const HELP_DATA: Record<LocaleCode, HelpItem[]> = {
       id: "1",
       category: "prayer",
       question: "Pourquoi les horaires de prière sont incorrects ?",
-      answer: "<p>...</p>",
+      answer:
+        "<p>Les horaires de prière varient selon la méthode de calcul sélectionnée. Veuillez vérifier <strong>Paramètres > Méthode de calcul</strong>.</p>",
+    },
+    {
+      id: "2",
+      category: "quran",
+      question: "Comment télécharger l'audio du Coran ?",
+      answer:
+        "<p>Allez sur la page de la Sourate et appuyez sur l'icône <strong>Télécharger</strong> en haut à droite.</p>",
+    },
+    {
+      id: "3",
+      category: "app",
+      question: "L'application ne joue pas le son de l'Adhan",
+      answer:
+        "<p>Assurez-vous que les notifications sont activées dans les paramètres de votre téléphone.</p>",
     },
   ],
   kr: [
@@ -106,15 +141,45 @@ const HELP_DATA: Record<LocaleCode, HelpItem[]> = {
       id: "1",
       category: "prayer",
       question: "기도 시간이 왜 맞지 않나요?",
-      answer: "<p>...</p>",
+      answer:
+        "<p>기도 시간은 선택한 계산 방법에 따라 다를 수 있습니다. <strong>설정 > 계산 방법</strong>을 확인해 주세요.</p>",
+    },
+    {
+      id: "2",
+      category: "quran",
+      question: "꾸란 오디오는 어떻게 다운로드하나요?",
+      answer:
+        "<p>수라 페이지로 이동하여 오른쪽 상단의 <strong>다운로드</strong> 아이콘을 탭하세요.</p>",
+    },
+    {
+      id: "3",
+      category: "app",
+      question: "앱에서 아잔 소리가 나지 않습니다",
+      answer:
+        "<p>휴대전화 설정에서 알림 권한이 활성화되어 있는지 확인하세요. 방해 금지 모드가 켜져 있는지도 확인해 주세요.</p>",
     },
   ],
   jp: [
     {
       id: "1",
       category: "prayer",
-      question: "祈りの時間が正しくないのはなぜですか？",
-      answer: "<p>...</p>",
+      question: "礼拝の時間が正しくないのはなぜですか？",
+      answer:
+        "<p>礼拝時間は選択された計算方法によって異なります。<strong>設定 > 計算方法</strong>を確認してください。</p>",
+    },
+    {
+      id: "2",
+      category: "quran",
+      question: "コーランの音声をダウンロードするには？",
+      answer:
+        "<p>スーラのページに移動し、右上の<strong>ダウンロード</strong>アイコンをタップしてください。</p>",
+    },
+    {
+      id: "3",
+      category: "app",
+      question: "アプリからアザーンの音が鳴りません",
+      answer:
+        "<p>携帯電話の設定で通知許可が有効になっていることを確認してください。また、「おやすみモード」がオンになっていないかも確認してください。</p>",
     },
   ],
 };
@@ -149,7 +214,7 @@ const UI_TEXT: Record<LocaleCode, UIText> = {
   ar: {
     title: "المساعدة",
     subtitle: "مركز الدعم",
-    searchPlaceholder: "بحث...",
+    searchPlaceholder: "بحث عن مشكلة...",
     cantFind: "لم تجد إجابة؟",
     contactUs: "اتصل بنا",
     categories: {
@@ -161,7 +226,7 @@ const UI_TEXT: Record<LocaleCode, UIText> = {
   },
   fr: {
     title: "Aide",
-    subtitle: "Support",
+    subtitle: "Support & FAQ",
     searchPlaceholder: "Rechercher...",
     cantFind: "Pas de réponse ?",
     contactUs: "Contactez-nous",
@@ -175,20 +240,25 @@ const UI_TEXT: Record<LocaleCode, UIText> = {
   kr: {
     title: "고객센터",
     subtitle: "지원 및 FAQ",
-    searchPlaceholder: "검색...",
+    searchPlaceholder: "문제 검색...",
     cantFind: "답을 찾을 수 없나요?",
     contactUs: "문의하기",
-    categories: { app: "앱", prayer: "기도", quran: "꾸란", account: "계정" },
+    categories: {
+      app: "앱",
+      prayer: "기도",
+      quran: "꾸란",
+      account: "계정",
+    },
   },
   jp: {
     title: "ヘルプ",
-    subtitle: "サポート",
-    searchPlaceholder: "検索...",
-    cantFind: "見つかりませんか？",
+    subtitle: "サポート＆FAQ",
+    searchPlaceholder: "問題を検索...",
+    cantFind: "答えが見つかりませんか？",
     contactUs: "お問い合わせ",
     categories: {
       app: "アプリ",
-      prayer: "祈り",
+      prayer: "礼拝",
       quran: "コーラン",
       account: "アカウント",
     },
@@ -197,7 +267,10 @@ const UI_TEXT: Record<LocaleCode, UIText> = {
 
 export default function HelpPage() {
   const { locale } = useI18n();
-  const safeLocale = (HELP_DATA[locale] ? locale : "id") as LocaleCode;
+  // Safe Locale Access with correct type
+  const safeLocale = (
+    HELP_DATA[locale as LocaleCode] ? locale : "id"
+  ) as LocaleCode;
   const t = UI_TEXT[safeLocale];
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -280,7 +353,7 @@ export default function HelpPage() {
                 <Card className="border-slate-100 shadow-sm hover:shadow-md transition-all hover:bg-slate-50 rounded-xl">
                   <CardContent className="p-4 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-accent-50 flex items-center justify-center text-awqaf-primary">
+                      <div className="w-8 h-8 rounded-full bg-accent-50 flex items-center justify-center text-awqaf-primary flex-shrink-0">
                         <HelpCircle className="w-4 h-4" />
                       </div>
                       <span className="font-bold text-slate-700 font-comfortaa text-sm line-clamp-2">
@@ -288,7 +361,7 @@ export default function HelpPage() {
                       </span>
                     </div>
                     <ChevronRight
-                      className={`w-4 h-4 text-slate-300 group-hover:text-awqaf-primary ${safeLocale === "ar" ? "rotate-180" : ""}`}
+                      className={`w-4 h-4 text-slate-300 group-hover:text-awqaf-primary flex-shrink-0 ${safeLocale === "ar" ? "rotate-180" : ""}`}
                     />
                   </CardContent>
                 </Card>
@@ -297,7 +370,9 @@ export default function HelpPage() {
           ) : (
             <div className="text-center py-10 text-slate-400">
               <FileQuestion className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Tidak ditemukan.</p>
+              <p className="text-sm">
+                {safeLocale === "en" ? "Not found." : "Tidak ditemukan."}
+              </p>
             </div>
           )}
 

@@ -110,11 +110,11 @@ const FEATURES_CONFIG: FeatureConfig[] = [
   // --- Hadits ---
   {
     id: "hadith",
-    defaultName: "Hadits",
+    defaultName: "Hadith",
     defaultDescription: "Kumpulan hadits shahih dan hadits harian",
     icon: BookMarked,
     href: "/hadith",
-    defaultCategory: "Hadits",
+    defaultCategory: "Hadith",
   },
 
   // --- Doa & Dzikir ---
