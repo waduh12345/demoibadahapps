@@ -42,7 +42,7 @@ interface UIText {
   };
 }
 
-// --- 2. DATA DUMMY (6 BAHASA) ---
+// --- 2. DATA DUMMY (SAMA SEPERTI SEBELUMNYA) ---
 const HELP_DATA: Record<LocaleCode, HelpItem[]> = {
   id: [
     {
@@ -267,7 +267,6 @@ const UI_TEXT: Record<LocaleCode, UIText> = {
 
 export default function HelpPage() {
   const { locale } = useI18n();
-  // Safe Locale Access with correct type
   const safeLocale = (
     HELP_DATA[locale as LocaleCode] ? locale : "id"
   ) as LocaleCode;
@@ -295,54 +294,63 @@ export default function HelpPage() {
 
   return (
     <div
-      className="min-h-screen bg-slate-50"
+      className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20"
       dir={safeLocale === "ar" ? "rtl" : "ltr"}
     >
-      <div className="max-w-md mx-auto min-h-screen bg-white relative pb-20">
-        {/* HEADER */}
-        <div className="bg-awqaf-primary pb-8 pt-4 rounded-b-[32px] shadow-lg relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]"></div>
-          <div className="px-4 relative z-10">
-            <div className="flex items-center gap-3 mb-6">
+      {/* HEADER: KIBLAT STYLE */}
+      <header className="sticky top-0 z-30">
+        <div className="max-w-md mx-auto px-4 py-4">
+          <div className="relative bg-background/90 backdrop-blur-md rounded-2xl border border-awqaf-border-light/50 shadow-lg px-4 py-3">
+            <div className="flex items-center justify-between">
               <Link href="/">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="p-2 hover:bg-white/10 text-white rounded-full"
+                  className="w-10 h-10 p-0 rounded-full hover:bg-accent-100 hover:text-awqaf-primary transition-colors duration-200"
                 >
                   <ArrowLeft
-                    className={`w-6 h-6 ${safeLocale === "ar" ? "rotate-180" : ""}`}
+                    className={`w-5 h-5 ${safeLocale === "ar" ? "rotate-180" : ""}`}
                   />
                 </Button>
               </Link>
-              <div>
-                <h1 className="text-xl font-bold text-white font-comfortaa">
+              <div className="text-center">
+                <h1 className="text-lg font-bold text-awqaf-primary font-comfortaa">
                   {t.title}
                 </h1>
-                <p className="text-white/80 text-xs font-comfortaa mt-0.5">
+                <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
                   {t.subtitle}
                 </p>
               </div>
-            </div>
-
-            {/* Search Bar */}
-            <div className="relative">
-              <Search
-                className={`absolute ${safeLocale === "ar" ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400`}
-              />
-              <Input
-                placeholder={t.searchPlaceholder}
-                className={`bg-white text-slate-800 border-0 h-11 rounded-xl shadow-md ${safeLocale === "ar" ? "pr-10" : "pl-10"}`}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+              {/* Spacer agar title tetap di tengah */}
+              <div className="w-10 h-10" />
             </div>
           </div>
         </div>
+      </header>
 
-        {/* CONTENT */}
-        <main className="px-5 py-6 space-y-4">
-          {/* FAQ List */}
+      {/* CONTENT */}
+      <main className="max-w-md mx-auto px-4 py-2 space-y-4">
+        {/* Search Bar - Moved to body like a widget */}
+        <div className="relative">
+          <div className="relative bg-white/80 backdrop-blur rounded-xl shadow-sm border border-awqaf-border-light/50 overflow-hidden transition-all focus-within:ring-2 focus-within:ring-awqaf-primary/20 focus-within:border-awqaf-primary">
+            <Search
+              className={`absolute ${
+                safeLocale === "ar" ? "right-3" : "left-3"
+              } top-1/2 -translate-y-1/2 w-4 h-4 text-awqaf-foreground-secondary`}
+            />
+            <Input
+              placeholder={t.searchPlaceholder}
+              className={`bg-transparent border-0 h-12 focus-visible:ring-0 ${
+                safeLocale === "ar" ? "pr-10" : "pl-10"
+              } placeholder:text-awqaf-foreground-secondary/70 text-awqaf-primary font-comfortaa`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* FAQ List */}
+        <div className="space-y-3">
           {filteredData.length > 0 ? (
             filteredData.map((item) => (
               <div
@@ -350,46 +358,52 @@ export default function HelpPage() {
                 onClick={() => setSelectedHelp(item)}
                 className="cursor-pointer group"
               >
-                <Card className="border-slate-100 shadow-sm hover:shadow-md transition-all hover:bg-slate-50 rounded-xl">
+                <Card className="border-awqaf-border-light hover:border-awqaf-primary/50 transition-all duration-300 hover:shadow-md bg-white/90 backdrop-blur-sm">
                   <CardContent className="p-4 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-accent-50 flex items-center justify-center text-awqaf-primary flex-shrink-0">
-                        <HelpCircle className="w-4 h-4" />
+                      <div className="w-9 h-9 rounded-full bg-accent-50 flex items-center justify-center text-awqaf-primary flex-shrink-0 border border-accent-100">
+                        <HelpCircle className="w-5 h-5" />
                       </div>
-                      <span className="font-bold text-slate-700 font-comfortaa text-sm line-clamp-2">
+                      <span className="font-semibold text-awqaf-primary font-comfortaa text-sm line-clamp-2">
                         {item.question}
                       </span>
                     </div>
                     <ChevronRight
-                      className={`w-4 h-4 text-slate-300 group-hover:text-awqaf-primary flex-shrink-0 ${safeLocale === "ar" ? "rotate-180" : ""}`}
+                      className={`w-4 h-4 text-awqaf-foreground-secondary group-hover:text-awqaf-primary flex-shrink-0 transition-colors ${
+                        safeLocale === "ar" ? "rotate-180" : ""
+                      }`}
                     />
                   </CardContent>
                 </Card>
               </div>
             ))
           ) : (
-            <div className="text-center py-10 text-slate-400">
-              <FileQuestion className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-white/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileQuestion className="w-8 h-8 text-awqaf-foreground-secondary/50" />
+              </div>
+              <p className="text-sm text-awqaf-foreground-secondary font-comfortaa">
                 {safeLocale === "en" ? "Not found." : "Tidak ditemukan."}
               </p>
             </div>
           )}
+        </div>
 
-          {/* Contact Support Box */}
-          <div className="mt-8 bg-gradient-to-r from-accent-50 to-white p-5 rounded-2xl border border-accent-100 text-center">
-            <p className="text-slate-600 font-medium text-sm mb-3">
+        {/* Contact Support Box */}
+        <Card className="border-awqaf-border-light bg-gradient-to-br from-accent-50 to-white mt-6">
+          <CardContent className="p-5 text-center">
+            <p className="text-awqaf-foreground-secondary font-medium font-comfortaa text-sm mb-3">
               {t.cantFind}
             </p>
-            <Button className="bg-awqaf-primary hover:bg-awqaf-secondary text-white hover:text-yellow-800 rounded-full w-full shadow-md font-bold">
+            <Button className="bg-awqaf-primary hover:bg-awqaf-primary/90 text-white rounded-xl w-full shadow-md font-bold font-comfortaa transition-all hover:scale-[1.02]">
               <MessageCircle
                 className={`w-4 h-4 ${safeLocale === "ar" ? "ml-2" : "mr-2"}`}
               />
               {t.contactUs}
             </Button>
-          </div>
-        </main>
-      </div>
+          </CardContent>
+        </Card>
+      </main>
     </div>
   );
 }

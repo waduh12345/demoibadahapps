@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  Share2,
-  LucideIcon,
-  Check,
-} from "lucide-react";
+import { ArrowLeft, Share2, LucideIcon, Check, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +27,12 @@ export default function GuideDetail({
   const [copied, setCopied] = useState(false);
 
   const LABELS = {
+    title:
+      locale === "en"
+        ? "Guide Detail"
+        : locale === "ar"
+          ? "تفاصيل الدليل"
+          : "Detail Panduan",
     step: locale === "en" ? "Step" : locale === "ar" ? "خطوة" : "Langkah",
     finish:
       locale === "en"
@@ -46,9 +46,7 @@ export default function GuideDetail({
     window.scrollTo(0, 0);
   }, []);
 
-  // --- SHARE FUNCTIONALITY ---
   const handleShare = async () => {
-    // Bersihkan HTML tag untuk text share yang rapi
     const cleanSummary = step.summary.replace(/<[^>]*>?/gm, "");
     const shareText = `${step.title} (${step.category.toUpperCase()})\n\n${cleanSummary}\n\nLink: ${window.location.href}`;
 
@@ -72,97 +70,98 @@ export default function GuideDetail({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50" dir={isRtl ? "rtl" : "ltr"}>
-      <div className="max-w-md mx-auto min-h-screen bg-white relative pb-20 shadow-xl overflow-hidden">
-        {/* HERO HEADER */}
-        <div className="relative bg-awqaf-primary h-64 rounded-b-[40px] overflow-hidden">
-          {/* Background Map Pattern */}
-          <div
-            className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"
-            style={{ backgroundSize: "20px 20px" }}
-          ></div>
-
-          {/* Top Bar */}
-          <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20">
-            <Button
-              onClick={onBack}
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20 rounded-full"
-            >
-              <ArrowLeft className={`w-6 h-6 ${isRtl ? "rotate-180" : ""}`} />
-            </Button>
-
-            {/* Functional Share Button */}
-            <Button
-              onClick={handleShare}
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20 rounded-full"
-            >
-              {copied ? (
-                <Check className="w-5 h-5 text-emerald-300" />
-              ) : (
-                <Share2 className="w-5 h-5" />
-              )}
-            </Button>
-          </div>
-
-          {/* Central Content */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-10 pb-8">
-            <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mb-4 border border-white/20 shadow-lg">
-              <Icon className="w-8 h-8 text-white" />
-            </div>
-
-            <Badge className="mb-3 bg-awqaf-secondary text-yellow-900 border-0 px-3 py-1 font-bold">
-              {step.category.toUpperCase()}
-            </Badge>
-
-            <h1 className="text-2xl font-bold text-center px-6 font-comfortaa leading-tight">
-              {step.title}
-            </h1>
-
-            <div className="mt-2 text-sm text-white/80 font-medium">
-              {LABELS.step} {step.stepNumber}{" "}
-              <span className="opacity-60 text-[10px] mx-1">●</span>{" "}
-              {totalSteps}
+    <div
+      className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20"
+      dir={isRtl ? "rtl" : "ltr"}
+    >
+      {/* HEADER: Floating Glass */}
+      <header className="sticky top-0 z-30">
+        <div className="max-w-md mx-auto px-4 py-4">
+          <div className="relative bg-background/90 backdrop-blur-md rounded-2xl border border-awqaf-border-light/50 shadow-lg px-4 py-3">
+            <div className="flex items-center justify-between">
+              <Button
+                onClick={onBack}
+                variant="ghost"
+                size="sm"
+                className="w-10 h-10 p-0 rounded-full hover:bg-accent-100 hover:text-awqaf-primary transition-colors duration-200"
+              >
+                <ArrowLeft className={`w-5 h-5 ${isRtl ? "rotate-180" : ""}`} />
+              </Button>
+              <div className="text-center">
+                <h1 className="text-lg font-bold text-awqaf-primary font-comfortaa">
+                  {LABELS.title}
+                </h1>
+              </div>
+              <Button
+                onClick={handleShare}
+                variant="ghost"
+                size="sm"
+                className="w-10 h-10 p-0 rounded-full hover:bg-accent-100 hover:text-awqaf-primary transition-colors duration-200"
+              >
+                {copied ? (
+                  <Check className="w-5 h-5 text-green-500" />
+                ) : (
+                  <Share2 className="w-5 h-5" />
+                )}
+              </Button>
             </div>
           </div>
         </div>
+      </header>
 
-        {/* CONTENT AREA */}
-        <main className="px-6 -mt-10 relative z-20">
-          <Card className="border-none shadow-lg bg-white rounded-3xl">
-            <CardContent className="p-6">
-              {/* Short Description Quote */}
-              <div className="flex gap-3 mb-6 p-4 bg-accent-50 rounded-xl border border-accent-100">
-                <CheckCircle2 className="w-5 h-5 text-awqaf-primary flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-slate-700 font-medium leading-relaxed">
-                  {step.summary}
-                </p>
-              </div>
+      {/* CONTENT */}
+      <main className="max-w-md mx-auto px-4 py-2 space-y-4">
+        {/* Info Card */}
+        <Card className="border-awqaf-border-light shadow-sm bg-white/95 backdrop-blur-sm rounded-2xl">
+          <CardContent className="p-6 text-center">
+            <div className="w-16 h-16 bg-accent-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-accent-100">
+              <Icon className="w-8 h-8 text-awqaf-primary" />
+            </div>
+            <Badge className="mb-3 bg-awqaf-secondary/20 text-awqaf-primary hover:bg-awqaf-secondary/30 border-0 px-3 py-1 font-bold font-comfortaa">
+              {step.category.toUpperCase()}
+            </Badge>
+            <h2 className="text-2xl font-bold text-awqaf-primary font-comfortaa mb-2 leading-tight">
+              {step.title}
+            </h2>
+            <p className="text-sm text-awqaf-foreground-secondary font-comfortaa">
+              {LABELS.step} <span className="font-bold">{step.stepNumber}</span>{" "}
+              / {totalSteps}
+            </p>
+          </CardContent>
+        </Card>
 
-              {/* HTML Content (Instructions & Duas) */}
-              <article
-                className={`
+        {/* Description Content */}
+        <Card className="border-awqaf-border-light shadow-sm bg-white/95 backdrop-blur-sm rounded-2xl">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <BookOpen className="w-5 h-5 text-awqaf-primary" />
+              <span className="font-bold text-awqaf-primary font-comfortaa">
+                Panduan
+              </span>
+            </div>
+
+            <article
+              className={`
                 prose prose-sm max-w-none 
-                prose-p:text-slate-600 prose-p:leading-7 prose-p:mb-4
-                prose-strong:text-awqaf-primary
-                prose-li:text-slate-600
-                ${isRtl ? "text-right font-tajawal" : "text-justify font-comfortaa"}
+                text-awqaf-foreground-secondary font-comfortaa leading-relaxed
+                prose-p:mb-4
+                prose-strong:text-awqaf-primary prose-strong:font-bold
+                prose-li:marker:text-awqaf-primary
+                ${isRtl ? "text-right" : "text-justify"}
               `}
-              >
-                <div dangerouslySetInnerHTML={{ __html: step.content }} />
-              </article>
-            </CardContent>
-          </Card>
-        </main>
+            >
+              <div dangerouslySetInnerHTML={{ __html: step.content }} />
+            </article>
+          </CardContent>
+        </Card>
+      </main>
 
-        {/* FOOTER */}
-        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white border-t border-slate-100 z-30">
+      {/* Floating Footer Button */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 z-30 bg-gradient-to-t from-white via-white/90 to-transparent">
+        <div className="max-w-md mx-auto">
           <Button
             onClick={onBack}
-            className="w-full rounded-xl bg-awqaf-primary hover:bg-awqaf-secondary text-white shadow-lg h-12 font-bold font-comfortaa"
+            className="w-full rounded-xl bg-awqaf-primary hover:bg-awqaf-primary/90 text-white shadow-lg h-12 font-bold font-comfortaa transition-transform active:scale-[0.98]"
           >
             {LABELS.finish}
           </Button>

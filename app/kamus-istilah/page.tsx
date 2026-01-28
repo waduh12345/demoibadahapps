@@ -5,7 +5,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, BookA, Loader2, BookOpen } from "lucide-react";
+import {
+  ArrowLeft,
+  Search,
+  BookA,
+  Loader2,
+  BookOpen,
+  X,
+  Hash,
+} from "lucide-react";
 import Link from "next/link";
 // Import Service & Types
 import { useGetDictionaryEntriesQuery } from "@/services/public/dictionary.service";
@@ -15,11 +23,11 @@ import { useI18n } from "@/app/hooks/useI18n";
 const ALPHABETS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 export default function KamusPage() {
-  const { t, locale } = useI18n(); // Import hook i18n
+  const { t, locale } = useI18n();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLetter, setSelectedLetter] = useState<string>("ALL");
 
-  // Fetch Data from API
+  // Fetch Data
   const {
     data: dictionaryEntries,
     isLoading,
@@ -28,32 +36,21 @@ export default function KamusPage() {
 
   // --- HELPER TRANSLATION ---
   const getDefinition = (entry: DictionaryEntry) => {
-    // 1. Cari translation sesuai locale aktif
     const localized = entry.translations.find((t) => t.locale === locale);
+    if (localized?.definition) return localized.definition;
 
-    // 2. Jika ada dan definition tidak kosong
-    if (localized && localized.definition) {
-      return localized.definition;
-    }
-
-    // 3. Fallback ke 'id' jika locale aktif kosong
     const idFallback = entry.translations.find((t) => t.locale === "id");
-    if (idFallback && idFallback.definition) {
-      return idFallback.definition;
-    }
+    if (idFallback?.definition) return idFallback.definition;
 
-    // 4. Fallback terakhir ke root object
     return entry.definition;
   };
-  // --------------------------
 
-  // 1. Filter Logic
+  // --- FILTER LOGIC ---
   const filteredTerms = useMemo(() => {
     if (!dictionaryEntries) return [];
 
     return dictionaryEntries.filter((item) => {
       const q = searchQuery.toLowerCase();
-      // Gunakan definition yang sudah diterjemahkan untuk pencarian
       const definitionText = getDefinition(item).toLowerCase();
 
       const matchesSearch =
@@ -64,9 +61,9 @@ export default function KamusPage() {
 
       return matchesSearch && matchesLetter;
     });
-  }, [dictionaryEntries, searchQuery, selectedLetter, locale]); // Add locale dependency
+  }, [dictionaryEntries, searchQuery, selectedLetter, locale]);
 
-  // 2. Grouping Logic (Group by Alphabet)
+  // --- GROUPING LOGIC ---
   const groupedTerms = useMemo(() => {
     return filteredTerms.reduce(
       (acc, item) => {
@@ -81,153 +78,168 @@ export default function KamusPage() {
     );
   }, [filteredTerms]);
 
-  // Sort keys alphabetically
   const sortedKeys = useMemo(() => {
     return Object.keys(groupedTerms).sort();
   }, [groupedTerms]);
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-teal-600 to-teal-500 text-white sticky top-0 z-30 shadow-md">
+    <div className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20">
+      {/* HEADER: Floating Glass */}
+      <header className="sticky top-0 z-30">
         <div className="max-w-md mx-auto px-4 py-4">
-          <div className="flex items-center gap-3 mb-4">
-            <Link href="/">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/20 -ml-2 rounded-full h-8 w-8 p-0"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-            </Link>
-            <div className="flex items-center gap-2">
-              <BookA className="w-6 h-6" />
-              <h1 className="text-xl font-bold font-comfortaa">
-                {t("dictionary.title") || "Kamus Islam"}
-              </h1>
+          <div className="relative bg-background/90 backdrop-blur-md rounded-2xl border border-awqaf-border-light/50 shadow-lg px-4 py-3">
+            <div className="flex items-center justify-between">
+              <Link href="/">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-10 h-10 p-0 rounded-full hover:bg-accent-100 hover:text-awqaf-primary transition-colors duration-200"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+              </Link>
+              <div className="text-center">
+                <h1 className="text-lg font-bold text-awqaf-primary font-comfortaa flex items-center justify-center gap-2">
+                  <BookA className="w-5 h-5 text-awqaf-primary" />
+                  {t("dictionary.title") || "Kamus Islam"}
+                </h1>
+              </div>
+              <div className="w-10 h-10" />
             </div>
           </div>
+        </div>
+      </header>
 
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <main className="max-w-md mx-auto px-4 py-2 space-y-6">
+        {/* Search Bar Widget */}
+        <div className="relative">
+          <div className="relative bg-white/80 backdrop-blur rounded-xl shadow-sm border border-awqaf-border-light/50 overflow-hidden transition-all focus-within:ring-2 focus-within:ring-awqaf-primary/20 focus-within:border-awqaf-primary">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-awqaf-foreground-primary" />
             <Input
               placeholder={
                 t("dictionary.searchPlaceholder") ||
                 "Cari istilah (cth: Taqwa)..."
               }
-              className="pl-9 h-10 bg-white text-gray-800 border-none rounded-full font-comfortaa focus-visible:ring-2 focus-visible:ring-teal-300 placeholder:text-gray-400"
+              className="bg-transparent border-0 h-12 focus-visible:ring-0 pl-10 pr-10 placeholder:text-awqaf-foreground-primary/70 text-awqaf-primary font-comfortaa text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-accent-100 hover:bg-accent-200 flex items-center justify-center transition-colors"
+              >
+                <X className="w-3 h-3 text-awqaf-primary" />
+              </button>
+            )}
           </div>
         </div>
-      </div>
 
-      <main className="max-w-md mx-auto px-4 py-4 space-y-4">
-        {/* Alphabet Navigation */}
-        <div className="bg-white p-2 rounded-xl border border-awqaf-border-light shadow-sm sticky top-[100px] z-20">
-          <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide items-center">
-            <Button
-              size="sm"
-              variant={selectedLetter === "ALL" ? "default" : "ghost"}
-              className={`h-8 px-3 rounded-lg text-xs font-bold font-mono transition-colors ${
-                selectedLetter === "ALL"
-                  ? "bg-teal-600 hover:bg-teal-700 text-white"
-                  : "text-gray-500 hover:bg-gray-100"
-              }`}
+        {/* Alphabet Navigation Pills */}
+        <div className="sticky top-[90px] z-20 bg-white/80 backdrop-blur-md p-2 rounded-xl border border-awqaf-border-light/50 shadow-sm">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide items-center">
+            <button
               onClick={() => setSelectedLetter("ALL")}
+              className={`
+                flex-shrink-0 h-8 px-4 rounded-lg text-xs font-bold font-comfortaa transition-all border
+                ${
+                  selectedLetter === "ALL"
+                    ? "bg-awqaf-primary text-white border-awqaf-primary shadow-md"
+                    : "bg-white text-awqaf-foreground-primary border-awqaf-border-light hover:bg-accent-50"
+                }
+              `}
             >
               ALL
-            </Button>
-            <div className="w-px h-4 bg-gray-200 mx-1 flex-shrink-0"></div>
+            </button>
+            <div className="w-px h-4 bg-awqaf-border-light mx-1 flex-shrink-0"></div>
             {ALPHABETS.map((char) => (
-              <Button
+              <button
                 key={char}
-                size="sm"
-                variant={selectedLetter === char ? "default" : "ghost"}
-                className={`h-8 w-8 p-0 rounded-lg text-xs font-bold font-mono flex-shrink-0 transition-colors ${
-                  selectedLetter === char
-                    ? "bg-teal-600 hover:bg-teal-700 text-white"
-                    : "text-gray-500 hover:bg-gray-100"
-                }`}
                 onClick={() => setSelectedLetter(char)}
+                className={`
+                  flex-shrink-0 w-8 h-8 rounded-lg text-xs font-bold font-comfortaa transition-all border flex items-center justify-center
+                  ${
+                    selectedLetter === char
+                      ? "bg-awqaf-primary text-white border-awqaf-primary shadow-md"
+                      : "bg-white text-awqaf-foreground-primary border-awqaf-border-light hover:bg-accent-50"
+                  }
+                `}
               >
                 {char}
-              </Button>
+              </button>
             ))}
           </div>
         </div>
 
-        {/* Terms List Content */}
+        {/* CONTENT AREA */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-            <Loader2 className="w-10 h-10 animate-spin mb-4 text-teal-600" />
-            <p className="font-comfortaa">
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-awqaf-primary mb-2" />
+            <p className="text-sm text-awqaf-foreground-primary font-comfortaa">
               {t("dictionary.loading") || "Memuat kamus..."}
             </p>
           </div>
         ) : error ? (
-          <div className="text-center py-20">
-            <p className="text-red-500 font-comfortaa">
-              {t("dictionary.failedToLoad") || "Gagal memuat data kamus."}
-            </p>
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={() => window.location.reload()}
-            >
-              {t("common.retry") || "Coba Lagi"}
-            </Button>
-          </div>
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="p-6 text-center">
+              <BookOpen className="w-10 h-10 text-red-400 mx-auto mb-3" />
+              <p className="text-sm text-red-700 font-comfortaa mb-4">
+                {t("dictionary.failedToLoad") || "Gagal memuat data kamus."}
+              </p>
+              <Button
+                onClick={() => window.location.reload()}
+                variant="outline"
+                className="bg-white border-red-200 text-red-600 hover:bg-red-50 font-comfortaa"
+              >
+                {t("common.retry") || "Coba Lagi"}
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {sortedKeys.length > 0 ? (
               sortedKeys.map((letter) => (
                 <div
                   key={letter}
-                  className="scroll-mt-24"
                   id={`section-${letter}`}
+                  className="scroll-mt-32"
                 >
-                  {/* Letter Header */}
-                  <div className="flex items-center gap-2 mb-3 px-2">
-                    <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold font-mono text-sm border border-teal-200">
+                  {/* Letter Header Separator */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-accent-50 text-awqaf-primary flex items-center justify-center font-bold font-comfortaa text-lg border border-accent-100 shadow-sm">
                       {letter}
                     </div>
-                    <div className="h-px flex-1 bg-gradient-to-r from-teal-200 to-transparent"></div>
+                    <div className="h-px flex-1 bg-gradient-to-r from-awqaf-border-light to-transparent"></div>
                   </div>
 
-                  {/* Terms Cards */}
-                  <div className="space-y-3">
+                  {/* Terms List */}
+                  <div className="grid gap-3">
                     {groupedTerms[letter].map((item) => {
-                      // Ambil definisi yang sudah diterjemahkan
                       const definition = getDefinition(item);
-
                       return (
                         <Card
                           key={item.id}
-                          className="border-awqaf-border-light hover:border-teal-200 transition-colors group"
+                          className="border-awqaf-border-light hover:border-awqaf-primary/30 transition-all duration-300 hover:shadow-md bg-white/95 backdrop-blur-sm rounded-2xl group"
                         >
-                          <CardContent className="p-4">
-                            <div className="flex justify-between items-start">
-                              <h3 className="font-bold text-gray-800 text-lg font-comfortaa mb-1 group-hover:text-teal-600 transition-colors">
+                          <CardContent className="p-5">
+                            <div className="flex justify-between items-start mb-2">
+                              <h3 className="font-bold text-awqaf-primary text-lg font-comfortaa group-hover:text-awqaf-primary transition-colors">
                                 {item.term}
                               </h3>
                               <Badge
-                                variant="outline"
-                                className="text-[10px] font-mono text-gray-400"
+                                variant="secondary"
+                                className="bg-accent-50 text-awqaf-foreground-primary border border-accent-100 text-[10px] font-mono px-2"
                               >
+                                <Hash className="w-3 h-3 mr-1 opacity-50" />
                                 {item.alphabet_index}
                               </Badge>
                             </div>
-                            {/* Render HTML Definition (Localized) */}
-                            <div
-                              className="text-sm text-gray-600 font-comfortaa leading-relaxed"
-                              dangerouslySetInnerHTML={{
-                                __html: definition,
-                              }}
-                            />
+
+                            <div className="text-sm text-awqaf-foreground-primary font-comfortaa leading-relaxed">
+                              <div
+                                dangerouslySetInnerHTML={{ __html: definition }}
+                              />
+                            </div>
                           </CardContent>
                         </Card>
                       );
@@ -237,13 +249,13 @@ export default function KamusPage() {
               ))
             ) : (
               <div className="text-center py-20">
-                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <BookOpen className="w-10 h-10 text-gray-300" />
+                <div className="w-16 h-16 bg-white/50 rounded-full flex items-center justify-center mx-auto mb-4 border border-dashed border-awqaf-border-light">
+                  <Search className="w-8 h-8 text-awqaf-foreground-primary/50" />
                 </div>
-                <h3 className="text-gray-900 font-bold font-comfortaa">
+                <h3 className="text-awqaf-primary font-bold font-comfortaa mb-1">
                   {t("dictionary.noTermsFound") || "Istilah tidak ditemukan"}
                 </h3>
-                <p className="text-sm text-gray-500 font-comfortaa">
+                <p className="text-xs text-awqaf-foreground-primary font-comfortaa">
                   {t("dictionary.tryDifferentKeyword") ||
                     "Coba cari dengan kata kunci lain."}
                 </p>
@@ -252,10 +264,13 @@ export default function KamusPage() {
           </div>
         )}
 
-        {!isLoading && !error && (
-          <div className="text-center py-6">
-            <p className="text-xs text-gray-400 font-comfortaa">
-              {t("dictionary.showing") || "Menampilkan"} {filteredTerms.length}{" "}
+        {!isLoading && !error && filteredTerms.length > 0 && (
+          <div className="text-center pt-4 pb-8">
+            <p className="text-xs text-awqaf-foreground-primary/50 font-comfortaa">
+              {t("dictionary.showing") || "Menampilkan"}{" "}
+              <span className="font-bold text-awqaf-primary">
+                {filteredTerms.length}
+              </span>{" "}
               {t("dictionary.terms") || "istilah"}
             </p>
           </div>

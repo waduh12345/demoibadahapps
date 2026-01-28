@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
-  CheckCircle2,
-  Video,
   FileCheck,
   Gift,
   UserCheck,
@@ -12,6 +10,7 @@ import {
   Phone,
   Share2,
   Check,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,6 +29,12 @@ export default function BadalDetail({ pkg, locale, onBack }: BadalDetailProps) {
   const [copied, setCopied] = useState(false);
 
   const LABELS = {
+    title:
+      locale === "en"
+        ? "Package Details"
+        : locale === "ar"
+          ? "تفاصيل الباقة"
+          : "Detail Paket",
     includes:
       locale === "en"
         ? "What's Included"
@@ -68,7 +73,6 @@ export default function BadalDetail({ pkg, locale, onBack }: BadalDetailProps) {
     window.scrollTo(0, 0);
   }, []);
 
-  // --- SHARE FUNCTIONALITY ---
   const handleShare = async () => {
     const shareText = `${pkg.title}\nHarga: ${pkg.priceDisplay}\n\n${pkg.shortDesc}\n\nLink: ${window.location.href}`;
     const shareData = {
@@ -91,129 +95,144 @@ export default function BadalDetail({ pkg, locale, onBack }: BadalDetailProps) {
   };
 
   return (
-    <div className="min-h-screen bg-white" dir={isRtl ? "rtl" : "ltr"}>
-      <div className="max-w-md mx-auto min-h-screen bg-white relative pb-24 shadow-xl overflow-hidden">
-        {/* HERO HEADER */}
-        <div className="bg-awqaf-primary pt-4 pb-12 rounded-b-[40px] relative overflow-hidden">
-          {/* Pattern */}
-          <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]"></div>
-
-          <div className="px-4 relative z-10">
-            <div className="flex justify-between items-center mb-6">
+    <div
+      className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-24"
+      dir={isRtl ? "rtl" : "ltr"}
+    >
+      {/* HEADER: Floating Glass */}
+      <header className="sticky top-0 z-30">
+        <div className="max-w-md mx-auto px-4 py-4">
+          <div className="relative bg-background/90 backdrop-blur-md rounded-2xl border border-awqaf-border-light/50 shadow-lg px-4 py-3">
+            <div className="flex items-center justify-between">
               <Button
                 onClick={onBack}
                 variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/10 rounded-full"
+                size="sm"
+                className="w-10 h-10 p-0 rounded-full hover:bg-accent-100 hover:text-awqaf-primary transition-colors duration-200"
               >
-                <ArrowLeft className={`w-6 h-6 ${isRtl ? "rotate-180" : ""}`} />
+                <ArrowLeft className={`w-5 h-5 ${isRtl ? "rotate-180" : ""}`} />
               </Button>
-
-              <div className="flex items-center gap-2">
-                <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white border border-white/20">
-                  {pkg.type.toUpperCase()}
-                </div>
-                {/* Share Button */}
-                <Button
-                  onClick={handleShare}
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-white/10 rounded-full h-8 w-8"
-                >
-                  {copied ? (
-                    <Check className="w-4 h-4 text-emerald-300" />
-                  ) : (
-                    <Share2 className="w-4 h-4" />
-                  )}
-                </Button>
+              <div className="text-center">
+                <h1 className="text-lg font-bold text-awqaf-primary font-comfortaa">
+                  {LABELS.title}
+                </h1>
               </div>
-            </div>
-
-            <div className="text-center px-4">
-              <h1 className="text-2xl font-bold text-white font-comfortaa mb-2 drop-shadow-md">
-                {pkg.title}
-              </h1>
-              <p className="text-awqaf-secondary font-bold text-3xl font-comfortaa">
-                {pkg.priceDisplay}
-              </p>
-              <p className="text-white/80 text-xs mt-2 max-w-[80%] mx-auto leading-relaxed">
-                {pkg.shortDesc}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* EXECUTOR CARD (Trust Factor) */}
-        <div className="px-6 -mt-8 relative z-20">
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-4 flex items-center gap-4">
-            <div className="w-12 h-12 bg-accent-50 rounded-full flex items-center justify-center border border-accent-100">
-              <UserCheck className="w-6 h-6 text-awqaf-primary" />
-            </div>
-            <div>
-              <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
-                {LABELS.executor}
-              </p>
-              <p className="text-sm font-bold text-slate-800">{pkg.executor}</p>
+              <Button
+                onClick={handleShare}
+                variant="ghost"
+                size="sm"
+                className="w-10 h-10 p-0 rounded-full hover:bg-accent-100 hover:text-awqaf-primary transition-colors duration-200"
+              >
+                {copied ? (
+                  <Check className="w-5 h-5 text-green-500" />
+                ) : (
+                  <Share2 className="w-5 h-5" />
+                )}
+              </Button>
             </div>
           </div>
         </div>
+      </header>
 
-        {/* CONTENT BODY */}
-        <main className="px-6 mt-8 space-y-8">
-          {/* Inclusions Grid */}
-          <div>
-            <h3 className="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
-              <Gift className="w-5 h-5 text-awqaf-secondary" />
-              {LABELS.includes}
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
+      {/* CONTENT */}
+      <main className="max-w-md mx-auto px-4 py-2 space-y-4">
+        {/* 1. Main Info Card */}
+        <Card className="border-awqaf-border-light shadow-sm bg-white/95 backdrop-blur-sm rounded-2xl">
+          <CardContent className="p-6 text-center">
+            <Badge
+              className={`mb-3 px-3 py-1 font-bold font-comfortaa ${pkg.type === "haji" ? "bg-awqaf-secondary text-white" : "bg-awqaf-primary text-white"}`}
+            >
+              {pkg.type.toUpperCase()}
+            </Badge>
+            <h2 className="text-2xl font-bold text-awqaf-primary font-comfortaa mb-2 leading-tight">
+              {pkg.title}
+            </h2>
+            <p className="text-3xl font-bold text-awqaf-primary font-comfortaa my-4">
+              {pkg.priceDisplay}
+            </p>
+
+            {/* Executor Badge */}
+            <div className="inline-flex items-center gap-2 bg-accent-50 px-3 py-1.5 rounded-full border border-accent-100">
+              <UserCheck className="w-4 h-4 text-awqaf-primary" />
+              <span className="text-xs text-awqaf-foreground-secondary font-medium font-comfortaa">
+                {LABELS.executor}:{" "}
+                <span className="font-bold">{pkg.executor}</span>
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 2. Inclusions */}
+        <Card className="border-awqaf-border-light shadow-sm bg-white/95 backdrop-blur-sm rounded-2xl">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Gift className="w-5 h-5 text-awqaf-primary" />
+              <span className="font-bold text-awqaf-primary font-comfortaa">
+                {LABELS.includes}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3">
               {pkg.features.map((feat, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-2.5 p-3 bg-slate-50 rounded-xl border border-slate-100"
+                  className="flex items-center gap-3 p-3 bg-accent-50/50 rounded-xl border border-awqaf-border-light/50"
                 >
-                  <FileCheck className="w-4 h-4 text-awqaf-primary" />
-                  <span className="text-xs font-medium text-slate-700">
+                  <div className="w-6 h-6 rounded-full bg-white text-awqaf-primary flex items-center justify-center shadow-sm border border-awqaf-border-light">
+                    <FileCheck className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-sm font-medium text-awqaf-foreground-secondary font-comfortaa">
                     {feat}
                   </span>
                 </div>
               ))}
-              <div className="flex items-center gap-2.5 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <Shield className="w-4 h-4 text-awqaf-primary" />
-                <span className="text-xs font-medium text-slate-700">
+              <div className="flex items-center gap-3 p-3 bg-accent-50/50 rounded-xl border border-awqaf-border-light/50">
+                <div className="w-6 h-6 rounded-full bg-white text-awqaf-primary flex items-center justify-center shadow-sm border border-awqaf-border-light">
+                  <Shield className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-sm font-medium text-awqaf-foreground-secondary font-comfortaa">
                   {LABELS.trust}
                 </span>
               </div>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Description */}
-          <div>
-            <h3 className="font-bold text-slate-800 text-lg mb-3">
-              {LABELS.desc}
-            </h3>
+        {/* 3. Description */}
+        <Card className="border-awqaf-border-light shadow-sm bg-white/95 backdrop-blur-sm rounded-2xl">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <BookOpen className="w-5 h-5 text-awqaf-primary" />
+              <span className="font-bold text-awqaf-primary font-comfortaa">
+                {LABELS.desc}
+              </span>
+            </div>
             <article
               className={`
-                 prose prose-sm max-w-none text-slate-600
-                 prose-p:leading-loose prose-p:font-comfortaa
-                 ${isRtl ? "text-right font-tajawal" : "text-justify"}
-              `}
+                  prose prose-sm max-w-none 
+                  text-awqaf-foreground-secondary font-comfortaa leading-relaxed
+                  prose-p:mb-4
+                  prose-strong:text-awqaf-primary prose-strong:font-bold
+                  ${isRtl ? "text-right" : "text-justify"}
+                `}
             >
               <div dangerouslySetInnerHTML={{ __html: pkg.description }} />
             </article>
-          </div>
-        </main>
+          </CardContent>
+        </Card>
+      </main>
 
-        {/* BOTTOM ACTION BAR */}
-        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white border-t border-slate-100 flex gap-3 z-30 shadow-[0_-5px_10px_rgba(0,0,0,0.05)]">
+      {/* FLOATING ACTION BAR */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 z-30 bg-gradient-to-t from-white via-white/90 to-transparent">
+        <div className="max-w-md mx-auto flex gap-3">
           <Button
             variant="outline"
-            className="flex-1 rounded-xl h-12 border-awqaf-primary text-awqaf-primary font-bold hover:bg-accent-50"
+            className="flex-1 rounded-xl h-12 border-awqaf-primary text-awqaf-primary font-bold hover:bg-accent-50 font-comfortaa bg-white shadow-sm"
           >
             <Phone className={`w-4 h-4 ${isRtl ? "ml-2" : "mr-2"}`} />
             {LABELS.contact}
           </Button>
-          <Button className="flex-[2] rounded-xl h-12 bg-awqaf-primary hover:bg-awqaf-secondary text-white font-bold shadow-lg shadow-awqaf-primary/20">
+          <Button className="flex-[2] rounded-xl h-12 bg-awqaf-primary hover:bg-awqaf-primary/90 text-white shadow-lg font-bold font-comfortaa transition-transform active:scale-[0.98]">
             {LABELS.book}
           </Button>
         </div>

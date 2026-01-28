@@ -19,18 +19,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/app/hooks/useI18n";
-
-// Import Service & Types
 import {
   useGetRukunIslamQuery,
   RukunIslamItem,
 } from "@/services/public/rukun-islam.service";
-
-// Import komponen detail
 import IslamDetail from "./islam-detail";
-
-// --- 1. DEFINISI TIPE & HELPER ---
-type LocaleCode = "id" | "en" | "ar" | "fr" | "kr" | "jp";
+import { LocaleCode } from "@/lib/i18n";
 
 interface UIText {
   title: string;
@@ -99,7 +93,6 @@ const UI_TEXT: Record<LocaleCode, UIText> = {
   },
 };
 
-// --- 2. COMPONENT UTAMA ---
 export default function RukunIslamPage() {
   const { locale } = useI18n();
   const safeLocale = (
@@ -107,7 +100,6 @@ export default function RukunIslamPage() {
   ) as LocaleCode;
   const t = UI_TEXT[safeLocale];
 
-  // --- API HOOK ---
   const {
     data: apiResponse,
     isLoading,
@@ -116,74 +108,58 @@ export default function RukunIslamPage() {
   } = useGetRukunIslamQuery({ page: 1 });
   const rukunData = apiResponse?.data?.data || [];
 
-  // STATE
   const [selectedItem, setSelectedItem] = useState<RukunIslamItem | null>(null);
 
-  // --- HELPER: Get Translation ---
-  // Fungsi ini mencari terjemahan yang pas. Prioritas: Locale Pilihan -> Inggris -> Default (Indonesia)
   const getTranslation = (
     item: RukunIslamItem,
     field: "title" | "description",
   ) => {
-    // 1. Coba cari di translations array
     const trans = item.translations?.find((tr) => tr.locale === safeLocale);
     if (trans && trans[field]) return trans[field];
-
-    // 2. Fallback ke Inggris jika ada
     const enTrans = item.translations?.find((tr) => tr.locale === "en");
     if (enTrans && enTrans[field]) return enTrans[field];
-
-    // 3. Fallback ke data utama (biasanya ID)
     if (field === "title") return item.title;
-
-    // Khusus deskripsi, kita coba bersihkan tag HTML sederhana untuk shortDesc di list view
     return item.description;
   };
 
-  // Helper untuk membersihkan HTML tags untuk tampilan list (shortDesc)
   const stripHtml = (html: string) => {
+    if (typeof window === "undefined") return html.replace(/<[^>]*>?/gm, "");
     const tmp = document.createElement("DIV");
     tmp.innerHTML = html;
     return tmp.textContent || tmp.innerText || "";
   };
 
-  // MAPPING ICON (Based on Order or Title keywords if needed)
   const getIcon = (order: number): LucideIcon => {
     switch (order) {
       case 1:
-        return MessageCircleHeart; // Syahadat
+        return MessageCircleHeart;
       case 2:
-        return Timer; // Shalat
+        return Timer;
       case 3:
-        return HandCoins; // Zakat
+        return HandCoins;
       case 4:
-        return Moon; // Puasa
+        return Moon;
       case 5:
-        return MapPin; // Haji
+        return MapPin;
       default:
         return LayoutGrid;
     }
   };
 
-  // --- RENDER DETAIL ---
   if (selectedItem) {
-    // Siapkan data yang sudah diterjemahkan untuk detail view
     const detailTitle = getTranslation(selectedItem, "title");
     const detailContent = getTranslation(selectedItem, "description");
 
-    // Kita passing object buatan agar compatible dengan komponen detail yang sudah ada
-    // Atau modifikasi komponen detail menerima raw item + helper function
-    // Di sini saya passing data yang sudah diproses agar komponen detail lebih bersih
     const processedItem = {
       ...selectedItem,
       title: detailTitle,
-      content: detailContent, // HTML String
-      shortDesc: stripHtml(detailContent).substring(0, 100) + "...", // Simulasi short desc
+      content: detailContent,
+      shortDesc: stripHtml(detailContent).substring(0, 100) + "...",
     };
 
     return (
       <IslamDetail
-        item={processedItem} // Perlu disesuaikan interfacenya di IslamDetail
+        item={processedItem}
         locale={safeLocale}
         onBack={() => setSelectedItem(null)}
         icon={getIcon(selectedItem.order)}
@@ -191,119 +167,125 @@ export default function RukunIslamPage() {
     );
   }
 
-  // --- RENDER LIST ---
   return (
     <div
-      className="min-h-screen bg-slate-50 mb-20"
+      className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20"
       dir={safeLocale === "ar" ? "rtl" : "ltr"}
     >
-      <div className="max-w-md mx-auto min-h-screen bg-white relative pb-10 shadow-xl overflow-hidden">
-        {/* Header */}
-        <header className="bg-gradient-to-bl from-emerald-600 to-teal-800 p-6 pb-12 rounded-b-[40px] relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]"></div>
-
-          <div className="relative z-10">
-            <Link href="/bekal-islam">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/20 p-2 h-auto mb-4 rounded-full"
-              >
-                <ArrowLeft
-                  className={`w-6 h-6 ${safeLocale === "ar" ? "rotate-180" : ""}`}
-                />
-              </Button>
-            </Link>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 backdrop-blur-sm rounded-xl">
-                <LayoutGrid className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white font-comfortaa">
+      {/* HEADER: Floating Glass */}
+      <header className="sticky top-0 z-30">
+        <div className="max-w-md mx-auto px-4 py-4">
+          <div className="relative bg-background/90 backdrop-blur-md rounded-2xl border border-awqaf-border-light/50 shadow-lg px-4 py-3">
+            <div className="flex items-center justify-between">
+              <Link href="/bekal-islam">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-10 h-10 p-0 rounded-full hover:bg-accent-100 hover:text-awqaf-primary transition-colors duration-200"
+                >
+                  <ArrowLeft
+                    className={`w-5 h-5 ${safeLocale === "ar" ? "rotate-180" : ""}`}
+                  />
+                </Button>
+              </Link>
+              <div className="text-center">
+                <h1 className="text-lg font-bold text-awqaf-primary font-comfortaa">
                   {t.title}
                 </h1>
-                <p className="text-white/80 text-xs font-comfortaa">
+                <p className="text-xs text-awqaf-foreground-primary font-comfortaa">
                   {t.subtitle}
                 </p>
               </div>
+              <div className="w-10 h-10" />
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* CONTENT AREA */}
-        <main className="px-5 -mt-6 relative z-20 space-y-4">
-          {/* 1. LOADING STATE */}
-          {isLoading && (
-            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-sm">
-              <Loader2 className="w-8 h-8 text-emerald-600 animate-spin mb-2" />
-              <p className="text-sm text-slate-500">{t.loading}</p>
-            </div>
-          )}
+      {/* Main Content */}
+      <main className="max-w-md mx-auto px-4 py-2 space-y-4">
+        {/* Loading */}
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 text-awqaf-primary animate-spin mb-2" />
+            <p className="text-sm text-awqaf-foreground-primary font-comfortaa">
+              {t.loading}
+            </p>
+          </div>
+        )}
 
-          {/* 2. ERROR STATE */}
-          {isError && (
-            <div className="flex flex-col items-center justify-center py-10 bg-white rounded-2xl shadow-sm border border-red-100 p-6 text-center">
-              <AlertCircle className="w-10 h-10 text-red-500 mb-3" />
-              <p className="text-sm text-slate-600 mb-4">{t.error}</p>
+        {/* Error */}
+        {isError && (
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="p-6 text-center">
+              <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+              <p className="text-sm text-red-700 font-comfortaa mb-4">
+                {t.error}
+              </p>
               <Button
                 onClick={() => refetch()}
                 variant="outline"
-                className="border-red-200 text-red-600 hover:bg-red-50"
+                className="bg-white border-red-200 text-red-600 hover:bg-red-50 font-comfortaa"
               >
                 {t.retry}
               </Button>
-            </div>
-          )}
+            </CardContent>
+          </Card>
+        )}
 
-          {/* 3. DATA LIST */}
-          {!isLoading &&
-            !isError &&
-            rukunData.map((item) => {
-              const Icon = getIcon(item.order);
-              const title = getTranslation(item, "title");
-              const rawDesc = getTranslation(item, "description");
-              // Bersihkan HTML tag untuk preview singkat di list (server-side safe strip)
-              const shortDesc =
-                rawDesc.replace(/<[^>]*>?/gm, "").substring(0, 80) + "...";
+        {/* List Items */}
+        {!isLoading &&
+          !isError &&
+          rukunData.map((item) => {
+            const Icon = getIcon(item.order);
+            const title = getTranslation(item, "title");
+            const rawDesc = getTranslation(item, "description");
+            const shortDesc =
+              rawDesc.replace(/<[^>]*>?/gm, "").substring(0, 80) + "...";
 
-              return (
-                <div
-                  key={item.id}
-                  onClick={() => setSelectedItem(item)}
-                  className="cursor-pointer group"
-                >
-                  <Card className="border-none shadow-md hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden bg-white hover:-translate-y-1">
-                    <CardContent className="p-4 flex items-center gap-4">
-                      {/* Number Badge with Icon */}
-                      <div className="relative w-14 h-14 flex-shrink-0">
-                        <div className="absolute inset-0 bg-emerald-50 rounded-full group-hover:bg-emerald-100 transition-colors"></div>
-                        <div className="absolute inset-0 flex items-center justify-center z-10">
-                          <Icon className="w-7 h-7 text-emerald-600" />
-                        </div>
-                        <Badge className="absolute -top-1 -right-1 w-6 h-6 flex items-center justify-center rounded-full bg-emerald-600 text-white text-[10px] z-20 border-2 border-white">
-                          {item.order}
-                        </Badge>
+            return (
+              <div
+                key={item.id}
+                onClick={() => setSelectedItem(item)}
+                className="cursor-pointer group"
+              >
+                <Card className="border-awqaf-border-light hover:border-awqaf-primary/30 shadow-sm hover:shadow-md transition-all duration-300 bg-white/95 backdrop-blur-sm rounded-2xl overflow-hidden hover:-translate-y-1">
+                  <CardContent className="p-4 flex gap-4">
+                    {/* Icon Box */}
+                    <div className="relative w-14 h-14 flex-shrink-0">
+                      <div className="absolute inset-0 bg-accent-50 rounded-xl rotate-3 group-hover:rotate-6 transition-transform border border-accent-100"></div>
+                      <div className="absolute inset-0 bg-white border border-awqaf-border-light rounded-xl flex items-center justify-center shadow-sm z-10 group-hover:border-awqaf-primary/50 transition-colors">
+                        <Icon className="w-6 h-6 text-awqaf-primary group-hover:scale-110 transition-transform" />
                       </div>
+                      <Badge className="absolute -top-2 -right-2 w-6 h-6 flex items-center justify-center rounded-full bg-awqaf-primary text-white text-[10px] z-20 border-2 border-white shadow-sm font-bold font-comfortaa">
+                        {item.order}
+                      </Badge>
+                    </div>
 
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-bold text-slate-800 font-comfortaa mb-1 group-hover:text-emerald-700 transition-colors">
-                          {title}
-                        </h3>
-                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                          {shortDesc}
-                        </p>
+                    {/* Text Content */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-bold text-awqaf-primary font-comfortaa mb-1 group-hover:text-awqaf-primary transition-colors">
+                        {title}
+                      </h3>
+                      <p className="text-xs text-awqaf-foreground-primary line-clamp-2 font-comfortaa leading-relaxed">
+                        {shortDesc}
+                      </p>
+
+                      <div className="mt-2 flex items-center justify-end">
+                        <span className="text-[10px] font-bold text-awqaf-primary flex items-center gap-1 group-hover:gap-2 transition-all font-comfortaa">
+                          {t.read}{" "}
+                          <ChevronRight
+                            className={`w-3 h-3 ${safeLocale === "ar" ? "rotate-180" : ""}`}
+                          />
+                        </span>
                       </div>
-
-                      <ChevronRight
-                        className={`w-5 h-5 text-slate-300 group-hover:text-emerald-600 transition-colors ${safeLocale === "ar" ? "rotate-180" : ""}`}
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
-              );
-            })}
-        </main>
-      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            );
+          })}
+      </main>
     </div>
   );
 }

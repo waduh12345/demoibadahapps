@@ -1,16 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, Share2, Quote, LucideIcon, Check } from "lucide-react";
+import {
+  ArrowLeft,
+  Share2,
+  Quote,
+  LucideIcon,
+  Check,
+  BookOpen,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LocaleCode } from "@/lib/i18n";
+
 export interface ProcessedIslamItem {
   id: number;
   order: number;
   title: string;
-  content: string; // HTML Content
+  content: string;
   shortDesc: string;
 }
 
@@ -38,20 +46,18 @@ export default function IslamDetail({
     const shareData = {
       title: item.title,
       text: item.shortDesc,
-      url: window.location.href, // Menggunakan URL halaman saat ini
+      url: window.location.href,
     };
 
     try {
-      // Coba gunakan Web Share API (Mobile Native Share)
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        // Fallback ke Clipboard untuk Desktop / Browser yang tidak mendukung
         await navigator.clipboard.writeText(
           `${item.title}\n\n${item.shortDesc}\n\nBaca selengkapnya: ${window.location.href}`,
         );
         setCopied(true);
-        setTimeout(() => setCopied(false), 2000); // Reset icon setelah 2 detik
+        setTimeout(() => setCopied(false), 2000);
       }
     } catch (err) {
       console.error("Error sharing:", err);
@@ -59,112 +65,96 @@ export default function IslamDetail({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50" dir={isRtl ? "rtl" : "ltr"}>
-      <div className="max-w-md mx-auto min-h-screen bg-white relative pb-20 shadow-xl overflow-hidden">
-        {/* HERO SECTION */}
-        <div className="relative h-64 bg-gradient-to-tr from-emerald-700 to-teal-500 overflow-hidden">
-          {/* Pattern Decoration */}
-          <div
-            className="absolute inset-0 opacity-15"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-              backgroundSize: "20px 20px",
-            }}
-          ></div>
-
-          {/* Navigation */}
-          <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-20">
-            <Button
-              onClick={onBack}
-              variant="ghost"
-              size="icon"
-              className="bg-black/20 hover:bg-black/30 text-white rounded-full backdrop-blur-sm transition-all"
-            >
-              <ArrowLeft className={`w-5 h-5 ${isRtl ? "rotate-180" : ""}`} />
-            </Button>
-
-            {/* Tombol Share Berfungsi */}
-            <Button
-              onClick={handleShare}
-              variant="ghost"
-              size="icon"
-              className="bg-black/20 hover:bg-black/30 text-white rounded-full backdrop-blur-sm transition-all"
-            >
-              {copied ? (
-                <Check className="w-5 h-5 text-emerald-300" />
-              ) : (
-                <Share2 className="w-5 h-5" />
-              )}
-            </Button>
-          </div>
-
-          {/* Central Icon Display */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-white z-10 pb-6">
-            <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center mb-4 shadow-xl border border-white/40">
-              <Icon className="w-9 h-9 text-white drop-shadow-md" />
-            </div>
-            <Badge className="bg-emerald-900/40 text-emerald-50 border-0 backdrop-blur-sm mb-2 px-3 py-0.5 text-[10px] uppercase tracking-wider">
-              Pilar Ke-{item.order}
-            </Badge>
-            <h1 className="text-3xl font-bold text-center px-4 font-comfortaa leading-tight drop-shadow-lg">
-              {item.title}
-            </h1>
-          </div>
-
-          {/* Wave Divider */}
-          <div className="absolute -bottom-1 left-0 right-0">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 1440 320"
-              className="w-full h-auto text-white fill-current"
-            >
-              <path
-                fillOpacity="1"
-                d="M0,96L80,112C160,128,320,160,480,160C640,160,800,128,960,112C1120,96,1280,96,1360,96L1440,96L1440,320L1360,320C1280,320,1120,320,960,320C800,320,640,320,480,320C320,320,160,320,80,320L0,320Z"
-              ></path>
-            </svg>
-          </div>
-        </div>
-
-        {/* CONTENT SECTION */}
-        <main className="px-6 -mt-8 relative z-20">
-          <Card className="border-none shadow-none bg-transparent">
-            <CardContent className="p-0 space-y-6">
-              {/* Highlight Box */}
-              <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100 flex flex-col items-center text-center gap-3">
-                <Quote className="w-8 h-8 text-emerald-200 fill-emerald-100" />
-                <p className="text-base text-slate-700 font-medium leading-relaxed font-comfortaa">
-                  {item.shortDesc}
-                </p>
-                <div className="w-12 h-1 bg-emerald-100 rounded-full mt-2"></div>
-              </div>
-
-              {/* Main HTML Content */}
-              <article
-                className={`
-                prose prose-slate max-w-none 
-                prose-p:text-slate-600 prose-p:leading-8 prose-p:font-comfortaa
-                prose-strong:text-emerald-800
-                ${isRtl ? "text-right font-tajawal" : "text-justify"}
-              `}
+    <div
+      className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20"
+      dir={isRtl ? "rtl" : "ltr"}
+    >
+      {/* HEADER: Floating Glass */}
+      <header className="sticky top-0 z-30">
+        <div className="max-w-md mx-auto px-4 py-4">
+          <div className="relative bg-background/90 backdrop-blur-md rounded-2xl border border-awqaf-border-light/50 shadow-lg px-4 py-3">
+            <div className="flex items-center justify-between">
+              <Button
+                onClick={onBack}
+                variant="ghost"
+                size="sm"
+                className="w-10 h-10 p-0 rounded-full hover:bg-accent-100 hover:text-awqaf-primary transition-colors duration-200"
               >
-                <div dangerouslySetInnerHTML={{ __html: item.content }} />
-              </article>
-            </CardContent>
-          </Card>
-        </main>
-
-        {/* FOOTER ACTION */}
-        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-30">
-          <Button
-            onClick={onBack}
-            className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 h-12 font-bold font-comfortaa transition-all active:scale-[0.98]"
-          >
-            {locale === "en" ? "Complete Reading" : "Selesai Membaca"}
-          </Button>
+                <ArrowLeft className={`w-5 h-5 ${isRtl ? "rotate-180" : ""}`} />
+              </Button>
+              <div className="text-center">
+                <h1 className="text-lg font-bold text-awqaf-primary font-comfortaa">
+                  Detail Rukun Islam
+                </h1>
+              </div>
+              <Button
+                onClick={handleShare}
+                variant="ghost"
+                size="sm"
+                className="w-10 h-10 p-0 rounded-full hover:bg-accent-100 hover:text-awqaf-primary transition-colors duration-200"
+              >
+                {copied ? (
+                  <Check className="w-5 h-5 text-green-500" />
+                ) : (
+                  <Share2 className="w-5 h-5" />
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
+      </header>
+
+      {/* CONTENT */}
+      <main className="max-w-md mx-auto px-4 py-2 space-y-4">
+        {/* Title Card */}
+        <Card className="border-awqaf-border-light shadow-sm bg-white/95 backdrop-blur-sm rounded-2xl text-center">
+          <CardContent className="p-6">
+            <div className="w-16 h-16 bg-accent-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-accent-100 text-awqaf-primary shadow-sm">
+              <Icon className="w-8 h-8" />
+            </div>
+            <Badge
+              variant="outline"
+              className="border-awqaf-primary/20 text-awqaf-primary bg-awqaf-primary/5 mb-3 font-normal px-3 font-comfortaa"
+            >
+              Rukun Islam #{item.order}
+            </Badge>
+            <h2 className="text-2xl font-bold text-awqaf-primary font-comfortaa leading-snug">
+              {item.title}
+            </h2>
+          </CardContent>
+        </Card>
+
+        {/* Short Desc / Quote */}
+        <Card className="border-awqaf-border-light bg-accent-50/50 rounded-2xl border-l-4 border-l-awqaf-primary">
+          <CardContent className="p-5 flex gap-3">
+            <Quote className="w-5 h-5 text-awqaf-primary flex-shrink-0 rotate-180" />
+            <p className="text-sm text-awqaf-foreground-primary font-medium italic font-comfortaa leading-relaxed">
+              {item.shortDesc}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Main Content */}
+        <Card className="border-awqaf-border-light shadow-sm bg-white/95 backdrop-blur-sm rounded-2xl">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 mb-4 text-awqaf-primary font-bold font-comfortaa border-b border-awqaf-border-light pb-2">
+              <BookOpen className="w-5 h-5" />
+              <span>Penjelasan Lengkap</span>
+            </div>
+            <article
+              className={`
+                  prose prose-sm max-w-none 
+                  text-awqaf-foreground-primary font-comfortaa leading-loose
+                  prose-headings:text-awqaf-primary prose-headings:font-bold
+                  prose-p:mb-4
+                  ${isRtl ? "text-right font-tajawal text-lg" : "text-justify"}
+               `}
+            >
+              <div dangerouslySetInnerHTML={{ __html: item.content }} />
+            </article>
+          </CardContent>
+        </Card>
+      </main>
     </div>
   );
 }
