@@ -3,52 +3,116 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Home, Clock, BookOpen, GraduationCap, BookMarked } from "lucide-react";
+import { useI18n } from "@/app/hooks/useI18n";
+
+// --- TYPES ---
+type LocaleCode = "id" | "en" | "ar" | "fr" | "kr" | "jp";
+
+interface NavLabels {
+  home: string;
+  prayer: string;
+  quran: string;
+  study: string;
+  books: string;
+}
+
+// --- TRANSLATION DICTIONARY ---
+const NAV_TEXT: Record<LocaleCode, NavLabels> = {
+  id: {
+    home: "Beranda",
+    prayer: "Sholat",
+    quran: "Al-Qur'an",
+    study: "Kajian",
+    books: "E-Book",
+  },
+  en: {
+    home: "Home",
+    prayer: "Prayer",
+    quran: "Quran",
+    study: "Study",
+    books: "E-Book",
+  },
+  ar: {
+    home: "الرئيسية",
+    prayer: "الصلاة",
+    quran: "القرآن",
+    study: "دروس",
+    books: "كتب",
+  },
+  fr: {
+    home: "Accueil",
+    prayer: "Prière",
+    quran: "Coran",
+    study: "Étude",
+    books: "E-Book",
+  },
+  kr: {
+    home: "홈",
+    prayer: "기도",
+    quran: "꾸란",
+    study: "공부",
+    books: "전자책",
+  },
+  jp: {
+    home: "ホーム",
+    prayer: "礼拝",
+    quran: "コーラン",
+    study: "勉強",
+    books: "電子書籍",
+  },
+};
 
 interface NavItem {
   href: string;
-  label: string;
+  key: keyof NavLabels; // Gunakan key dari NavLabels untuk mapping
   icon: React.ComponentType<{ className?: string }>;
-  shortLabel: string;
 }
-
-const navItems: NavItem[] = [
-  {
-    href: "/",
-    label: "Beranda",
-    icon: Home,
-    shortLabel: "Home",
-  },
-  {
-    href: "/sholat",
-    label: "Sholat",
-    icon: Clock,
-    shortLabel: "Prayer",
-  },
-  {
-    href: "/quran",
-    label: "Al-Qur'an",
-    icon: BookOpen,
-    shortLabel: "Quran",
-  },
-  {
-    href: "/kajian",
-    label: "Kajian",
-    icon: GraduationCap,
-    shortLabel: "Study",
-  },
-  {
-    href: "/ebook",
-    label: "E-Book",
-    icon: BookMarked,
-    shortLabel: "Books",
-  },
-];
 
 export default function BottomNavigation() {
   const pathname = usePathname();
+  const { locale } = useI18n();
+
+  // Safe Locale Access
+  const safeLocale = (
+    NAV_TEXT[locale as LocaleCode] ? locale : "id"
+  ) as LocaleCode;
+  const t_nav = NAV_TEXT[safeLocale];
+  const isRtl = safeLocale === "ar";
+
+  // Data NavItems (hanya struktur, label diambil dari dictionary)
+  const navItems: NavItem[] = [
+    {
+      href: "/",
+      key: "home",
+      icon: Home,
+    },
+    {
+      href: "/sholat",
+      key: "prayer",
+      icon: Clock,
+    },
+    {
+      href: "/quran",
+      key: "quran",
+      icon: BookOpen,
+    },
+    {
+      href: "/kajian",
+      key: "study",
+      icon: GraduationCap,
+    },
+    {
+      href: "/ebook",
+      key: "books",
+      icon: BookMarked,
+    },
+  ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-awqaf-border-light safe-area-pb">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-awqaf-border-light safe-area-pb"
+      dir={isRtl ? "rtl" : "ltr"}
+    >
       {/* Background blur effect */}
       <div className="absolute inset-0 bg-background/80 backdrop-blur-md"></div>
 
@@ -57,6 +121,7 @@ export default function BottomNavigation() {
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
+          const label = t_nav[item.key];
 
           return (
             <Link
@@ -98,15 +163,16 @@ export default function BottomNavigation() {
               {/* Label */}
               <span
                 className={`
-                text-xs font-medium transition-all duration-200 text-center leading-tight
+                text-[10px] sm:text-xs font-medium transition-all duration-200 text-center leading-tight truncate w-full px-1
                 ${
                   isActive
                     ? "text-awqaf-primary font-semibold"
                     : "text-awqaf-foreground-secondary"
                 }
+                font-comfortaa
               `}
               >
-                {item.label}
+                {label}
               </span>
 
               {/* Active background highlight */}
