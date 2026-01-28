@@ -4,8 +4,152 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { useI18n } from "@/app/hooks/useI18n";
 
-// 1. Definisikan tipe PrayerKey agar sesuai dengan keyof PrayerStatus
+// 1. Definisikan tipe Locale dan Translation
+type LocaleCode = "id" | "en" | "ar" | "fr" | "kr" | "jp";
+
+interface ChecklistTranslations {
+  title: string;
+  subtitle: string;
+  status: {
+    completed: string;
+    current: string;
+    pending: string;
+  };
+  instructionTitle: string;
+  instruction1: string;
+  instruction2: string;
+  prayerNames: {
+    fajr: string;
+    dhuhr: string;
+    asr: string;
+    maghrib: string;
+    isha: string;
+  };
+}
+
+// 2. Dictionary Translation
+const CHECKLIST_TEXT: Record<LocaleCode, ChecklistTranslations> = {
+  id: {
+    title: "Checklist Sholat",
+    subtitle: "Tandai sholat yang sudah dikerjakan",
+    status: {
+      completed: "Selesai",
+      current: "Waktunya",
+      pending: "Belum Waktunya",
+    },
+    instructionTitle: "Petunjuk:",
+    instruction1:
+      "Anda hanya bisa menandai sholat yang sudah waktunya atau yang sudah selesai dikerjakan.",
+    instruction2: "Klik pada sholat yang sudah dikerjakan untuk menandainya.",
+    prayerNames: {
+      fajr: "Subuh",
+      dhuhr: "Dzuhur",
+      asr: "Ashar",
+      maghrib: "Maghrib",
+      isha: "Isya",
+    },
+  },
+  en: {
+    title: "Prayer Checklist",
+    subtitle: "Mark completed prayers",
+    status: {
+      completed: "Completed",
+      current: "Time to Pray",
+      pending: "Upcoming",
+    },
+    instructionTitle: "Hint:",
+    instruction1: "You can only mark prayers that are current or have passed.",
+    instruction2: "Click on a completed prayer to mark it.",
+    prayerNames: {
+      fajr: "Fajr",
+      dhuhr: "Dhuhr",
+      asr: "Asr",
+      maghrib: "Maghrib",
+      isha: "Isha",
+    },
+  },
+  ar: {
+    title: "قائمة الصلاة",
+    subtitle: "حدد الصلوات المكتملة",
+    status: {
+      completed: "مكتملة",
+      current: "حان الوقت",
+      pending: "قادم",
+    },
+    instructionTitle: "تلميح:",
+    instruction1: "يمكنك فقط تحديد الصلوات التي حان وقتها أو التي انقضت.",
+    instruction2: "اضغط على الصلاة المكتملة لتحديدها.",
+    prayerNames: {
+      fajr: "الفجر",
+      dhuhr: "الظهر",
+      asr: "العصر",
+      maghrib: "المغرب",
+      isha: "العشاء",
+    },
+  },
+  fr: {
+    title: "Liste des Prières",
+    subtitle: "Marquer les prières terminées",
+    status: {
+      completed: "Terminé",
+      current: "C'est l'heure",
+      pending: "À venir",
+    },
+    instructionTitle: "Indice :",
+    instruction1:
+      "Vous ne pouvez marquer que les prières actuelles ou passées.",
+    instruction2: "Cliquez sur une prière terminée pour la marquer.",
+    prayerNames: {
+      fajr: "Fajr",
+      dhuhr: "Dhuhr",
+      asr: "Asr",
+      maghrib: "Maghrib",
+      isha: "Isha",
+    },
+  },
+  kr: {
+    title: "기도 체크리스트",
+    subtitle: "완료된 기도 표시",
+    status: {
+      completed: "완료됨",
+      current: "기도 시간",
+      pending: "대기 중",
+    },
+    instructionTitle: "힌트:",
+    instruction1: "현재 시간 또는 지난 기도만 표시할 수 있습니다.",
+    instruction2: "완료된 기도를 클릭하여 표시하세요.",
+    prayerNames: {
+      fajr: "파즈르",
+      dhuhr: "두후르",
+      asr: "아스르",
+      maghrib: "마그립",
+      isha: "이샤",
+    },
+  },
+  jp: {
+    title: "礼拝チェックリスト",
+    subtitle: "完了した礼拝をマーク",
+    status: {
+      completed: "完了",
+      current: "礼拝の時間",
+      pending: "予定",
+    },
+    instructionTitle: "ヒント:",
+    instruction1: "現在または過去の礼拝のみマークできます。",
+    instruction2: "完了した礼拝をクリックしてマークしてください。",
+    prayerNames: {
+      fajr: "ファジュル",
+      dhuhr: "ズフル",
+      asr: "アスル",
+      maghrib: "マグリブ",
+      isha: "イシャー",
+    },
+  },
+};
+
+// 3. Definisikan tipe PrayerKey agar sesuai dengan keyof PrayerStatus
 export type PrayerKey = "fajr" | "dhuhr" | "asr" | "maghrib" | "isha";
 
 interface PrayerTimes {
@@ -18,7 +162,6 @@ interface PrayerTimes {
 
 interface PrayerChecklistProps {
   prayerTimes: PrayerTimes;
-  // Gunakan Record<PrayerKey, boolean> atau definisikan manual, asalkan key-nya sesuai
   prayerStatus: {
     fajr: boolean;
     dhuhr: boolean;
@@ -26,7 +169,6 @@ interface PrayerChecklistProps {
     maghrib: boolean;
     isha: boolean;
   };
-  // 2. PERBAIKAN DI SINI: Ubah 'string' menjadi 'PrayerKey'
   onPrayerToggle: (prayer: PrayerKey) => void;
   currentPrayer: string | null;
 }
@@ -37,27 +179,54 @@ export default function PrayerChecklist({
   onPrayerToggle,
   currentPrayer,
 }: PrayerChecklistProps) {
-  // 3. Pastikan array prayers diketik dengan benar agar 'key' dianggap PrayerKey, bukan string biasa
+  const { locale } = useI18n();
+
+  // Safe Locale Access
+  const safeLocale = (
+    CHECKLIST_TEXT[locale as LocaleCode] ? locale : "id"
+  ) as LocaleCode;
+  const t = CHECKLIST_TEXT[safeLocale];
+  const isRtl = safeLocale === "ar";
+
   const prayers: {
     key: PrayerKey;
     name: string;
     arabic: string;
     time: string;
   }[] = [
-    { key: "fajr", name: "Subuh", arabic: "الفجر", time: prayerTimes.fajr },
-    { key: "dhuhr", name: "Dzuhur", arabic: "الظهر", time: prayerTimes.dhuhr },
-    { key: "asr", name: "Ashar", arabic: "العصر", time: prayerTimes.asr },
+    {
+      key: "fajr",
+      name: t.prayerNames.fajr,
+      arabic: "الفجر",
+      time: prayerTimes.fajr,
+    },
+    {
+      key: "dhuhr",
+      name: t.prayerNames.dhuhr,
+      arabic: "الظهر",
+      time: prayerTimes.dhuhr,
+    },
+    {
+      key: "asr",
+      name: t.prayerNames.asr,
+      arabic: "العصر",
+      time: prayerTimes.asr,
+    },
     {
       key: "maghrib",
-      name: "Maghrib",
+      name: t.prayerNames.maghrib,
       arabic: "المغرب",
       time: prayerTimes.maghrib,
     },
-    { key: "isha", name: "Isya", arabic: "العشاء", time: prayerTimes.isha },
+    {
+      key: "isha",
+      name: t.prayerNames.isha,
+      arabic: "العشاء",
+      time: prayerTimes.isha,
+    },
   ];
 
   const getPrayerStatus = (prayerKey: string) => {
-    // Casting keyof untuk akses object aman
     const isCompleted = prayerStatus[prayerKey as PrayerKey];
     const isCurrent = currentPrayer === prayerKey;
 
@@ -100,16 +269,16 @@ export default function PrayerChecklist({
   const getStatusText = (status: string) => {
     switch (status) {
       case "completed":
-        return "Selesai";
+        return t.status.completed;
       case "current":
-        return "Waktunya";
+        return t.status.current;
       default:
-        return "Belum Waktunya";
+        return t.status.pending;
     }
   };
 
   return (
-    <Card className="border-awqaf-border-light">
+    <Card className="border-awqaf-border-light" dir={isRtl ? "rtl" : "ltr"}>
       <CardContent className="p-4">
         {/* Header */}
         <div className="flex items-center gap-2 mb-4">
@@ -118,10 +287,10 @@ export default function PrayerChecklist({
           </div>
           <div>
             <h3 className="font-semibold text-card-foreground text-sm font-comfortaa">
-              Checklist Sholat
+              {t.title}
             </h3>
             <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
-              Tandai sholat yang sudah dikerjakan
+              {t.subtitle}
             </p>
           </div>
         </div>
@@ -145,7 +314,6 @@ export default function PrayerChecklist({
                     ? "ring-2 ring-warning/20 bg-warning/5"
                     : ""
                 }`}
-                // Tidak perlu arrow function anonim jika parameternya sama, tapi agar aman:
                 onClick={() => canCheck && onPrayerToggle(prayer.key)}
               >
                 <div className="flex items-center gap-3">
@@ -158,7 +326,7 @@ export default function PrayerChecklist({
                       {prayer.arabic}
                     </p>
                     <p className="text-xs text-awqaf-foreground-secondary font-comfortaa mt-1">
-                      {prayer.time} WIB
+                      {prayer.time}
                     </p>
                   </div>
                 </div>
@@ -200,11 +368,10 @@ export default function PrayerChecklist({
             <AlertCircle className="w-4 h-4 text-awqaf-primary mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
-                <strong>Petunjuk:</strong> Anda hanya bisa menandai sholat yang
-                sudah waktunya atau yang sudah selesai dikerjakan.
+                <strong>{t.instructionTitle}</strong> {t.instruction1}
               </p>
               <p className="text-xs text-awqaf-foreground-secondary font-comfortaa mt-1">
-                Klik pada sholat yang sudah dikerjakan untuk menandainya.
+                {t.instruction2}
               </p>
             </div>
           </div>

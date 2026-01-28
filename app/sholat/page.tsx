@@ -31,7 +31,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useI18n } from "@/app/hooks/useI18n";
+import { LocaleCode } from "@/lib/i18n";
 
+// --- TYPES ---
 interface Location {
   latitude: number;
   longitude: number;
@@ -59,16 +61,407 @@ interface AladhanResponse {
   };
 }
 
-// Popular Adhan Audio URL - Mishary Rashid Alafasy (most popular reciter worldwide)
-// Using multiple fallback URLs for reliability
+// Popular Adhan Audio URL
 const ADHAN_URLS = [
-  "https://www.islamcan.com/audio/adhan/azan1.mp3", // Full Adhan - Makkah style
-  "https://media.sd.ma/assabile/adhan_3435/8bdb88c0b65f.mp3", // Mishary Rashid Alafasy
-  "https://cdn.aladhan.com/audio/mishary/adhan.mp3", // Aladhan CDN fallback
+  "https://www.islamcan.com/audio/adhan/azan1.mp3",
+  "https://media.sd.ma/assabile/adhan_3435/8bdb88c0b65f.mp3",
+  "https://cdn.aladhan.com/audio/mishary/adhan.mp3",
 ];
 
+// Definisi Tipe Spesifik untuk Dictionary
+interface SholatTranslations {
+  title: string;
+  subtitle: string;
+  currentLocation: string;
+  locationNotSet: string;
+  useCurrentLocation: string;
+  gettingLocation: string;
+  adhanReminder: string;
+  adhanActive: string;
+  activateReminder: string;
+  active: string;
+  inactive: string;
+  playingAdhan: string;
+  testAdhan: string;
+  stop: string;
+  test: string;
+  scheduledPrayers: string;
+  allPrayersPassed: string;
+  allowNotification: string;
+  todaySchedule: string;
+  prayerProgress: string;
+  alhamdulillah: string;
+  keepSpirit: string;
+  markInstruction: string;
+  alreadyPrayed: string;
+  currentlyOngoing: string;
+  completed: string;
+  locationRequired: string;
+  locationRequiredDesc: string;
+  allowLocationAccess: string;
+  motivationTitle: string;
+  motivationDesc: string;
+  quranQuote: string;
+  quranSource: string;
+  motivationFooter: string;
+  alhamdulillahBtn: string;
+  errors: {
+    geoNotSupported: string;
+    fetchFailed: string;
+    locDenied: string;
+    locUnavailable: string;
+    locTimeout: string;
+    locError: string;
+    locUnknown: string;
+    notificationBlocked: string;
+  };
+  notification: {
+    title: string;
+    body: string;
+  };
+}
+
+const SHOLAT_TEXT: Record<LocaleCode, SholatTranslations> = {
+  id: {
+    title: "Jadwal Sholat",
+    subtitle: "Waktu sholat akurat sesuai lokasi Anda",
+    currentLocation: "Lokasi Saat Ini",
+    locationNotSet: "Lokasi belum ditentukan",
+    useCurrentLocation: "Gunakan Lokasi Saat Ini",
+    gettingLocation: "Mendapatkan lokasi...",
+    adhanReminder: "Pengingat Adzan",
+    adhanActive: "Notifikasi suara adzan aktif",
+    activateReminder: "Aktifkan notifikasi adzan",
+    active: "Aktif",
+    inactive: "Nonaktif",
+    playingAdhan: "Memutar Adzan",
+    testAdhan: "Coba Suara Adzan",
+    stop: "Stop",
+    test: "Test",
+    scheduledPrayers: "Sholat Terjadwal:",
+    allPrayersPassed: "Semua sholat hari ini telah berlalu",
+    allowNotification: "Izinkan notifikasi browser agar pengingat berfungsi",
+    todaySchedule: "Jadwal Hari Ini",
+    prayerProgress: "Progress Sholat Hari Ini",
+    alhamdulillah: "Alhamdulillah, lengkap!",
+    keepSpirit: "Tetap semangat! 💪",
+    markInstruction:
+      "Klik lingkaran untuk menandai sholat yang sudah dikerjakan",
+    alreadyPrayed: "✓ Sudah Sholat",
+    currentlyOngoing: "• Sedang Berlangsung",
+    completed: "• Selesai",
+    locationRequired: "Akses Lokasi Diperlukan",
+    locationRequiredDesc:
+      "Mohon izinkan akses lokasi untuk menampilkan jadwal sholat yang akurat di daerah Anda.",
+    allowLocationAccess: "Izinkan Akses Lokasi",
+    motivationTitle: "Alhamdulillah! 🎉",
+    motivationDesc: "Anda telah menyelesaikan sholat",
+    quranQuote:
+      '"Sesungguhnya sholat itu mencegah dari perbuatan keji dan mungkar"',
+    quranSource: "- QS. Al-Ankabut: 45",
+    motivationFooter:
+      "Terus jaga sholat 5 waktu untuk kebaikan dunia dan akhirat! 💪",
+    alhamdulillahBtn: "Alhamdulillah",
+    errors: {
+      geoNotSupported: "Geolocation tidak didukung oleh browser ini",
+      fetchFailed: "Gagal memuat jadwal sholat. Periksa koneksi internet Anda.",
+      locDenied:
+        "Akses lokasi ditolak. Silakan izinkan akses lokasi untuk melihat jadwal sholat.",
+      locUnavailable: "Informasi lokasi tidak tersedia.",
+      locTimeout: "Permintaan lokasi timeout.",
+      locError: "Terjadi kesalahan saat mendapatkan lokasi.",
+      locUnknown: "Lokasi tidak diketahui",
+      notificationBlocked:
+        "Izinkan notifikasi untuk mengaktifkan pengingat adzan. Silakan cek pengaturan browser Anda.",
+    },
+    notification: {
+      title: "Waktu",
+      body: "Saatnya menunaikan sholat",
+    },
+  },
+  en: {
+    title: "Prayer Times",
+    subtitle: "Accurate prayer times based on your location",
+    currentLocation: "Current Location",
+    locationNotSet: "Location not set",
+    useCurrentLocation: "Use Current Location",
+    gettingLocation: "Getting location...",
+    adhanReminder: "Adhan Reminder",
+    adhanActive: "Adhan voice notification active",
+    activateReminder: "Enable adhan notification",
+    active: "Active",
+    inactive: "Inactive",
+    playingAdhan: "Playing Adhan",
+    testAdhan: "Test Adhan Sound",
+    stop: "Stop",
+    test: "Test",
+    scheduledPrayers: "Scheduled Prayers:",
+    allPrayersPassed: "All prayers for today have passed",
+    allowNotification: "Allow browser notifications for reminders to work",
+    todaySchedule: "Today's Schedule",
+    prayerProgress: "Today's Prayer Progress",
+    alhamdulillah: "Alhamdulillah, complete!",
+    keepSpirit: "Keep it up! 💪",
+    markInstruction: "Click the circle to mark completed prayers",
+    alreadyPrayed: "✓ Prayed",
+    currentlyOngoing: "• Ongoing",
+    completed: "• Completed",
+    locationRequired: "Location Access Required",
+    locationRequiredDesc:
+      "Please allow location access to show accurate prayer times in your area.",
+    allowLocationAccess: "Allow Location Access",
+    motivationTitle: "Alhamdulillah! 🎉",
+    motivationDesc: "You have completed the prayer",
+    quranQuote: '"Indeed, prayer prohibits immorality and wrongdoing"',
+    quranSource: "- QS. Al-Ankabut: 45",
+    motivationFooter:
+      "Keep up the 5 daily prayers for goodness in this world and the hereafter! 💪",
+    alhamdulillahBtn: "Alhamdulillah",
+    errors: {
+      geoNotSupported: "Geolocation is not supported by this browser",
+      fetchFailed:
+        "Failed to load prayer times. Check your internet connection.",
+      locDenied:
+        "Location access denied. Please allow location access to view prayer times.",
+      locUnavailable: "Location information unavailable.",
+      locTimeout: "Location request timeout.",
+      locError: "An error occurred while getting location.",
+      locUnknown: "Unknown location",
+      notificationBlocked:
+        "Allow notifications to enable adhan reminder. Please check your browser settings.",
+    },
+    notification: {
+      title: "Time for",
+      body: "It is time to perform prayer",
+    },
+  },
+  ar: {
+    title: "أوقات الصلاة",
+    subtitle: "أوقات صلاة دقيقة بناءً على موقعك",
+    currentLocation: "الموقع الحالي",
+    locationNotSet: "لم يتم تحديد الموقع",
+    useCurrentLocation: "استخدام الموقع الحالي",
+    gettingLocation: "جاري تحديد الموقع...",
+    adhanReminder: "تذكير الأذان",
+    adhanActive: "إشعار صوت الأذان نشط",
+    activateReminder: "تفعيل إشعار الأذان",
+    active: "نشط",
+    inactive: "غير نشط",
+    playingAdhan: "تشغيل الأذان",
+    testAdhan: "تجربة صوت الأذان",
+    stop: "إيقاف",
+    test: "تجربة",
+    scheduledPrayers: "الصلوات المجدولة:",
+    allPrayersPassed: "انقضت جميع صلوات اليوم",
+    allowNotification: "اسمح بإشعارات المتصفح لعمل التذكيرات",
+    todaySchedule: "جدول اليوم",
+    prayerProgress: "تقدم الصلاة اليوم",
+    alhamdulillah: "الحمد لله، اكتملت!",
+    keepSpirit: "استمر في ذلك! 💪",
+    markInstruction: "انقر على الدائرة لتحديد الصلوات المكتملة",
+    alreadyPrayed: "✓ صليت",
+    currentlyOngoing: "• جارية الآن",
+    completed: "• اكتملت",
+    locationRequired: "مطلوب الوصول إلى الموقع",
+    locationRequiredDesc:
+      "يرجى السماح بالوصول إلى الموقع لإظهار أوقات الصلاة الدقيقة في منطقتك.",
+    allowLocationAccess: "السماح بالوصول إلى الموقع",
+    motivationTitle: "الحمد لله! 🎉",
+    motivationDesc: "لقد أتممت صلاة",
+    quranQuote: '"إِنَّ الصَّلَاةَ تَنْهَىٰ عَنِ الْفَحْشَاءِ وَالْمُنكَرِ"',
+    quranSource: "- سورة العنكبوت: ٤٥",
+    motivationFooter: "حافظ على الصلوات الخمس لخير الدنيا والآخرة! 💪",
+    alhamdulillahBtn: "الحمد لله",
+    errors: {
+      geoNotSupported: "الموقع الجغرافي غير مدعوم في هذا المتصفح",
+      fetchFailed: "فشل تحميل أوقات الصلاة. تحقق من اتصالك بالإنترنت.",
+      locDenied: "تم رفض الوصول إلى الموقع. يرجى السماح بالوصول لعرض الأوقات.",
+      locUnavailable: "معلومات الموقع غير متاحة.",
+      locTimeout: "انتهت مهلة طلب الموقع.",
+      locError: "حدث خطأ أثناء الحصول على الموقع.",
+      locUnknown: "موقع غير معروف",
+      notificationBlocked:
+        "اسمح بالإشعارات لتفعيل تذكير الأذان. تحقق من إعدادات المتصفح.",
+    },
+    notification: {
+      title: "وقت",
+      body: "حان وقت أداء صلاة",
+    },
+  },
+  fr: {
+    title: "Horaires de Prière",
+    subtitle: "Horaires précis basés sur votre position",
+    currentLocation: "Position Actuelle",
+    locationNotSet: "Position non définie",
+    useCurrentLocation: "Utiliser la position actuelle",
+    gettingLocation: "Obtention de la position...",
+    adhanReminder: "Rappel Adhan",
+    adhanActive: "Notification vocale Adhan active",
+    activateReminder: "Activer la notification Adhan",
+    active: "Actif",
+    inactive: "Inactif",
+    playingAdhan: "Lecture de l'Adhan",
+    testAdhan: "Tester le son Adhan",
+    stop: "Arrêter",
+    test: "Test",
+    scheduledPrayers: "Prières programmées:",
+    allPrayersPassed: "Toutes les prières d'aujourd'hui sont passées",
+    allowNotification: "Autoriser les notifications du navigateur",
+    todaySchedule: "Programme d'aujourd'hui",
+    prayerProgress: "Progrès des prières",
+    alhamdulillah: "Alhamdulillah, complet !",
+    keepSpirit: "Continuez comme ça ! 💪",
+    markInstruction:
+      "Cliquez sur le cercle pour marquer les prières effectuées",
+    alreadyPrayed: "✓ Prié",
+    currentlyOngoing: "• En cours",
+    completed: "• Terminé",
+    locationRequired: "Accès à la localisation requis",
+    locationRequiredDesc:
+      "Veuillez autoriser l'accès à la localisation pour afficher les horaires précis.",
+    allowLocationAccess: "Autoriser l'accès",
+    motivationTitle: "Alhamdulillah ! 🎉",
+    motivationDesc: "Vous avez terminé la prière de",
+    quranQuote:
+      '"En vérité, la prière préserve de la turpitude et du blâmable"',
+    quranSource: "- Sourate Al-Ankabut: 45",
+    motivationFooter:
+      "Maintenez les 5 prières quotidiennes pour le bien ici-bas et dans l'au-delà ! 💪",
+    alhamdulillahBtn: "Alhamdulillah",
+    errors: {
+      geoNotSupported: "La géolocalisation n'est pas supportée",
+      fetchFailed: "Échec du chargement. Vérifiez votre connexion.",
+      locDenied: "Accès refusé. Veuillez autoriser la localisation.",
+      locUnavailable: "Position indisponible.",
+      locTimeout: "Délai d'attente dépassé.",
+      locError: "Erreur lors de l'obtention de la position.",
+      locUnknown: "Position inconnue",
+      notificationBlocked:
+        "Autorisez les notifications pour activer le rappel.",
+    },
+    notification: {
+      title: "Heure de",
+      body: "Il est temps d'effectuer la prière de",
+    },
+  },
+  kr: {
+    title: "기도 시간",
+    subtitle: "위치 기반 정확한 기도 시간",
+    currentLocation: "현재 위치",
+    locationNotSet: "위치 설정되지 않음",
+    useCurrentLocation: "현재 위치 사용",
+    gettingLocation: "위치 확인 중...",
+    adhanReminder: "아잔 알림",
+    adhanActive: "아잔 음성 알림 활성화됨",
+    activateReminder: "아잔 알림 켜기",
+    active: "활성",
+    inactive: "비활성",
+    playingAdhan: "아잔 재생 중",
+    testAdhan: "아잔 소리 테스트",
+    stop: "정지",
+    test: "테스트",
+    scheduledPrayers: "예정된 기도:",
+    allPrayersPassed: "오늘의 모든 기도가 지났습니다",
+    allowNotification: "알림이 작동하도록 브라우저 알림 허용",
+    todaySchedule: "오늘의 일정",
+    prayerProgress: "오늘의 기도 진행상황",
+    alhamdulillah: "알함둘릴라, 완료!",
+    keepSpirit: "계속 힘내세요! 💪",
+    markInstruction: "완료된 기도를 표시하려면 원을 클릭하세요",
+    alreadyPrayed: "✓ 기도함",
+    currentlyOngoing: "• 진행 중",
+    completed: "• 완료됨",
+    locationRequired: "위치 액세스 필요",
+    locationRequiredDesc: "정확한 기도 시간을 위해 위치 액세스를 허용해주세요.",
+    allowLocationAccess: "위치 액세스 허용",
+    motivationTitle: "알함둘릴라! 🎉",
+    motivationDesc: "기도를 마쳤습니다:",
+    quranQuote: '"실로 예배는 죄악과 사악함을 방지하느니라"',
+    quranSource: "- 수라 알-안카붓: 45",
+    motivationFooter:
+      "현세와 내세의 선함을 위해 하루 5번의 기도를 지키세요! 💪",
+    alhamdulillahBtn: "알함둘릴라",
+    errors: {
+      geoNotSupported: "지리적 위치가 지원되지 않음",
+      fetchFailed: "기도 시간을 불러오지 못했습니다. 인터넷을 확인하세요.",
+      locDenied: "위치 액세스가 거부되었습니다. 허용해주세요.",
+      locUnavailable: "위치 정보 사용 불가.",
+      locTimeout: "위치 요청 시간 초과.",
+      locError: "위치를 가져오는 중 오류 발생.",
+      locUnknown: "알 수 없는 위치",
+      notificationBlocked: "아잔 알림을 위해 알림을 허용해주세요.",
+    },
+    notification: {
+      title: "시간",
+      body: "기도할 시간입니다:",
+    },
+  },
+  jp: {
+    title: "礼拝時間",
+    subtitle: "現在地に基づいた正確な礼拝時間",
+    currentLocation: "現在地",
+    locationNotSet: "位置情報未設定",
+    useCurrentLocation: "現在地を使用",
+    gettingLocation: "位置情報を取得中...",
+    adhanReminder: "アザーンリマインダー",
+    adhanActive: "アザーン音声通知有効",
+    activateReminder: "アザーン通知を有効にする",
+    active: "有効",
+    inactive: "無効",
+    playingAdhan: "アザーン再生中",
+    testAdhan: "アザーン音テスト",
+    stop: "停止",
+    test: "テスト",
+    scheduledPrayers: "予定された礼拝:",
+    allPrayersPassed: "本日の礼拝はすべて終了しました",
+    allowNotification: "リマインダーのためにブラウザ通知を許可してください",
+    todaySchedule: "今日のスケジュール",
+    prayerProgress: "今日の礼拝進捗",
+    alhamdulillah: "アルハムドゥリッラー、完了！",
+    keepSpirit: "その調子で！ 💪",
+    markInstruction: "完了した礼拝をマークするには円をクリック",
+    alreadyPrayed: "✓ 礼拝済み",
+    currentlyOngoing: "• 進行中",
+    completed: "• 完了",
+    locationRequired: "位置情報へのアクセスが必要",
+    locationRequiredDesc:
+      "正確な礼拝時間を表示するために位置情報のアクセスを許可してください。",
+    allowLocationAccess: "位置情報アクセスを許可",
+    motivationTitle: "アルハムドゥリッラー！ 🎉",
+    motivationDesc: "あなたは礼拝を完了しました:",
+    quranQuote: '"誠に礼拝は、人を醜行と邪悪から遠ざける。"',
+    quranSource: "- スーラ アル・アンカブート: 45",
+    motivationFooter: "現世と来世の善のために1日5回の礼拝を守りましょう！ 💪",
+    alhamdulillahBtn: "アルハムドゥリッラー",
+    errors: {
+      geoNotSupported: "位置情報はサポートされていません",
+      fetchFailed:
+        "読み込みに失敗しました。インターネット接続を確認してください。",
+      locDenied: "アクセスが拒否されました。位置情報を許可してください。",
+      locUnavailable: "位置情報が利用できません。",
+      locTimeout: "リクエストがタイムアウトしました。",
+      locError: "位置情報の取得中にエラーが発生しました。",
+      locUnknown: "不明な場所",
+      notificationBlocked:
+        "リマインダーを有効にするには通知を許可してください。",
+    },
+    notification: {
+      title: "時間",
+      body: "礼拝を行う時間です:",
+    },
+  },
+};
+
 export default function SholatPage() {
-  const { t, locale } = useI18n();
+  const { locale } = useI18n();
+  // Safe Locale Access with correct type
+  const safeLocale = (
+    SHOLAT_TEXT[locale as LocaleCode] ? locale : "id"
+  ) as LocaleCode;
+  const t_sholat = SHOLAT_TEXT[safeLocale];
+  const isRtl = safeLocale === "ar";
+
+  // State
   const [location, setLocation] = useState<Location | null>(null);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTime[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -77,18 +470,20 @@ export default function SholatPage() {
     "granted" | "denied" | "prompt" | "unknown"
   >("unknown");
 
-  // Adhan Reminder States
+  // Adhan States
   const [isAdhanEnabled, setIsAdhanEnabled] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<
     "granted" | "denied" | "default"
   >("default");
   const [isAdhanPlaying, setIsAdhanPlaying] = useState(false);
   const [currentAdhanPrayer, setCurrentAdhanPrayer] = useState<string | null>(
-    null
+    null,
   );
 
-  // Prayer Checklist States
-  const [prayerChecklist, setPrayerChecklist] = useState<Record<string, boolean>>({});
+  // Prayer Checklist
+  const [prayerChecklist, setPrayerChecklist] = useState<
+    Record<string, boolean>
+  >({});
   const [showMotivationDialog, setShowMotivationDialog] = useState(false);
   const [completedPrayerName, setCompletedPrayerName] = useState<string>("");
 
@@ -96,24 +491,20 @@ export default function SholatPage() {
   const adhanAudioRef = useRef<HTMLAudioElement | null>(null);
   const adhanTimersRef = useRef<NodeJS.Timeout[]>([]);
 
-  // Helper to determine status based on current time and prayer time
+  // --- Helper: Get Prayer Status ---
   const getPrayerStatus = (
     prayerTimeStr: string,
-    nextPrayerTimeStr: string | null
+    nextPrayerTimeStr: string | null,
   ): "completed" | "current" | "upcoming" => {
     const now = new Date();
     const currentTime = now.getHours() * 60 + now.getMinutes();
-
     if (!prayerTimeStr) return "upcoming";
 
-    // API returns "04:45" or "04:45 (WIB)". We need to clean it just in case.
     const cleanTime = prayerTimeStr.split(" ")[0];
     const [pHeader, pMinute] = cleanTime.split(":").map(Number);
     const prayerTimeMinutes = pHeader * 60 + pMinute;
 
-    if (currentTime < prayerTimeMinutes) {
-      return "upcoming";
-    }
+    if (currentTime < prayerTimeMinutes) return "upcoming";
 
     if (nextPrayerTimeStr) {
       const cleanNextTime = nextPrayerTimeStr.split(" ")[0];
@@ -122,382 +513,235 @@ export default function SholatPage() {
       if (
         currentTime >= prayerTimeMinutes &&
         currentTime < nextPrayerTimeMinutes
-      ) {
+      )
         return "current";
-      }
     } else {
-      // Logic for Isha (last prayer of day)
-      if (currentTime >= prayerTimeMinutes) {
-        return "current";
-      }
+      if (currentTime >= prayerTimeMinutes) return "current";
     }
-
     return "completed";
   };
 
+  // --- Helper: Fetch Prayer Times ---
   const fetchPrayerTimes = async (lat: number, lng: number) => {
     try {
       const date = new Date();
-      // Ensure DD-MM-YYYY format with leading zeros
       const day = String(date.getDate()).padStart(2, "0");
       const month = String(date.getMonth() + 1).padStart(2, "0");
       const year = date.getFullYear();
       const dateString = `${day}-${month}-${year}`;
-
-      // Using Aladhan API with https protocol
       const apiUrl = `https://api.aladhan.com/v1/timings/${dateString}?latitude=${lat}&longitude=${lng}&method=20`;
 
       const response = await fetch(apiUrl);
-
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
-      }
-
+      if (!response.ok) throw new Error(`API Error: ${response.status}`);
       const data: AladhanResponse = await response.json();
-
-      if (!data || !data.data || !data.data.timings) {
-        throw new Error("Invalid API response structure");
-      }
+      if (!data?.data?.timings) throw new Error("Invalid API response");
 
       const timings = data.data.timings;
 
-      // Map API response to our interface - using i18n for prayer names
+      // Use raw names first, map later for translation
       const rawPrayers = [
-        { name: t("prayer.prayerNames.fajr"), arabic: "الفجر", time: timings.Fajr },
-        { name: t("prayer.prayerNames.dhuhr"), arabic: "الظهر", time: timings.Dhuhr },
-        { name: t("prayer.prayerNames.asr"), arabic: "العصر", time: timings.Asr },
-        { name: t("prayer.prayerNames.maghrib"), arabic: "المغرب", time: timings.Maghrib },
-        { name: t("prayer.prayerNames.isha"), arabic: "العشاء", time: timings.Isha },
+        { name: "Fajr", arabic: "الفجر", time: timings.Fajr },
+        { name: "Dhuhr", arabic: "الظهر", time: timings.Dhuhr },
+        { name: "Asr", arabic: "العصر", time: timings.Asr },
+        { name: "Maghrib", arabic: "المغرب", time: timings.Maghrib },
+        { name: "Isha", arabic: "العشاء", time: timings.Isha },
       ];
 
       const processedPrayers: PrayerTime[] = rawPrayers.map((p, index) => {
         const nextPrayer = rawPrayers[index + 1];
         const status = getPrayerStatus(
           p.time,
-          nextPrayer ? nextPrayer.time : null
+          nextPrayer ? nextPrayer.time : null,
         );
-        return {
-          ...p,
-          status,
-        };
+
+        // Translate name immediately based on current locale
+        const translatedName = getPrayerName(p.name, safeLocale);
+
+        return { ...p, name: translatedName, status };
       });
 
       setPrayerTimes(processedPrayers);
     } catch (err) {
       console.error("Failed to fetch prayer times:", err);
-      const errorMessages: Record<string, string> = {
-        id: "Gagal memuat jadwal sholat. Periksa koneksi internet Anda.",
-        en: "Failed to load prayer times. Check your internet connection.",
-        ar: "فشل تحميل أوقات الصلاة. تحقق من اتصالك بالإنترنت.",
-        fr: "Échec du chargement des horaires de prière. Vérifiez votre connexion Internet.",
-        kr: "기도 시간을 불러오지 못했습니다. 인터넷 연결을 확인하세요.",
-        jp: "礼拝時間の読み込みに失敗しました。インターネット接続を確認してください。",
-      };
-      setError(errorMessages[locale] || errorMessages.id);
+      setError(t_sholat.errors.fetchFailed);
     }
   };
 
-  // Load prayer checklist from localStorage
+  // Helper to translate prayer names (Manual Mapping)
+  const getPrayerName = (key: string, loc: LocaleCode) => {
+    const maps: Record<string, Record<LocaleCode, string>> = {
+      Fajr: {
+        id: "Subuh",
+        en: "Fajr",
+        ar: "الفجر",
+        fr: "Fajr",
+        kr: "파즈르",
+        jp: "ファジュル",
+      },
+      Dhuhr: {
+        id: "Dzuhur",
+        en: "Dhuhr",
+        ar: "الظهر",
+        fr: "Dhuhr",
+        kr: "두후르",
+        jp: "ズフル",
+      },
+      Asr: {
+        id: "Ashar",
+        en: "Asr",
+        ar: "العصر",
+        fr: "Asr",
+        kr: "아스르",
+        jp: "アスル",
+      },
+      Maghrib: {
+        id: "Maghrib",
+        en: "Maghrib",
+        ar: "المغرب",
+        fr: "Maghrib",
+        kr: "마그립",
+        jp: "マグリブ",
+      },
+      Isha: {
+        id: "Isya",
+        en: "Isha",
+        ar: "العشاء",
+        fr: "Isha",
+        kr: "이샤",
+        jp: "イシャー",
+      },
+    };
+    return maps[key]?.[loc] || key;
+  };
+
+  // Load Checklist
   useEffect(() => {
     try {
       const today = new Date().toDateString();
       const savedChecklist = localStorage.getItem(`prayer-checklist-${today}`);
-      
-      if (savedChecklist) {
-        const parsed = JSON.parse(savedChecklist);
-        setPrayerChecklist(parsed || {});
-      } else {
-        // Reset checklist for new day
-        setPrayerChecklist({});
-      }
-    } catch (error) {
-      console.error("Error loading prayer checklist:", error);
+      if (savedChecklist) setPrayerChecklist(JSON.parse(savedChecklist) || {});
+      else setPrayerChecklist({});
+    } catch (e) {
       setPrayerChecklist({});
     }
   }, []);
 
-  // Save prayer checklist to localStorage
+  // Save Checklist
   useEffect(() => {
-    try {
-      const today = new Date().toDateString();
-      if (prayerChecklist && Object.keys(prayerChecklist).length >= 0) {
-        localStorage.setItem(`prayer-checklist-${today}`, JSON.stringify(prayerChecklist));
-      }
-    } catch (error) {
-      console.error("Error saving prayer checklist:", error);
-    }
+    const today = new Date().toDateString();
+    localStorage.setItem(
+      `prayer-checklist-${today}`,
+      JSON.stringify(prayerChecklist),
+    );
   }, [prayerChecklist]);
 
-  // Update prayer names when locale changes
+  // Update prayer names on locale change
   useEffect(() => {
-    if (prayerTimes.length > 0 && location) {
-      const updatedPrayers = prayerTimes.map((prayer, index) => {
-        const prayerNames = [
-          t("prayer.prayerNames.fajr"),
-          t("prayer.prayerNames.dhuhr"),
-          t("prayer.prayerNames.asr"),
-          t("prayer.prayerNames.maghrib"),
-          t("prayer.prayerNames.isha"),
-        ];
-        return {
-          ...prayer,
-          name: prayerNames[index],
-        };
-      });
-      setPrayerTimes(updatedPrayers);
+    if (prayerTimes.length > 0) {
+      if (location) fetchPrayerTimes(location.latitude, location.longitude);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locale, t]);
+  }, [locale]);
 
-  // Calculate prayer progress
+  // Prayer Progress
   const prayerProgress = useMemo(() => {
-    if (!prayerTimes || prayerTimes.length === 0) return 0;
-    if (!prayerChecklist) return 0;
-    
-    try {
-      const checkedCount = Object.values(prayerChecklist).filter(Boolean).length;
-      return Math.round((checkedCount / prayerTimes.length) * 100);
-    } catch (error) {
-      console.error("Error calculating prayer progress:", error);
-      return 0;
-    }
+    if (!prayerTimes.length) return 0;
+    const checkedCount = Object.values(prayerChecklist).filter(Boolean).length;
+    return Math.round((checkedCount / prayerTimes.length) * 100);
   }, [prayerChecklist, prayerTimes]);
 
-  // Toggle prayer checklist
+  // Toggle Check
   const togglePrayerCheck = (prayerName: string) => {
-    try {
-      if (!prayerName) {
-        console.error("Prayer name is required");
-        return;
-      }
-
-      const newChecklist = { ...(prayerChecklist || {}) };
-      const isCurrentlyChecked = newChecklist[prayerName];
-      
-      if (!isCurrentlyChecked) {
-        // Checking the prayer
-        newChecklist[prayerName] = true;
-        setPrayerChecklist(newChecklist);
-        
-        // Show motivation dialog
-        setCompletedPrayerName(prayerName);
-        setShowMotivationDialog(true);
-      } else {
-        // Unchecking the prayer
-        newChecklist[prayerName] = false;
-        setPrayerChecklist(newChecklist);
-      }
-    } catch (error) {
-      console.error("Error toggling prayer check:", error);
-      alert("Terjadi kesalahan. Silakan coba lagi.");
+    const newChecklist = { ...prayerChecklist };
+    if (!newChecklist[prayerName]) {
+      newChecklist[prayerName] = true;
+      setCompletedPrayerName(prayerName);
+      setShowMotivationDialog(true);
+    } else {
+      newChecklist[prayerName] = false;
     }
+    setPrayerChecklist(newChecklist);
   };
 
+  // Geolocation
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
-      const errorMessages: Record<string, string> = {
-        id: "Geolocation tidak didukung oleh browser ini",
-        en: "Geolocation is not supported by this browser",
-        ar: "الموقع الجغرافي غير مدعوم في هذا المتصفح",
-        fr: "La géolocalisation n'est pas prise en charge par ce navigateur",
-        kr: "이 브라우저에서 지리적 위치를 지원하지 않습니다",
-        jp: "このブラウザでは位置情報がサポートされていません",
-      };
-      setError(errorMessages[locale] || errorMessages.id);
+      setError(t_sholat.errors.geoNotSupported);
       return;
     }
-
     setIsLoading(true);
     setError(null);
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-
         try {
-          // Reverse geocoding to get city name
-          const localeMap: Record<string, string> = {
-            id: "id",
-            en: "en",
-            ar: "ar",
-            fr: "fr",
-            kr: "ko",
-            jp: "ja",
-          };
           const response = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=${localeMap[locale] || "id"}`
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=${locale}`,
           );
-
-          // Only process if response is OK
-          const unknownLocation: Record<string, { city: string; country: string }> = {
-            id: { city: "Lokasi tidak diketahui", country: "Indonesia" },
-            en: { city: "Unknown location", country: "Indonesia" },
-            ar: { city: "موقع غير معروف", country: "إندونيسيا" },
-            fr: { city: "Emplacement inconnu", country: "Indonésie" },
-            kr: { city: "알 수 없는 위치", country: "인도네시아" },
-            jp: { city: "不明な場所", country: "インドネシア" },
+          let locData = {
+            city: t_sholat.errors.locUnknown,
+            country: "Indonesia",
           };
-          let locationData = unknownLocation[locale] || unknownLocation.id;
           if (response.ok) {
             const data = await response.json();
-            locationData = {
-              city: data.city || data.locality || locationData.city,
-              country: data.countryName || locationData.country,
+            locData = {
+              city: data.city || data.locality || locData.city,
+              country: data.countryName || locData.country,
             };
           }
-
-          const newLocation: Location = {
-            latitude,
-            longitude,
-            city: locationData.city,
-            country: locationData.country,
-          };
-
-          setLocation(newLocation);
-          // Fetch prayer times using real coordinates
+          setLocation({ latitude, longitude, ...locData });
           await fetchPrayerTimes(latitude, longitude);
           setPermissionStatus("granted");
-        } catch (err) {
-          console.error("Location or API Error:", err);
-          const errorMessages: Record<string, string> = {
-            id: "Gagal mendapatkan data lokasi atau jadwal.",
-            en: "Failed to get location or schedule data.",
-            ar: "فشل في الحصول على بيانات الموقع أو الجدول.",
-            fr: "Échec de l'obtention des données de localisation ou d'horaire.",
-            kr: "위치 또는 일정 데이터를 가져오지 못했습니다.",
-            jp: "位置情報またはスケジュールデータの取得に失敗しました。",
-          };
-          setError(errorMessages[locale] || errorMessages.id);
-
-          // Still try to set location if we have coordinates but geocoding failed
-          const currentLocationText: Record<string, { city: string; country: string }> = {
-            id: { city: "Lokasi saat ini", country: "Indonesia" },
-            en: { city: "Current location", country: "Indonesia" },
-            ar: { city: "الموقع الحالي", country: "إندونيسيا" },
-            fr: { city: "Emplacement actuel", country: "Indonésie" },
-            kr: { city: "현재 위치", country: "인도네시아" },
-            jp: { city: "現在の場所", country: "インド네시아" },
-          };
-          const currentLoc = currentLocationText[locale] || currentLocationText.id;
-          const newLocation: Location = {
+        } catch (e) {
+          setError(t_sholat.errors.locError);
+          setLocation({
             latitude,
             longitude,
-            city: currentLoc.city,
-            country: currentLoc.country,
-          };
-          setLocation(newLocation);
-          // Still try to fetch prayer times even if city name failed
+            city: t_sholat.currentLocation,
+            country: "Indonesia",
+          });
           await fetchPrayerTimes(latitude, longitude);
         }
-
         setIsLoading(false);
       },
-      (error) => {
+      (err) => {
         setIsLoading(false);
         setPermissionStatus("denied");
-        const errorMessages: Record<string, Record<number, string>> = {
-          id: {
-            1: "Akses lokasi ditolak. Silakan izinkan akses lokasi untuk melihat jadwal sholat.",
-            2: "Informasi lokasi tidak tersedia.",
-            3: "Permintaan lokasi timeout.",
-            0: "Terjadi kesalahan saat mendapatkan lokasi.",
-          },
-          en: {
-            1: "Location access denied. Please allow location access to view prayer times.",
-            2: "Location information unavailable.",
-            3: "Location request timeout.",
-            0: "An error occurred while getting location.",
-          },
-          ar: {
-            1: "تم رفض الوصول إلى الموقع. يرجى السماح بالوصول إلى الموقع لعرض أوقات الصلاة.",
-            2: "معلومات الموقع غير متاحة.",
-            3: "انتهت مهلة طلب الموقع.",
-            0: "حدث خطأ أثناء الحصول على الموقع.",
-          },
-          fr: {
-            1: "Accès à la localisation refusé. Veuillez autoriser l'accès à la localisation pour voir les horaires de prière.",
-            2: "Informations de localisation indisponibles.",
-            3: "Délai d'attente de la demande de localisation expiré.",
-            0: "Une erreur s'est produite lors de l'obtention de la localisation.",
-          },
-          kr: {
-            1: "위치 액세스가 거부되었습니다. 기도 시간을 보려면 위치 액세스를 허용하세요.",
-            2: "위치 정보를 사용할 수 없습니다.",
-            3: "위치 요청 시간 초과.",
-            0: "위치를 가져오는 중 오류가 발생했습니다.",
-          },
-          jp: {
-            1: "位置情報へのアクセスが拒否されました。礼拝時間を表示するには、位置情報へのアクセスを許可してください。",
-            2: "位置情報が利用できません。",
-            3: "位置情報のリクエストがタイムアウトしました。",
-            0: "位置情報の取得中にエラーが発生しました。",
-          },
-        };
-        const messages = errorMessages[locale] || errorMessages.id;
-        setError(messages[error.code as keyof typeof messages] || messages[0]);
+        // Map error codes
+        const msgs = t_sholat.errors;
+        if (err.code === 1) setError(msgs.locDenied);
+        else if (err.code === 2) setError(msgs.locUnavailable);
+        else if (err.code === 3) setError(msgs.locTimeout);
+        else setError(msgs.locError);
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000, // 5 minutes
-      }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
     );
   };
 
+  // Init Audio & Permissions
   useEffect(() => {
-    // Check if geolocation is available
-    if (navigator.geolocation) {
-      setPermissionStatus("prompt");
-    } else {
-      const errorMessages: Record<string, string> = {
-        id: "Geolocation tidak didukung oleh browser ini",
-        en: "Geolocation is not supported by this browser",
-        ar: "الموقع الجغرافي غير مدعوم في هذا المتصفح",
-        fr: "La géolocalisation n'est pas prise en charge par ce navigateur",
-        kr: "이 브라우저에서 지리적 위치를 지원하지 않습니다",
-        jp: "このブラウザでは位置情報がサポートされていません",
-      };
-      setError(errorMessages[locale] || errorMessages.id);
-    }
+    if (navigator.geolocation) setPermissionStatus("prompt");
+    else setError(t_sholat.errors.geoNotSupported);
 
-    // Load adhan preference from localStorage
-    const savedAdhanPref = localStorage.getItem("adhan-reminder-enabled");
-    if (savedAdhanPref === "true") {
+    if (localStorage.getItem("adhan-reminder-enabled") === "true")
       setIsAdhanEnabled(true);
-    }
-
-    // Check notification permission
-    if ("Notification" in window) {
+    if ("Notification" in window)
       setNotificationPermission(Notification.permission);
-    }
 
-    // Initialize audio element with fallback
-    const initAudio = () => {
-      const audio = new Audio(ADHAN_URLS[0]);
-      audio.preload = "auto";
-
-      // Add error handler to try fallback URLs
-      let currentUrlIndex = 0;
-      audio.onerror = () => {
-        currentUrlIndex++;
-        if (currentUrlIndex < ADHAN_URLS.length) {
-          audio.src = ADHAN_URLS[currentUrlIndex];
-          audio.load();
-        }
-      };
-
-      return audio;
+    const audio = new Audio(ADHAN_URLS[0]);
+    audio.preload = "auto";
+    let urlIdx = 0;
+    audio.onerror = () => {
+      urlIdx++;
+      if (urlIdx < ADHAN_URLS.length) {
+        audio.src = ADHAN_URLS[urlIdx];
+        audio.load();
+      }
     };
+    adhanAudioRef.current = audio;
 
-    adhanAudioRef.current = initAudio();
-
-    // Cleanup on unmount
     return () => {
-      // Clear all timers
-      adhanTimersRef.current.forEach((timer) => clearTimeout(timer));
-      adhanTimersRef.current = [];
-
-      // Stop and cleanup audio
+      adhanTimersRef.current.forEach(clearTimeout);
       if (adhanAudioRef.current) {
         adhanAudioRef.current.pause();
         adhanAudioRef.current = null;
@@ -505,223 +749,117 @@ export default function SholatPage() {
     };
   }, []);
 
-  // Play Adhan function
-  const playAdhan = useCallback((prayerName: string) => {
-    if (!adhanAudioRef.current) {
-      adhanAudioRef.current = new Audio(ADHAN_URLS[0]);
-    }
+  // Play Adhan
+  const playAdhan = useCallback(
+    (prayerName: string) => {
+      if (!adhanAudioRef.current)
+        adhanAudioRef.current = new Audio(ADHAN_URLS[0]);
+      setCurrentAdhanPrayer(prayerName);
+      setIsAdhanPlaying(true);
 
-    setCurrentAdhanPrayer(prayerName);
-    setIsAdhanPlaying(true);
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification(`${t_sholat.notification.title} ${prayerName}`, {
+          body: `${t_sholat.notification.body} ${prayerName}`,
+          icon: "/icons/icon-192x192.png",
+          tag: `adhan-${prayerName}`,
+          requireInteraction: true,
+        });
+      }
 
-    // Show notification
-    if ("Notification" in window && Notification.permission === "granted") {
-      const notificationTitles: Record<string, string> = {
-        id: `Waktu ${prayerName}`,
-        en: `${prayerName} Time`,
-        ar: `وقت ${prayerName}`,
-        fr: `Heure de ${prayerName}`,
-        kr: `${prayerName} 시간`,
-        jp: `${prayerName}の時間`,
-      };
-      const notificationBodies: Record<string, string> = {
-        id: `Saatnya menunaikan sholat ${prayerName}`,
-        en: `Time to perform ${prayerName} prayer`,
-        ar: `حان وقت أداء صلاة ${prayerName}`,
-        fr: `Il est temps d'effectuer la prière ${prayerName}`,
-        kr: `${prayerName} 기도를 수행할 시간입니다`,
-        jp: `${prayerName}の礼拝を行う時間です`,
-      };
-      new Notification(notificationTitles[locale] || notificationTitles.id, {
-        body: notificationBodies[locale] || notificationBodies.id,
-        icon: "/icons/icon-192x192.png",
-        tag: `adhan-${prayerName}`,
-        requireInteraction: true,
-      });
-    }
-
-    // Play adhan audio
-    adhanAudioRef.current.currentTime = 0;
-    adhanAudioRef.current
-      .play()
-      .then(() => {
-        console.log(`Playing adhan for ${prayerName}`);
-      })
-      .catch((err) => {
-        console.error("Error playing adhan:", err);
+      adhanAudioRef.current.currentTime = 0;
+      adhanAudioRef.current.play().catch((e) => {
+        console.error(e);
         setIsAdhanPlaying(false);
-        setCurrentAdhanPrayer(null);
       });
+      adhanAudioRef.current.onended = () => setIsAdhanPlaying(false);
+    },
+    [t_sholat],
+  );
 
-    // Handle audio end
-    adhanAudioRef.current.onended = () => {
-      setIsAdhanPlaying(false);
-      setCurrentAdhanPrayer(null);
-    };
-  }, []);
-
-  // Stop Adhan function
   const stopAdhan = useCallback(() => {
     if (adhanAudioRef.current) {
       adhanAudioRef.current.pause();
       adhanAudioRef.current.currentTime = 0;
     }
     setIsAdhanPlaying(false);
-    setCurrentAdhanPrayer(null);
   }, []);
 
-  // Schedule Adhan reminders
+  // Schedule Adhan
   const scheduleAdhanReminders = useCallback(() => {
-    // Clear existing timers
-    adhanTimersRef.current.forEach((timer) => clearTimeout(timer));
+    adhanTimersRef.current.forEach(clearTimeout);
     adhanTimersRef.current = [];
-
-    if (!isAdhanEnabled || prayerTimes.length === 0) return;
+    if (!isAdhanEnabled || !prayerTimes.length) return;
 
     const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
 
-    prayerTimes.forEach((prayer) => {
-      // Parse prayer time
-      const cleanTime = prayer.time.split(" ")[0];
-      const [hours, minutes] = cleanTime.split(":").map(Number);
-      const prayerMinutes = hours * 60 + minutes;
-
-      // Only schedule if prayer time is in the future
-      if (prayerMinutes > currentMinutes) {
-        const delayMs = (prayerMinutes - currentMinutes) * 60 * 1000;
-
-        const timer = setTimeout(() => {
-          playAdhan(prayer.name);
-        }, delayMs);
-
+    prayerTimes.forEach((p) => {
+      const [h, m] = p.time.split(" ")[0].split(":").map(Number);
+      const pMins = h * 60 + m;
+      if (pMins > currentMins) {
+        const delay = (pMins - currentMins) * 60 * 1000;
+        const timer = setTimeout(() => playAdhan(p.name), delay);
         adhanTimersRef.current.push(timer);
-        console.log(
-          `Scheduled adhan for ${prayer.name} in ${Math.round(delayMs / 60000)} minutes`
-        );
       }
     });
   }, [isAdhanEnabled, prayerTimes, playAdhan]);
 
-  // Effect to schedule adhan when enabled or prayer times change
   useEffect(() => {
     scheduleAdhanReminders();
-
-    // Reschedule every minute to handle edge cases
-    const intervalId = setInterval(() => {
-      scheduleAdhanReminders();
-    }, 60000);
-
-    return () => {
-      clearInterval(intervalId);
-      adhanTimersRef.current.forEach((timer) => clearTimeout(timer));
-    };
+    const id = setInterval(scheduleAdhanReminders, 60000);
+    return () => clearInterval(id);
   }, [scheduleAdhanReminders]);
 
-  // Request notification permission
-  const requestNotificationPermission = async () => {
-    if (!("Notification" in window)) {
-      const messages: Record<string, string> = {
-        id: "Browser tidak mendukung notifikasi",
-        en: "Browser does not support notifications",
-        ar: "المتصفح لا يدعم الإشعارات",
-        fr: "Le navigateur ne prend pas en charge les notifications",
-        kr: "브라우저가 알림을 지원하지 않습니다",
-        jp: "ブラウザが通知をサポートしていません",
-      };
-      alert(messages[locale] || messages.id);
-      return false;
-    }
-
-    try {
-      const permission = await Notification.requestPermission();
-      setNotificationPermission(permission);
-      return permission === "granted";
-    } catch (err) {
-      console.error("Error requesting notification permission:", err);
-      return false;
-    }
-  };
-
-  // Toggle Adhan Reminder
+  // Toggle Adhan
   const toggleAdhanReminder = async () => {
     if (!isAdhanEnabled) {
-      // Enabling - request notification permission first
-      const hasPermission = await requestNotificationPermission();
+      if (!("Notification" in window))
+        return alert(t_sholat.errors.geoNotSupported);
+      const perm = await Notification.requestPermission();
+      setNotificationPermission(perm);
 
-      if (hasPermission || notificationPermission === "granted") {
+      if (perm === "granted") {
         setIsAdhanEnabled(true);
         localStorage.setItem("adhan-reminder-enabled", "true");
-
-        // Test audio can play (browsers require user interaction)
+        // Test play silent
         if (adhanAudioRef.current) {
-          adhanAudioRef.current.volume = 0.1;
+          adhanAudioRef.current.volume = 0;
           adhanAudioRef.current
             .play()
             .then(() => {
               setTimeout(() => {
                 if (adhanAudioRef.current) {
                   adhanAudioRef.current.pause();
-                  adhanAudioRef.current.currentTime = 0;
                   adhanAudioRef.current.volume = 1;
                 }
               }, 500);
             })
-            .catch((err) => {
-              console.log("Audio autoplay blocked:", err);
-            });
+            .catch(console.log);
         }
       } else {
-        const messages: Record<string, string> = {
-          id: "Izinkan notifikasi untuk mengaktifkan pengingat adzan. Silakan cek pengaturan browser Anda.",
-          en: "Allow notifications to enable adhan reminder. Please check your browser settings.",
-          ar: "السماح بالإشعارات لتفعيل تذكير الأذان. يرجى التحقق من إعدادات المتصفح.",
-          fr: "Autorisez les notifications pour activer le rappel d'adhan. Veuillez vérifier les paramètres de votre navigateur.",
-          kr: "아잔 알림을 활성화하려면 알림을 허용하세요. 브라우저 설정을 확인하세요.",
-          jp: "アザーンリマインダーを有効にするには、通知を許可してください。ブラウザの設定を確認してください。",
-        };
-        alert(messages[locale] || messages.id);
+        alert(t_sholat.errors.notificationBlocked);
       }
     } else {
-      // Disabling
       setIsAdhanEnabled(false);
       localStorage.setItem("adhan-reminder-enabled", "false");
       stopAdhan();
-
-      // Clear all scheduled timers
-      adhanTimersRef.current.forEach((timer) => clearTimeout(timer));
-      adhanTimersRef.current = [];
-    }
-  };
-
-  // Test play adhan
-  const testPlayAdhan = () => {
-    if (isAdhanPlaying) {
-      stopAdhan();
-    } else {
-      const testText: Record<string, string> = {
-        id: "Test",
-        en: "Test",
-        ar: "اختبار",
-        fr: "Test",
-        kr: "테스트",
-        jp: "テスト",
-      };
-      playAdhan(testText[locale] || testText.id);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20">
+    <div
+      className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20"
+      dir={isRtl ? "rtl" : "ltr"}
+    >
       {/* Header */}
       <header className="sticky top-0 z-30">
         <div className="max-w-md mx-auto px-4 py-4">
           <div className="relative bg-background/90 backdrop-blur-md rounded-2xl border border-awqaf-border-light/50 shadow-lg px-4 py-3">
             <h1 className="text-xl font-bold text-awqaf-primary font-comfortaa text-center">
-              {t("prayer.title")}
+              {t_sholat.title}
             </h1>
             <p className="text-sm text-awqaf-foreground-secondary font-comfortaa text-center mt-1">
-              {t("prayer.subtitle")}
+              {t_sholat.subtitle}
             </p>
           </div>
         </div>
@@ -737,20 +875,16 @@ export default function SholatPage() {
               </div>
               <div className="flex-1">
                 <h2 className="font-semibold text-card-foreground font-comfortaa">
-                  {t("prayer.currentLocation")}
+                  {t_sholat.currentLocation}
                 </h2>
-                {location ? (
-                  <p className="text-sm text-awqaf-foreground-secondary font-comfortaa">
-                    {location.city}, {location.country}
-                  </p>
-                ) : (
-                  <p className="text-sm text-awqaf-foreground-secondary font-comfortaa">
-                    {t("prayer.locationNotSet")}
-                  </p>
-                )}
+                <p className="text-sm text-awqaf-foreground-secondary font-comfortaa">
+                  {location
+                    ? `${location.city}, ${location.country}`
+                    : t_sholat.locationNotSet}
+                </p>
               </div>
               {permissionStatus === "granted" && (
-                <CheckCircle className="w-5 h-5 text-success" />
+                <CheckCircle className="w-5 h-5 text-green-500" />
               )}
             </div>
 
@@ -763,20 +897,18 @@ export default function SholatPage() {
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {t("prayer.gettingLocation")}
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />{" "}
+                      {t_sholat.gettingLocation}
                     </>
                   ) : (
                     <>
-                      <Navigation className="w-4 h-4 mr-2" />
-                      {t("prayer.useCurrentLocation")}
+                      <Navigation className="w-4 h-4 mr-2" />{" "}
+                      {t_sholat.useCurrentLocation}
                     </>
                   )}
                 </Button>
-
-                {/* Error message displayed below the button */}
                 {error && (
-                  <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg animate-in fade-in slide-in-from-top-1">
+                  <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
                     <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
                     <p className="text-sm text-red-600 font-comfortaa">
                       {error}
@@ -795,11 +927,7 @@ export default function SholatPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                      isAdhanEnabled
-                        ? "bg-awqaf-primary text-white"
-                        : "bg-accent-100 text-awqaf-primary"
-                    }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isAdhanEnabled ? "bg-awqaf-primary text-white" : "bg-accent-100 text-awqaf-primary"}`}
                   >
                     {isAdhanEnabled ? (
                       <Bell className="w-5 h-5" />
@@ -809,12 +937,12 @@ export default function SholatPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-card-foreground font-comfortaa">
-                      {t("prayer.adhanReminder")}
+                      {t_sholat.adhanReminder}
                     </h3>
                     <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
                       {isAdhanEnabled
-                        ? t("prayer.adhanActive")
-                        : t("prayer.activateReminder")}
+                        ? t_sholat.adhanActive
+                        : t_sholat.activateReminder}
                     </p>
                   </div>
                 </div>
@@ -822,92 +950,68 @@ export default function SholatPage() {
                   onClick={toggleAdhanReminder}
                   variant={isAdhanEnabled ? "default" : "outline"}
                   size="sm"
-                  className={`font-comfortaa ${
-                    isAdhanEnabled
-                      ? "bg-awqaf-primary hover:bg-awqaf-primary/90"
-                      : "border-awqaf-border-light"
-                  }`}
+                  className={`font-comfortaa ${isAdhanEnabled ? "bg-awqaf-primary hover:bg-awqaf-primary/90" : "border-awqaf-border-light"}`}
                 >
                   {isAdhanEnabled ? (
                     <>
-                      <Volume2 className="w-4 h-4 mr-2" />
-                      {t("prayer.active")}
+                      <Volume2 className="w-4 h-4 mr-2" /> {t_sholat.active}
                     </>
                   ) : (
                     <>
-                      <VolumeX className="w-4 h-4 mr-2" />
-                      {t("prayer.inactive")}
+                      <VolumeX className="w-4 h-4 mr-2" /> {t_sholat.inactive}
                     </>
                   )}
                 </Button>
               </div>
 
-              {/* Test Play Button & Status */}
               {isAdhanEnabled && (
                 <div className="mt-4 pt-4 border-t border-awqaf-border-light">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-awqaf-foreground-secondary font-comfortaa">
-                        {isAdhanPlaying
-                          ? `${t("prayer.playingAdhan")} ${currentAdhanPrayer}...`
-                          : t("prayer.testAdhan")}
-                      </span>
-                    </div>
+                    <span className="text-sm text-awqaf-foreground-secondary font-comfortaa">
+                      {isAdhanPlaying
+                        ? `${t_sholat.playingAdhan} ${currentAdhanPrayer}...`
+                        : t_sholat.testAdhan}
+                    </span>
                     <Button
-                      onClick={testPlayAdhan}
+                      onClick={() =>
+                        isAdhanPlaying ? stopAdhan() : playAdhan("Test")
+                      }
                       variant="outline"
                       size="sm"
                       className="border-awqaf-border-light font-comfortaa"
                     >
                       {isAdhanPlaying ? (
                         <>
-                          <Square className="w-4 h-4 mr-2" />
-                          {t("prayer.stop")}
+                          <Square className="w-4 h-4 mr-2" /> {t_sholat.stop}
                         </>
                       ) : (
                         <>
-                          <Play className="w-4 h-4 mr-2" />
-                          {t("prayer.test")}
+                          <Play className="w-4 h-4 mr-2" /> {t_sholat.test}
                         </>
                       )}
                     </Button>
                   </div>
-
-                  {/* Scheduled Prayers Info */}
                   <div className="mt-3 text-xs text-awqaf-foreground-secondary font-comfortaa">
-                    <p>
-                      {t("prayer.scheduledPrayers")}
-                    </p>
+                    <p>{t_sholat.scheduledPrayers}</p>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {prayerTimes
-                        .filter((p) => p.status === "upcoming" || p.status === "current")
-                        .map((prayer) => (
+                        .filter(
+                          (p) =>
+                            p.status === "upcoming" || p.status === "current",
+                        )
+                        .map((p) => (
                           <span
-                            key={prayer.name}
+                            key={p.name}
                             className="px-2 py-1 bg-accent-100 rounded-full text-awqaf-primary"
                           >
-                            {prayer.name} ({prayer.time})
+                            {p.name} ({p.time})
                           </span>
                         ))}
-                      {prayerTimes.filter(
-                        (p) => p.status === "upcoming" || p.status === "current"
-                      ).length === 0 && (
-                        <span className="text-awqaf-foreground-secondary">
-                          {t("prayer.allPrayersPassed")}
-                        </span>
+                      {prayerTimes.every((p) => p.status === "completed") && (
+                        <span>{t_sholat.allPrayersPassed}</span>
                       )}
                     </div>
                   </div>
-                </div>
-              )}
-
-              {/* Notification Permission Warning */}
-              {isAdhanEnabled && notificationPermission !== "granted" && (
-                <div className="mt-3 flex items-center gap-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0" />
-                  <p className="text-xs text-yellow-700 font-comfortaa">
-                    {t("prayer.allowNotification")}
-                  </p>
                 </div>
               )}
             </CardContent>
@@ -924,93 +1028,75 @@ export default function SholatPage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-card-foreground font-comfortaa">
-                    {t("prayer.todaySchedule")}
+                    {t_sholat.todaySchedule}
                   </h3>
                   <p className="text-sm text-awqaf-foreground-secondary font-comfortaa">
                     {new Date().toLocaleDateString(
-                      locale === "id" ? "id-ID" :
-                      locale === "en" ? "en-US" :
-                      locale === "ar" ? "ar-SA" :
-                      locale === "fr" ? "fr-FR" :
-                      locale === "kr" ? "ko-KR" :
-                      locale === "jp" ? "ja-JP" : "id-ID",
+                      locale === "id" ? "id-ID" : "en-US",
                       {
                         weekday: "long",
                         year: "numeric",
                         month: "long",
                         day: "numeric",
-                      }
+                      },
                     )}
                   </p>
                 </div>
               </div>
 
-              {/* Prayer Progress */}
+              {/* Progress */}
               <div className="mb-6 p-4 bg-gradient-to-br from-accent-50 to-accent-100 rounded-xl border border-awqaf-border-light">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Award className="w-5 h-5 text-awqaf-primary" />
                     <span className="font-semibold text-card-foreground font-comfortaa">
-                      Progress Sholat Hari Ini
+                      {t_sholat.prayerProgress}
                     </span>
                   </div>
-                  <span className={`text-2xl font-bold font-comfortaa ${prayerProgress === 100 ? "text-success" : "text-awqaf-primary"}`}>
+                  <span
+                    className={`text-2xl font-bold font-comfortaa ${prayerProgress === 100 ? "text-green-600" : "text-awqaf-primary"}`}
+                  >
                     {prayerProgress}%
                   </span>
                 </div>
-                <Progress value={prayerProgress} className="h-3 bg-accent-200" />
+                <Progress
+                  value={prayerProgress}
+                  className="h-3 bg-accent-200"
+                />
                 <div className="flex items-center justify-between mt-2 text-xs font-comfortaa">
                   <span className="text-awqaf-foreground-secondary">
-                    {Object.values(prayerChecklist).filter(Boolean).length} / {prayerTimes.length} Sholat
+                    {Object.values(prayerChecklist).filter(Boolean).length} /{" "}
+                    {prayerTimes.length} Sholat
                   </span>
                   {prayerProgress === 100 ? (
-                    <span className="text-success font-semibold flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" />
-                      Alhamdulillah, lengkap!
+                    <span className="text-green-600 font-semibold flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" />{" "}
+                      {t_sholat.alhamdulillah}
                     </span>
                   ) : (
                     <span className="text-awqaf-primary font-semibold">
-                      Tetap semangat! 💪
+                      {t_sholat.keepSpirit}
                     </span>
                   )}
                 </div>
                 <p className="text-xs text-center text-awqaf-foreground-secondary font-comfortaa mt-3 italic">
-                  Klik lingkaran untuk menandai sholat yang sudah dikerjakan
+                  {t_sholat.markInstruction}
                 </p>
               </div>
 
+              {/* List */}
               <div className="space-y-3">
                 {prayerTimes.map((prayer) => {
                   const isChecked = prayerChecklist[prayer.name] || false;
-                  
                   return (
                     <div
                       key={prayer.name}
-                      className={`
-                        flex items-center justify-between py-3 px-4 rounded-xl transition-all duration-200
-                        ${
-                          isChecked
-                            ? "bg-success/10 border-2 border-success/30"
-                            : prayer.status === "current"
-                            ? "bg-accent-100 border border-accent-200"
-                            : "hover:bg-accent-50 border border-transparent"
-                        }
-                      `}
+                      className={`flex items-center justify-between py-3 px-4 rounded-xl transition-all duration-200 ${isChecked ? "bg-green-50/50 border-2 border-green-200" : prayer.status === "current" ? "bg-accent-100 border border-accent-200" : "hover:bg-accent-50 border border-transparent"}`}
                     >
                       <div className="flex items-center gap-4 flex-1">
-                        {/* Checkbox */}
                         <button
                           onClick={() => togglePrayerCheck(prayer.name)}
-                          className={`
-                            w-10 h-10 rounded-full flex items-center justify-center transition-all
-                            ${
-                              isChecked
-                                ? "bg-success text-white"
-                                : prayer.status === "current"
-                                ? "bg-awqaf-primary text-white hover:bg-awqaf-primary/90"
-                                : "bg-accent-100 text-awqaf-primary hover:bg-accent-200"
-                            }
-                          `}
+                          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isChecked ? "bg-green-500 text-white" : prayer.status === "current" ? "bg-awqaf-primary text-white hover:bg-awqaf-primary/90" : "bg-accent-100 text-awqaf-primary hover:bg-accent-200"}`}
                         >
                           {isChecked ? (
                             <CheckCircle2 className="w-6 h-6" />
@@ -1018,14 +1104,15 @@ export default function SholatPage() {
                             <Circle className="w-6 h-6" />
                           )}
                         </button>
-
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className={`text-card-foreground font-comfortaa font-semibold text-lg ${isChecked ? "line-through opacity-70" : ""}`}>
+                            <span
+                              className={`text-card-foreground font-comfortaa font-semibold text-lg ${isChecked ? "line-through opacity-70" : ""}`}
+                            >
                               {prayer.name}
                             </span>
                             {isChecked && (
-                              <CheckCircle className="w-4 h-4 text-success" />
+                              <CheckCircle className="w-4 h-4 text-green-500" />
                             )}
                           </div>
                           <p className="text-sm text-awqaf-primary font-tajawal">
@@ -1033,35 +1120,25 @@ export default function SholatPage() {
                           </p>
                         </div>
                       </div>
-
                       <div className="text-right">
                         <span
-                          className={`
-                            font-comfortaa font-bold text-xl
-                            ${
-                              isChecked
-                                ? "text-success"
-                                : prayer.status === "current"
-                                ? "text-awqaf-primary"
-                                : "text-awqaf-foreground-secondary"
-                            }
-                          `}
+                          className={`font-comfortaa font-bold text-xl ${isChecked ? "text-green-600" : prayer.status === "current" ? "text-awqaf-primary" : "text-awqaf-foreground-secondary"}`}
                         >
                           {prayer.time}
                         </span>
                         {isChecked && (
-                          <p className="text-xs text-success font-comfortaa mt-1 font-semibold">
-                            ✓ Sudah Sholat
+                          <p className="text-xs text-green-600 font-comfortaa mt-1 font-semibold">
+                            {t_sholat.alreadyPrayed}
                           </p>
                         )}
                         {!isChecked && prayer.status === "current" && (
-                          <p className="text-xs text-success font-comfortaa mt-1">
-                            {t("prayer.currentlyOngoing")}
+                          <p className="text-xs text-green-600 font-comfortaa mt-1">
+                            {t_sholat.currentlyOngoing}
                           </p>
                         )}
                         {!isChecked && prayer.status === "completed" && (
                           <p className="text-xs text-awqaf-foreground-secondary font-comfortaa mt-1">
-                            {t("prayer.completed")}
+                            {t_sholat.completed}
                           </p>
                         )}
                       </div>
@@ -1073,7 +1150,7 @@ export default function SholatPage() {
           </Card>
         )}
 
-        {/* No Location Message or Error Persistence (if location null but tried) */}
+        {/* No Location State */}
         {!location && !isLoading && !error && (
           <Card className="border-awqaf-border-light">
             <CardContent className="p-6 text-center">
@@ -1081,70 +1158,64 @@ export default function SholatPage() {
                 <MapPin className="w-8 h-8 text-awqaf-primary" />
               </div>
               <h3 className="font-semibold text-card-foreground font-comfortaa mb-2">
-                {t("prayer.locationRequired")}
+                {t_sholat.locationRequired}
               </h3>
               <p className="text-sm text-awqaf-foreground-secondary font-comfortaa mb-4">
-                {t("prayer.locationRequiredDesc")}
+                {t_sholat.locationRequiredDesc}
               </p>
               <Button
                 onClick={getCurrentLocation}
                 className="bg-awqaf-primary hover:bg-awqaf-primary/90 text-white font-comfortaa"
               >
-                <Navigation className="w-4 h-4 mr-2" />
-                {t("prayer.allowLocationAccess")}
+                <Navigation className="w-4 h-4 mr-2" />{" "}
+                {t_sholat.allowLocationAccess}
               </Button>
             </CardContent>
           </Card>
         )}
-
-        {/* Additional error display if location failed but UI is in "No Location" state */}
-        {!location && error && (
-          <div className="flex items-center justify-center p-4 bg-red-50 border border-red-200 rounded-lg mx-4">
-            <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
-            <p className="text-sm text-red-600 font-comfortaa">{error}</p>
-          </div>
-        )}
       </main>
 
       {/* Motivation Dialog */}
-      <Dialog open={showMotivationDialog} onOpenChange={setShowMotivationDialog}>
+      <Dialog
+        open={showMotivationDialog}
+        onOpenChange={setShowMotivationDialog}
+      >
         <DialogContent className="border-awqaf-border-light p-0 max-w-sm">
           <DialogHeader className="p-6 pb-4">
             <div className="flex items-center justify-center mb-4">
-              <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center animate-pulse">
-                <CheckCircle2 className="w-12 h-12 text-success" />
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center animate-pulse">
+                <CheckCircle2 className="w-12 h-12 text-green-600" />
               </div>
             </div>
             <DialogTitle className="font-comfortaa text-center text-xl">
-              Alhamdulillah! 🎉
+              {t_sholat.motivationTitle}
             </DialogTitle>
             <DialogDescription className="text-center font-comfortaa text-sm text-awqaf-foreground-secondary">
-              Anda telah menyelesaikan sholat <span className="font-semibold text-awqaf-primary">{completedPrayerName}</span>
+              {t_sholat.motivationDesc}{" "}
+              <span className="font-semibold text-awqaf-primary">
+                {completedPrayerName}
+              </span>
             </DialogDescription>
           </DialogHeader>
-          
           <div className="px-6 pb-6 space-y-4">
             <div className="bg-gradient-to-br from-accent-50 to-accent-100 p-4 rounded-lg border border-awqaf-border-light">
               <p className="text-sm text-center text-awqaf-foreground font-comfortaa leading-relaxed">
-                &quot;Sesungguhnya sholat itu mencegah dari perbuatan keji dan mungkar&quot;
+                {t_sholat.quranQuote}
               </p>
               <p className="text-xs text-center text-awqaf-foreground-secondary font-comfortaa mt-2">
-                - QS. Al-Ankabut: 45
+                {t_sholat.quranSource}
               </p>
             </div>
-
             <div className="text-center">
               <p className="text-sm text-awqaf-foreground-secondary font-comfortaa">
-                Terus jaga sholat 5 waktu untuk kebaikan dunia dan akhirat! 💪
+                {t_sholat.motivationFooter}
               </p>
             </div>
-
             <Button
               onClick={() => setShowMotivationDialog(false)}
-              className="w-full bg-success hover:bg-success/90 text-white font-comfortaa"
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-comfortaa"
             >
-              <Check className="w-4 h-4 mr-2" />
-              Alhamdulillah
+              <Check className="w-4 h-4 mr-2" /> {t_sholat.alhamdulillahBtn}
             </Button>
           </div>
         </DialogContent>
