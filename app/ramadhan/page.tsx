@@ -73,7 +73,7 @@ interface DailyProgress {
   reflection: string;
 }
 
-// --- TRANSLATION DICTIONARY (LENGKAP) ---
+// --- TRANSLATION DICTIONARY ---
 const RAMADHAN_TEXT: Record<
   LocaleCode,
   {
@@ -92,7 +92,6 @@ const RAMADHAN_TEXT: Record<
     iftar: string;
     sahur: string;
     reminderBtn: string;
-    // New Translations
     totalAchieved: string;
     decrease: string;
     increase: string;
@@ -346,7 +345,6 @@ export default function RamadhanPage() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [reflectionText, setReflectionText] = useState("");
 
-  // State untuk Loading indikator per item
   const [togglingIds, setTogglingIds] = useState<Set<number>>(new Set());
 
   const [reminders, setReminders] = useState<RamadhanReminder[]>([
@@ -470,42 +468,28 @@ export default function RamadhanPage() {
 
   return (
     <div
-      className={`min-h-screen pb-20 transition-colors duration-500 ${
-        isLastTenNights
-          ? "bg-gradient-to-br from-purple-900 to-indigo-900"
-          : "bg-gradient-to-br from-purple-50 to-indigo-50"
-      }`}
+      className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 pb-20"
       dir={isRtl ? "rtl" : "ltr"}
     >
       {/* Header */}
       <header className="sticky top-0 z-30">
         <div className="max-w-md mx-auto px-4 py-4">
-          <div
-            className={`relative backdrop-blur-md rounded-2xl border shadow-lg px-4 py-3 ${
-              isLastTenNights
-                ? "bg-purple-900/90 border-purple-700/50"
-                : "bg-background/90 border-awqaf-border-light/50"
-            }`}
-          >
+          <div className="relative bg-background/90 backdrop-blur-md rounded-2xl border border-awqaf-border-light/50 shadow-lg px-4 py-3">
             <div className="flex items-center justify-between">
               <Link href="/">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`w-10 h-10 p-0 rounded-full ${isLastTenNights ? "text-purple-200" : "text-awqaf-primary"}`}
+                  className="w-10 h-10 p-0 rounded-full hover:bg-accent-100 transition-colors duration-200"
                 >
                   <Navigation
-                    className={`w-5 h-5 ${isRtl ? "rotate-180" : ""}`}
+                    className={`w-5 h-5 text-awqaf-primary ${isRtl ? "rotate-180" : ""}`}
                   />
                 </Button>
               </Link>
               <div className="flex items-center gap-2">
-                <Moon
-                  className={`w-5 h-5 ${isLastTenNights ? "text-yellow-300" : "text-awqaf-primary"}`}
-                />
-                <h1
-                  className={`text-xl font-bold font-comfortaa ${isLastTenNights ? "text-white" : "text-awqaf-primary"}`}
-                >
+                <Moon className="w-5 h-5 text-awqaf-primary" />
+                <h1 className="text-xl font-bold font-comfortaa text-awqaf-primary">
                   {t_ramadhan.title}
                 </h1>
               </div>
@@ -517,29 +501,29 @@ export default function RamadhanPage() {
 
       <main className="max-w-md mx-auto px-4 py-6 space-y-6">
         {/* Countdown Card */}
-        <Card className="border-awqaf-border-light">
+        <Card className="border-awqaf-border-light bg-gradient-to-r from-accent-100 to-accent-200">
           <CardContent className="p-6">
             <div className="flex items-center justify-center gap-4 mb-6">
               {nextEvent === "iftar" ? (
                 <>
-                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                    <Sun className="w-6 h-6 text-orange-600" />
+                  <div className="w-12 h-12 bg-white/60 rounded-full flex items-center justify-center border border-awqaf-border-light">
+                    <Sun className="w-6 h-6 text-orange-500" />
                   </div>
                   <div className="text-center">
                     <h3 className="text-sm font-comfortaa text-awqaf-foreground-secondary">
                       {t_ramadhan.iftar}
                     </h3>
                     <div className="flex gap-2 mt-2" dir="ltr">
-                      <div className="bg-awqaf-primary text-white px-3 py-2 rounded-lg">
-                        <span className="text-2xl font-bold">
+                      <div className="bg-awqaf-primary text-white px-3 py-2 rounded-lg shadow-sm">
+                        <span className="text-2xl font-bold font-mono">
                           {String(timeToIftar.hours).padStart(2, "0")}
                         </span>
                       </div>
                       <span className="text-2xl font-bold text-awqaf-primary">
                         :
                       </span>
-                      <div className="bg-awqaf-primary text-white px-3 py-2 rounded-lg">
-                        <span className="text-2xl font-bold">
+                      <div className="bg-awqaf-primary text-white px-3 py-2 rounded-lg shadow-sm">
+                        <span className="text-2xl font-bold font-mono">
                           {String(timeToIftar.minutes).padStart(2, "0")}
                         </span>
                       </div>
@@ -548,24 +532,24 @@ export default function RamadhanPage() {
                 </>
               ) : (
                 <>
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Sunrise className="w-6 h-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-white/60 rounded-full flex items-center justify-center border border-awqaf-border-light">
+                    <Sunrise className="w-6 h-6 text-blue-500" />
                   </div>
                   <div className="text-center">
                     <h3 className="text-sm font-comfortaa text-awqaf-foreground-secondary">
                       {t_ramadhan.sahur}
                     </h3>
                     <div className="flex gap-2 mt-2" dir="ltr">
-                      <div className="bg-blue-600 text-white px-3 py-2 rounded-lg">
-                        <span className="text-2xl font-bold">
+                      <div className="bg-blue-600 text-white px-3 py-2 rounded-lg shadow-sm">
+                        <span className="text-2xl font-bold font-mono">
                           {String(timeToSahur.hours).padStart(2, "0")}
                         </span>
                       </div>
                       <span className="text-2xl font-bold text-blue-600">
                         :
                       </span>
-                      <div className="bg-blue-600 text-white px-3 py-2 rounded-lg">
-                        <span className="text-2xl font-bold">
+                      <div className="bg-blue-600 text-white px-3 py-2 rounded-lg shadow-sm">
+                        <span className="text-2xl font-bold font-mono">
                           {String(timeToSahur.minutes).padStart(2, "0")}
                         </span>
                       </div>
@@ -577,7 +561,7 @@ export default function RamadhanPage() {
             <Button
               variant="outline"
               size="sm"
-              className="w-full"
+              className="w-full border-awqaf-primary/20 text-awqaf-primary hover:bg-awqaf-primary hover:text-white"
               onClick={() => setShowReminderDrawer(true)}
             >
               <Bell className={`w-4 h-4 ${isRtl ? "ml-2" : "mr-2"}`} />{" "}
@@ -588,25 +572,40 @@ export default function RamadhanPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="khatam">Khatam</TabsTrigger>
-            <TabsTrigger value="tracking">Tracking</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 bg-accent-100/50 p-1 rounded-xl">
+            <TabsTrigger
+              value="dashboard"
+              className="data-[state=active]:bg-white data-[state=active]:text-awqaf-primary data-[state=active]:shadow-sm rounded-lg"
+            >
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger
+              value="khatam"
+              className="data-[state=active]:bg-white data-[state=active]:text-awqaf-primary data-[state=active]:shadow-sm rounded-lg"
+            >
+              Khatam
+            </TabsTrigger>
+            <TabsTrigger
+              value="tracking"
+              className="data-[state=active]:bg-white data-[state=active]:text-awqaf-primary data-[state=active]:shadow-sm rounded-lg"
+            >
+              Tracking
+            </TabsTrigger>
           </TabsList>
 
           {/* DASHBOARD TAB */}
           <TabsContent value="dashboard" className="space-y-4 mt-4">
             <Card className="border-awqaf-border-light">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg font-comfortaa">
-                  <Target className="w-5 h-5 text-awqaf-primary" />
+                <CardTitle className="flex items-center gap-2 text-lg font-comfortaa text-awqaf-primary">
+                  <Target className="w-5 h-5" />
                   {t_ramadhan.targetTitle}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Progress Bar */}
                 <div className="flex items-center justify-between">
-                  <span className="font-comfortaa font-semibold">
+                  <span className="font-comfortaa font-semibold text-awqaf-foreground">
                     {t_ramadhan.dailyProgress}
                   </span>
                   <span className="text-2xl font-bold text-awqaf-primary">
@@ -615,7 +614,8 @@ export default function RamadhanPage() {
                 </div>
                 <Progress
                   value={isAuthenticated ? dailyProgressPercentage : 0}
-                  className="h-3"
+                  className="h-3 bg-accent-100"
+                  // indicator className handled by global or inject style if needed, assuming default uses primary color
                 />
 
                 {/* Login Prompt */}
@@ -665,7 +665,7 @@ export default function RamadhanPage() {
                             group flex items-center justify-between p-4 rounded-xl border transition-all duration-200 select-none
                             ${
                               isDone
-                                ? "bg-green-50 border-green-200 shadow-sm"
+                                ? "bg-accent-50 border-awqaf-primary/20 shadow-sm"
                                 : "bg-white border-slate-100 hover:border-awqaf-primary/30 hover:shadow-sm"
                             } 
                             ${!isAuthenticated ? "opacity-60 cursor-not-allowed" : "cursor-pointer"}
@@ -673,13 +673,13 @@ export default function RamadhanPage() {
                           onClick={() => handleToggleTarget(target.id)}
                         >
                           <div className="flex items-center gap-4 flex-1">
-                            {/* Improved Visual Toggle */}
+                            {/* Checkbox Visual */}
                             <div
                               className={`
                               flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300
                               ${
                                 isDone
-                                  ? "bg-green-500 text-white scale-105 shadow-md shadow-green-200"
+                                  ? "bg-awqaf-primary text-white scale-105 shadow-md"
                                   : "bg-white border-2 border-slate-200 text-transparent group-hover:border-awqaf-primary"
                               }
                             `}
@@ -698,7 +698,7 @@ export default function RamadhanPage() {
                               <p
                                 className={`font-bold font-comfortaa text-sm transition-colors ${
                                   isDone
-                                    ? "text-green-800 line-through decoration-green-800/30"
+                                    ? "text-awqaf-primary line-through decoration-awqaf-primary/30"
                                     : "text-slate-800"
                                 }`}
                               >
@@ -722,7 +722,7 @@ export default function RamadhanPage() {
 
                 <Button
                   variant="outline"
-                  className="w-full mt-4"
+                  className="w-full mt-4 border-awqaf-primary/20 text-awqaf-primary hover:bg-awqaf-primary/5"
                   onClick={() => setShowReflectionDialog(true)}
                   disabled={!isAuthenticated}
                 >
@@ -737,26 +737,29 @@ export default function RamadhanPage() {
             <RamadhanDoaCard />
           </TabsContent>
 
-          {/* KHATAM TAB (Translated) */}
+          {/* KHATAM TAB */}
           <TabsContent value="khatam" className="space-y-4 mt-4">
             <Card className="border-awqaf-border-light">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg font-comfortaa">
-                  <BookOpen className="w-5 h-5 text-awqaf-primary" />
+                <CardTitle className="flex items-center gap-2 text-lg font-comfortaa text-awqaf-primary">
+                  <BookOpen className="w-5 h-5" />
                   {t_ramadhan.khatamTitle}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-comfortaa font-semibold">
+                    <span className="font-comfortaa font-semibold text-awqaf-foreground">
                       {t_ramadhan.totalAchieved}
                     </span>
                     <span className="text-2xl font-bold text-awqaf-primary">
                       {khatamPercentage.toFixed(0)}%
                     </span>
                   </div>
-                  <Progress value={khatamPercentage} className="h-4 mb-2" />
+                  <Progress
+                    value={khatamPercentage}
+                    className="h-4 mb-2 bg-accent-100"
+                  />
                   <p className="text-sm text-center text-awqaf-foreground-secondary font-comfortaa">
                     {khatamProgress.toFixed(1)} / 30 Juz
                   </p>
@@ -767,6 +770,7 @@ export default function RamadhanPage() {
                     variant="outline"
                     onClick={() => handleKhatamProgress(-0.5)}
                     disabled={khatamProgress <= 0}
+                    className="border-awqaf-border-light hover:bg-accent-50"
                   >
                     <Minus className="w-4 h-4 mr-2" /> {t_ramadhan.decrease} 0.5
                     Juz
@@ -774,14 +778,15 @@ export default function RamadhanPage() {
                   <Button
                     onClick={() => handleKhatamProgress(0.5)}
                     disabled={khatamProgress >= 30}
+                    className="bg-awqaf-primary hover:bg-awqaf-primary/90 text-white"
                   >
                     <Plus className="w-4 h-4 mr-2" /> {t_ramadhan.increase} 0.5
                     Juz
                   </Button>
                 </div>
 
-                <div className="bg-blue-50 p-4 rounded-lg text-center border border-blue-100">
-                  <p className="text-sm text-blue-800 font-medium italic">
+                <div className="bg-accent-50 p-4 rounded-lg text-center border border-awqaf-border-light">
+                  <p className="text-sm text-awqaf-primary font-medium italic">
                     &quot;{t_ramadhan.quranQuote}&quot;
                   </p>
                 </div>
@@ -789,51 +794,51 @@ export default function RamadhanPage() {
             </Card>
           </TabsContent>
 
-          {/* TRACKING TAB (Translated) */}
+          {/* TRACKING TAB */}
           <TabsContent value="tracking" className="space-y-4 mt-4">
             <Card className="border-awqaf-border-light">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg font-comfortaa">
-                  <BarChart3 className="w-5 h-5 text-awqaf-primary" />
+                <CardTitle className="flex items-center gap-2 text-lg font-comfortaa text-awqaf-primary">
+                  <BarChart3 className="w-5 h-5" />
                   {t_ramadhan.statsTitle}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Summary Cards */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-blue-50 rounded-lg text-center">
-                    <BookOpen className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-blue-900">
+                  <div className="p-4 bg-accent-50 rounded-lg text-center border border-awqaf-border-light">
+                    <BookOpen className="w-8 h-8 text-awqaf-primary mx-auto mb-2" />
+                    <p className="text-2xl font-bold text-awqaf-primary">
                       {khatamProgress.toFixed(1)}
                     </p>
-                    <p className="text-xs text-blue-700 font-comfortaa">
+                    <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
                       {t_ramadhan.juzRead}
                     </p>
                   </div>
-                  <div className="p-4 bg-green-50 rounded-lg text-center">
-                    <CheckCircle2 className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-green-900">
+                  <div className="p-4 bg-accent-50 rounded-lg text-center border border-awqaf-border-light">
+                    <CheckCircle2 className="w-8 h-8 text-awqaf-primary mx-auto mb-2" />
+                    <p className="text-2xl font-bold text-awqaf-primary">
                       {monthlyProgress.filter((p) => p.tarawih).length}
                     </p>
-                    <p className="text-xs text-green-700 font-comfortaa">
+                    <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
                       {t_ramadhan.tarawihCount}
                     </p>
                   </div>
-                  <div className="p-4 bg-purple-50 rounded-lg text-center">
-                    <Heart className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-purple-900">
+                  <div className="p-4 bg-accent-50 rounded-lg text-center border border-awqaf-border-light">
+                    <Heart className="w-8 h-8 text-awqaf-primary mx-auto mb-2" />
+                    <p className="text-2xl font-bold text-awqaf-primary">
                       {monthlyProgress.filter((p) => p.dzikir).length}
                     </p>
-                    <p className="text-xs text-purple-700 font-comfortaa">
+                    <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
                       {t_ramadhan.dzikirCount}
                     </p>
                   </div>
-                  <div className="p-4 bg-orange-50 rounded-lg text-center">
-                    <TrendingUp className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-orange-900">
+                  <div className="p-4 bg-accent-50 rounded-lg text-center border border-awqaf-border-light">
+                    <TrendingUp className="w-8 h-8 text-awqaf-primary mx-auto mb-2" />
+                    <p className="text-2xl font-bold text-awqaf-primary">
                       {dailyProgressPercentage}%
                     </p>
-                    <p className="text-xs text-orange-700 font-comfortaa">
+                    <p className="text-xs text-awqaf-foreground-secondary font-comfortaa">
                       {t_ramadhan.statusToday}
                     </p>
                   </div>
@@ -841,7 +846,7 @@ export default function RamadhanPage() {
 
                 {/* Grid Visual */}
                 <div>
-                  <h4 className="font-semibold font-comfortaa mb-3">
+                  <h4 className="font-semibold font-comfortaa mb-3 text-awqaf-foreground">
                     {t_ramadhan.consistency}
                   </h4>
                   <div className="grid grid-cols-7 gap-2" dir="ltr">
@@ -853,14 +858,14 @@ export default function RamadhanPage() {
                       return (
                         <div
                           key={i}
-                          className={`aspect-square rounded-lg flex items-center justify-center text-xs font-bold ${
+                          className={`aspect-square rounded-lg flex items-center justify-center text-xs font-bold transition-all ${
                             i < currentRamadhanDay - 1
                               ? hasProgress
-                                ? "bg-green-500 text-white"
-                                : "bg-gray-200 text-gray-400"
+                                ? "bg-awqaf-primary text-white shadow-sm"
+                                : "bg-gray-100 text-gray-400"
                               : i === currentRamadhanDay - 1
-                                ? "bg-awqaf-primary text-white ring-2 ring-awqaf-primary ring-offset-2"
-                                : "bg-gray-100 text-gray-300"
+                                ? "bg-white text-awqaf-primary border-2 border-awqaf-primary"
+                                : "bg-accent-50 text-awqaf-foreground-secondary/50"
                           }`}
                         >
                           {i + 1}
@@ -868,17 +873,17 @@ export default function RamadhanPage() {
                       );
                     })}
                   </div>
-                  <div className="flex items-center justify-between mt-3 text-xs text-awqaf-foreground-secondary">
+                  <div className="flex items-center justify-between mt-3 text-xs text-awqaf-foreground-secondary font-comfortaa">
                     <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-green-500 rounded"></div>
+                      <div className="w-3 h-3 bg-awqaf-primary rounded"></div>
                       <span>{t_ramadhan.statusAchieved}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-awqaf-primary rounded ring-2 ring-awqaf-primary ring-offset-1"></div>
+                      <div className="w-3 h-3 bg-white border-2 border-awqaf-primary rounded"></div>
                       <span>{t_ramadhan.statusToday}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-gray-200 rounded"></div>
+                      <div className="w-3 h-3 bg-gray-100 rounded"></div>
                       <span>{t_ramadhan.statusNotYet}</span>
                     </div>
                   </div>
@@ -886,7 +891,7 @@ export default function RamadhanPage() {
 
                 {/* Reflection History */}
                 <div>
-                  <h4 className="font-semibold font-comfortaa mb-3">
+                  <h4 className="font-semibold font-comfortaa mb-3 text-awqaf-foreground">
                     {t_ramadhan.reflectionHistory}
                   </h4>
                   {monthlyProgress.filter((p) => p.reflection).length > 0 ? (
@@ -898,7 +903,7 @@ export default function RamadhanPage() {
                         .map((p, index) => (
                           <div
                             key={index}
-                            className="p-3 bg-accent-50 rounded-lg"
+                            className="p-3 bg-accent-50 rounded-lg border border-awqaf-border-light"
                           >
                             <p className="text-xs text-awqaf-foreground-secondary font-comfortaa mb-1">
                               {new Date(p.date).toLocaleDateString(safeLocale, {
@@ -914,7 +919,7 @@ export default function RamadhanPage() {
                         ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-center text-gray-400 italic py-4">
+                    <p className="text-sm text-center text-awqaf-foreground-secondary italic py-4">
                       {t_ramadhan.noReflection}
                     </p>
                   )}
@@ -930,24 +935,30 @@ export default function RamadhanPage() {
         open={showReflectionDialog}
         onOpenChange={setShowReflectionDialog}
       >
-        <DialogContent>
+        <DialogContent className="border-awqaf-border-light">
           <DialogHeader>
-            <DialogTitle>{t_ramadhan.reflectionTitle}</DialogTitle>
+            <DialogTitle className="font-comfortaa text-awqaf-primary">
+              {t_ramadhan.reflectionTitle}
+            </DialogTitle>
           </DialogHeader>
           <Textarea
             placeholder="..."
             value={reflectionText}
             onChange={(e) => setReflectionText(e.target.value)}
-            className="min-h-[100px]"
+            className="min-h-[100px] border-awqaf-border-light focus-visible:ring-awqaf-primary"
           />
           <DialogFooter>
             <Button
               onClick={() => setShowReflectionDialog(false)}
               variant="outline"
+              className="border-awqaf-border-light"
             >
               {t_ramadhan.cancel}
             </Button>
-            <Button onClick={() => setShowReflectionDialog(false)}>
+            <Button
+              onClick={() => setShowReflectionDialog(false)}
+              className="bg-awqaf-primary hover:bg-awqaf-primary/90 text-white"
+            >
               {t_ramadhan.save}
             </Button>
           </DialogFooter>
@@ -956,28 +967,39 @@ export default function RamadhanPage() {
 
       {/* Drawer Reminder */}
       <Drawer open={showReminderDrawer} onOpenChange={setShowReminderDrawer}>
-        <DrawerContent>
+        <DrawerContent className="border-awqaf-border-light">
           <DrawerHeader>
-            <DrawerTitle>{t_ramadhan.reminderBtn}</DrawerTitle>
+            <DrawerTitle className="font-comfortaa text-awqaf-primary">
+              {t_ramadhan.reminderBtn}
+            </DrawerTitle>
           </DrawerHeader>
           <div className="p-4 space-y-4">
             {reminders.map((rem) => (
               <div
                 key={rem.id}
-                className="flex items-center justify-between border p-3 rounded-lg"
+                className="flex items-center justify-between border border-awqaf-border-light p-3 rounded-lg bg-white"
               >
                 <div className="flex items-center gap-3">
                   <Bell
                     className={`w-5 h-5 ${rem.enabled ? "text-awqaf-primary" : "text-gray-300"}`}
                   />
                   <div>
-                    <p className="font-semibold text-sm">{rem.name}</p>
-                    <p className="text-xs text-gray-500">{rem.time}</p>
+                    <p className="font-semibold text-sm text-awqaf-foreground">
+                      {rem.name}
+                    </p>
+                    <p className="text-xs text-awqaf-foreground-secondary">
+                      {rem.time}
+                    </p>
                   </div>
                 </div>
                 <Button
                   size="sm"
                   variant={rem.enabled ? "default" : "outline"}
+                  className={
+                    rem.enabled
+                      ? "bg-awqaf-primary hover:bg-awqaf-primary/90 text-white"
+                      : "border-awqaf-border-light"
+                  }
                   onClick={() => toggleReminder(rem.id)}
                 >
                   {rem.enabled ? "ON" : "OFF"}

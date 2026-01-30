@@ -190,7 +190,7 @@ export default function RukunImanPage() {
         <div className="max-w-md mx-auto px-4 py-4">
           <div className="relative bg-background/90 backdrop-blur-md rounded-2xl border border-awqaf-border-light/50 shadow-lg px-4 py-3">
             <div className="flex items-center justify-between">
-              <Link href="/bekal-islam">
+              <Link href="/">
                 <Button
                   variant="ghost"
                   size="sm"
