@@ -41,7 +41,7 @@ export async function middleware(req: NextRequest) {
 
   const pathname = req.nextUrl.pathname;
 
-  const publicPaths = ["/auth/login", "/register", "/login"];
+  const publicPaths = ["/auth/login", "/auth/register", "/login"];
 
   // Jika user mengakses halaman public, biarkan lewat
   if (publicPaths.some((path) => pathname.startsWith(path))) {
