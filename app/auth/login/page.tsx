@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
 import {
   Card,
   CardContent,
@@ -12,16 +12,81 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Lock, Mail, ArrowRight, UserPlus } from "lucide-react";
+import { LogIn, Lock, Mail, ArrowRight, UserPlus, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
+
+// Auto-login credentials
+const AUTO_LOGIN_EMAIL = "soni.setiawan.it07@gmail.com";
+const AUTO_LOGIN_PASSWORD = "123123123";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isAutoLogging, setIsAutoLogging] = useState(true); // Start with true to show loading
+  const [autoLoginDone, setAutoLoginDone] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data: session, status } = useSession();
+  
+  // Get callback URL from query params
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
+
+  // Auto-login on mount - run immediately
+  useEffect(() => {
+    // Skip if already attempted
+    if (autoLoginDone) return;
+
+    const performAutoLogin = async () => {
+      // If already authenticated, redirect immediately
+      if (status === "authenticated" && session) {
+        router.push(callbackUrl);
+        return;
+      }
+
+      // Wait a bit for session to be determined
+      if (status === "loading") return;
+
+      // If not authenticated, auto-login
+      if (status === "unauthenticated") {
+        setAutoLoginDone(true);
+        
+        try {
+          console.log("Attempting auto-login...");
+          const result = await signIn("credentials", {
+            redirect: false,
+            email: AUTO_LOGIN_EMAIL,
+            password: AUTO_LOGIN_PASSWORD,
+          });
+
+          console.log("Auto-login result:", result);
+
+          if (result?.ok) {
+            // Use window.location for hard redirect to ensure session is refreshed
+            window.location.href = callbackUrl;
+          } else {
+            // If auto-login fails, show the form
+            console.log("Auto-login failed, showing form");
+            setIsAutoLogging(false);
+          }
+        } catch (error) {
+          console.error("Auto-login error:", error);
+          setIsAutoLogging(false);
+        }
+      }
+    };
+
+    performAutoLogin();
+  }, [status, session, router, callbackUrl, autoLoginDone]);
+
+  // Additional check: if session becomes authenticated, redirect
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      window.location.href = callbackUrl;
+    }
+  }, [status, session, callbackUrl]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +125,24 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  // Show loading while checking session or auto-logging
+  if (status === "loading" || isAutoLogging) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-awqaf-border-light shadow-lg">
+          <CardContent className="py-12">
+            <div className="flex flex-col items-center gap-4">
+              <Loader2 className="w-12 h-12 text-awqaf-primary animate-spin" />
+              <p className="text-awqaf-foreground-secondary font-comfortaa">
+                {isAutoLogging ? "Sedang masuk otomatis..." : "Memeriksa sesi..."}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 flex items-center justify-center p-4">
