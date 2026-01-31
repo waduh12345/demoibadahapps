@@ -50,9 +50,6 @@ import {
   useToggleDailyTargetMutation,
 } from "@/services/daily-target.service";
 
-// Import Komponen
-import RamadhanDoaCard from "./components/RamadhanDoaCard";
-
 // --- TYPES ---
 type LocaleCode = "id" | "en" | "ar" | "fr" | "kr" | "jp";
 
@@ -734,7 +731,7 @@ export default function RamadhanPage() {
               </CardContent>
             </Card>
 
-            <RamadhanDoaCard />
+            {/* <RamadhanDoaCard /> */}
           </TabsContent>
 
           {/* KHATAM TAB */}
