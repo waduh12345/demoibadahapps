@@ -19,7 +19,6 @@ import {
   ArrowLeft, // Ditambahkan agar sesuai dengan UI KajianPage
 } from "lucide-react";
 import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
 import DonationCarousel, {
   CarouselDonation,
 } from "./components/DonationCarousel";
@@ -47,8 +46,6 @@ import { Label } from "@/components/ui/label";
 import { useI18n } from "@/app/hooks/useI18n";
 import { useGetCurrentUserQuery } from "@/services/auth.service";
 import { useSession } from "next-auth/react";
-
-const MySwal = withReactContent(Swal);
 
 // Loading Skeleton Component
 const DonationSkeleton = () => {
@@ -222,7 +219,7 @@ export default function DonasiPage() {
       if (!toggleResponse.ok) throw new Error("Failed to toggle favorite");
       await refetchUser();
     } catch (error) {
-      MySwal.fire({
+      Swal.fire({
         icon: "error",
         title: "Oops...",
         text: "Gagal mengubah status favorit.",
@@ -290,7 +287,7 @@ export default function DonasiPage() {
 
     // 2. Jika belum ada, tampilkan pilihan dari daftar donasi yang sedang muncul di layar
     if (donations.length > 0) {
-      MySwal.fire({
+      Swal.fire({
         title:
           locale === "id"
             ? "Pilih Riwayat Campaign"
@@ -318,7 +315,7 @@ export default function DonasiPage() {
       });
     } else {
       // 3. Jika data donasi dari API memang kosong
-      MySwal.fire({
+      Swal.fire({
         icon: "info",
         text:
           locale === "id"
@@ -333,12 +330,12 @@ export default function DonasiPage() {
 
     const amountNum = Number(donationAmount.replace(/\D/g, ""));
     if (amountNum < 10000) {
-      MySwal.fire({ icon: "warning", text: t("donation.minimumDonation") });
+      Swal.fire({ icon: "warning", text: t("donation.minimumDonation") });
       return;
     }
 
     if (!donorName.trim()) {
-      MySwal.fire({ icon: "warning", text: "Nama donor wajib diisi" });
+      Swal.fire({ icon: "warning", text: "Nama donor wajib diisi" });
       return;
     }
 
@@ -369,7 +366,7 @@ export default function DonasiPage() {
       setDescription("");
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
-      MySwal.fire({
+      Swal.fire({
         icon: "error",
         title: "Gagal",
         text: err.data?.message || "Gagal memproses donasi.",

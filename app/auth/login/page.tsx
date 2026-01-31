@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { signIn, useSession } from "next-auth/react";
 import {
   Card,
@@ -21,7 +21,7 @@ import Swal from "sweetalert2";
 const AUTO_LOGIN_EMAIL = "soni.setiawan.it07@gmail.com";
 const AUTO_LOGIN_PASSWORD = "123123123";
 
-export default function LoginPage() {
+function LoginContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -238,5 +238,28 @@ export default function LoginPage() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-accent-50 to-accent-100 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md border-awqaf-border-light shadow-lg">
+            <CardContent className="py-12">
+              <div className="flex flex-col items-center gap-4">
+                <Loader2 className="w-12 h-12 text-awqaf-primary animate-spin" />
+                <p className="text-awqaf-foreground-secondary font-comfortaa">
+                  Memuat...
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

@@ -33,9 +33,6 @@ import ImageWithFallback from "../components/ImageWithFallback";
 import ShareModal from "../components/ShareModal";
 import PaymentStatusModal from "../components/PaymentModal";
 import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
-
-const MySwal = withReactContent(Swal);
 
 // --- Interface Response API (Sesuai Struktur JSON Anda) ---
 interface ApiResponseWrapper {
@@ -316,7 +313,7 @@ export default function DonationCategoryPage() {
   ) => {
     e.stopPropagation();
     if (!session) {
-      MySwal.fire({ icon: "info", text: t.loginRequired });
+      Swal.fire({ icon: "info", text: t.loginRequired });
       return;
     }
     setTogglingId(campaignId);
@@ -349,12 +346,12 @@ export default function DonationCategoryPage() {
 
     const amountNum = Number(donationAmount.replace(/\D/g, ""));
     if (amountNum < 10000) {
-      MySwal.fire({ icon: "warning", text: t.minAmount });
+      Swal.fire({ icon: "warning", text: t.minAmount });
       return;
     }
 
     if (!donorName.trim()) {
-      MySwal.fire({ icon: "warning", text: "Nama donatur wajib diisi" });
+      Swal.fire({ icon: "warning", text: "Nama donatur wajib diisi" });
       return;
     }
 
@@ -395,7 +392,7 @@ export default function DonationCategoryPage() {
       // 3. Error Handling
       const err = error as { data?: { message?: string } };
       console.error("Donation Error:", err);
-      MySwal.fire({
+      Swal.fire({
         icon: "error",
         title: "Gagal",
         text: err.data?.message || "Gagal memproses donasi.",
